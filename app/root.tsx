@@ -13,6 +13,7 @@ import Footer from "~/components/layout/footer";
 import "./app.css";
 
 export const links: LinksFunction = () => [
+  { rel: "icon", href: "/assets/app-icon.png", type: "image/png" },
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",

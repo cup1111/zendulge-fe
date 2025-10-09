@@ -216,7 +216,7 @@ export default function Landing() {
                       </Button>
 
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         className="border-shadow-lavender text-shadow-lavender hover:bg-shadow-lavender hover:text-white px-6 py-3 rounded-xl transition-all duration-300 font-semibold border-2"
                         onClick={handleAllDeals}
                       >
@@ -227,7 +227,7 @@ export default function Landing() {
                     {/* Clear Search Button */}
                     {showSearchResults && (
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => {
                           setShowSearchResults(false);
                           setSelectedCategory("");
@@ -245,7 +245,7 @@ export default function Landing() {
 
             {/* Login/Signup Buttons */}
             <div className="flex items-center justify-center gap-4 mt-8">
-              <Button variant="outline">Sign In</Button>
+              <Button variant="ghost">Sign In</Button>
               <Button className="bg-shadow-lavender hover:bg-shadow-lavender/90">
                 Sign Up
               </Button>
