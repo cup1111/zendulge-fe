@@ -12,12 +12,12 @@ export default function Header() {
   const location = useLocation();
   
   // 静态展示：模拟已登录用户
-  const isAuthenticated = true;
+  const isAuthenticated = false;
   const user = {
     firstName: "Demo",
     lastName: "User",
     email: "demo@zendulge.com",
-    role: "customer" as const,
+    role: "super_admin" as const,
   };
 
   return (
@@ -84,7 +84,7 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {!isAuthenticated ? (
               <>
-                <Button variant="ghost">
+                <Button variant="secondary">
                   <span>Sign In</span>
                 </Button>
                 <Button>
