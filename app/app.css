@@ -1,15 +1,109 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
 @import "tailwindcss";
 
+/* Tailwind v4 主题配置 */
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* 自定义字体 */
+  --font-montserrat: 'Montserrat', sans-serif;
+  
+  /* Zendulge 品牌色 */
+  --color-shadow-lavender: hsl(241, 43%, 52%);
+  --color-frosted-lilac: hsl(244, 85%, 92%);
+  --color-true-black: hsl(0, 0%, 0%);
+  --color-pure-white: hsl(0, 0%, 100%);
+  
+  /* Radix UI 主题色 */
+  --color-background: hsl(0, 0%, 100%);
+  --color-foreground: hsl(240, 10%, 3.9%);
+  --color-card: hsl(0, 0%, 100%);
+  --color-card-foreground: hsl(240, 10%, 3.9%);
+  --color-popover: hsl(0, 0%, 100%);
+  --color-popover-foreground: hsl(240, 10%, 3.9%);
+  --color-primary: hsl(241, 43%, 52%);
+  --color-primary-foreground: hsl(0, 0%, 98%);
+  --color-secondary: hsl(244, 85%, 92%);
+  --color-secondary-foreground: hsl(241, 43%, 52%);
+  --color-muted: hsl(244, 85%, 92%);
+  --color-muted-foreground: hsl(240, 3.8%, 46.1%);
+  --color-accent: hsl(244, 85%, 92%);
+  --color-accent-foreground: hsl(241, 43%, 52%);
+  --color-destructive: hsl(0, 84.2%, 60.2%);
+  --color-destructive-foreground: hsl(0, 0%, 98%);
+  --color-border: hsl(240, 5.9%, 90%);
+  --color-input: hsl(240, 5.9%, 90%);
+  --color-ring: hsl(241, 43%, 52%);
+  
+  /* 圆角 */
+  --radius: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
+/* 深色模式（可选） */
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: hsl(240, 10%, 3.9%);
+    --color-foreground: hsl(0, 0%, 98%);
+    /* ... 其他深色模式颜色 */
+  }
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+/* 基础样式 */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+}
+
+/* 自定义工具类 */
+@layer utilities {
+  .font-montserrat {
+    font-family: var(--font-montserrat);
+  }
+  
+  .bg-shadow-lavender {
+    background-color: var(--color-shadow-lavender);
+  }
+  
+  .bg-frosted-lilac {
+    background-color: var(--color-frosted-lilac);
+  }
+  
+  .bg-true-black {
+    background-color: var(--color-true-black);
+  }
+  
+  .bg-pure-white {
+    background-color: var(--color-pure-white);
+  }
+  
+  .text-shadow-lavender {
+    color: var(--color-shadow-lavender);
+  }
+  
+  .text-frosted-lilac {
+    color: var(--color-frosted-lilac);
+  }
+  
+  .text-true-black {
+    color: var(--color-true-black);
+  }
+  
+  .text-pure-white {
+    color: var(--color-pure-white);
+  }
+  
+  .border-shadow-lavender {
+    border-color: var(--color-shadow-lavender);
+  }
+  
+  .border-frosted-lilac {
+    border-color: var(--color-frosted-lilac);
   }
 }
