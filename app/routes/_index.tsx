@@ -366,6 +366,7 @@ export default function Landing() {
 // Deal Card Component
 function DealCard({ deal }: { deal: any }) {
   return (
+    <Link to={`/deal-details/${deal.id}`} className="block">  {/* 添加 Link 包装 */}
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow">
       {/* Deal Image */}
       <div className="relative h-48 bg-gradient-to-br from-frosted-lilac to-shadow-lavender/20">
@@ -428,13 +429,18 @@ function DealCard({ deal }: { deal: any }) {
             </div>
           </div>
           <Button
-            size="sm"
-            className="bg-shadow-lavender hover:bg-shadow-lavender/90"
-          >
-            View Deal
-          </Button>
+          size="sm"
+          className="bg-shadow-lavender hover:bg-shadow-lavender/90"
+          onClick={(e) => {
+            e.preventDefault(); // 防止双重导航
+            e.stopPropagation();
+          }}
+        >
+          View Deal
+        </Button>
         </div>
       </div>
     </div>
+    </Link>
   );
 }
