@@ -1,5 +1,5 @@
 import React from "react"
-import { mergeTailwind } from "~/lib/utils";
+import { combineClasses } from "~/lib/utils";
 
 interface ButtonProps extends React.ComponentPropsWithRef<'button'> {
   variant?: "default" | "ghost";
@@ -11,7 +11,7 @@ const Button = ({ ref, className, variant = "default", size = "default", asChild
     const Comp = asChild ? "span" : "button";
     return (
       <Comp
-        className={mergeTailwind(
+        className={combineClasses(
           "inline-flex items-center justify-center rounded-md font-medium transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
           "disabled:pointer-events-none disabled:opacity-50",

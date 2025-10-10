@@ -2,7 +2,7 @@ import React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
-import { mergeTailwind } from "~/lib/utils"
+import { combineClasses } from "~/lib/utils"
 
 const Select = SelectPrimitive.Root
 
@@ -13,7 +13,7 @@ const SelectValue = SelectPrimitive.Value
 const SelectTrigger = ({className, children, ref, ...props}: React.ComponentPropsWithRef<typeof SelectPrimitive.Trigger>) => (
   <SelectPrimitive.Trigger
     ref={ref}
-    className={mergeTailwind(
+    className={combineClasses(
       "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className
     )}
@@ -32,7 +32,7 @@ const SelectScrollUpButton = ({ className, ref, ...props}: React.ComponentPropsW
   return (
   <SelectPrimitive.ScrollUpButton
     ref={ref}
-    className={mergeTailwind(
+    className={combineClasses(
       "flex cursor-default items-center justify-center py-1",
       className
     )}
@@ -48,7 +48,7 @@ SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
 const SelectScrollDownButton = ({ className, ref, ...props }: React.ComponentPropsWithRef<typeof SelectPrimitive.ScrollDownButton>) => {
   return (<SelectPrimitive.ScrollDownButton
     ref={ref}
-    className={mergeTailwind(
+    className={combineClasses(
       "flex cursor-default items-center justify-center py-1",
       className
     )}
@@ -65,7 +65,7 @@ const SelectContent = ({ className, children, position = "popper", ref, ...props
   return (<SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
-      className={mergeTailwind(
+      className={combineClasses(
         "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-select-content-transform-origin]",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
@@ -76,7 +76,7 @@ const SelectContent = ({ className, children, position = "popper", ref, ...props
     >
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
-        className={mergeTailwind(
+        className={combineClasses(
           "p-1",
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
@@ -95,7 +95,7 @@ const SelectLabel = ({ className, ref, ...props }: React.ComponentPropsWithRef<t
   return (
   <SelectPrimitive.Label
     ref={ref}
-    className={mergeTailwind("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
+    className={combineClasses("py-1.5 pl-8 pr-2 text-sm font-semibold", className)}
     {...props}
   />
 )}
@@ -105,7 +105,7 @@ const SelectItem = ({ className, children, ref, ...props }: React.ComponentProps
   return (
   <SelectPrimitive.Item
     ref={ref}
-    className={mergeTailwind(
+    className={combineClasses(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
@@ -126,7 +126,7 @@ const SelectSeparator = ({ className, ref, ...props }: React.ComponentPropsWithR
   return (
   <SelectPrimitive.Separator
     ref={ref}
-    className={mergeTailwind("-mx-1 my-1 h-px bg-muted", className)}
+    className={combineClasses("-mx-1 my-1 h-px bg-muted", className)}
     {...props}
   />
 )}
