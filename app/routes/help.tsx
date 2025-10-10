@@ -38,21 +38,6 @@ import {
             </p>
           </div>
   
-          {/* Quick Contact */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <Card className="text-center">
-              <CardHeader>
-                <MessageCircle className="w-8 h-8 text-shadow-lavender mx-auto mb-2" />
-                <CardTitle className="text-lg">Live Chat</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">Available 24/7</p>
-                <Button className="bg-shadow-lavender hover:bg-shadow-lavender/90">
-                  Start Chat
-                </Button>
-              </CardContent>
-            </Card>
-  
             <Card className="text-center">
               <CardHeader>
                 <Mail className="w-8 h-8 text-shadow-lavender mx-auto mb-2" />
@@ -294,6 +279,5 @@ import {
             </div>
           </div>
         </div>
-      </div>
     );
   }

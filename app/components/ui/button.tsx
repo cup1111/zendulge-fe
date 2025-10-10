@@ -1,19 +1,17 @@
-import * as React from "react";
-import { cn } from "~/lib/utils";
+import React from "react"
+import { mergeTailwind } from "~/lib/utils";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends React.ComponentPropsWithRef<'button'> {
   variant?: "default" | "ghost";
   size?: "default" | "sm";
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "default", size = "default", asChild, children, ...props }, ref) => {
+const Button = ({ ref, className, variant = "default", size = "default", asChild, children, ...props }: ButtonProps) => {
     const Comp = asChild ? "span" : "button";
-    
     return (
       <Comp
-        className={cn(
+        className={mergeTailwind(
           "inline-flex items-center justify-center rounded-md font-medium transition-colors",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
           "disabled:pointer-events-none disabled:opacity-50",
@@ -31,7 +29,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       </Comp>
     );
   }
-);
+
 Button.displayName = "Button";
 
 export { Button };

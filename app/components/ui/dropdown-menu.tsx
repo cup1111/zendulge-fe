@@ -1,5 +1,5 @@
-import * as React from "react";
-import { cn } from "~/lib/utils";
+import React from "react"
+import { mergeTailwind } from "~/lib/utils";
 
 export function DropdownMenu({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -32,7 +32,7 @@ export function DropdownMenuContent({ children, align = "center", className, isO
   
   return (
     <div
-      className={cn(
+      className={mergeTailwind(
         "absolute z-50 min-w-[200px] rounded-md border bg-white p-1 shadow-md",
         align === "center" && "left-1/2 -translate-x-1/2",
         align === "end" && "right-0",
@@ -48,7 +48,7 @@ export function DropdownMenuContent({ children, align = "center", className, isO
 export function DropdownMenuItem({ children, asChild, onClick, className }: any) {
   return (
     <div
-      className={cn(
+      className={mergeTailwind(
         "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
         "hover:bg-gray-100 transition-colors",
         className
