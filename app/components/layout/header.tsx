@@ -71,6 +71,15 @@ export default function Header() {
             </Link>
 
             <Link
+              to="/business-management"
+              className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
+                location.pathname === '/business-management' ? 'opacity-80' : ''
+              }`}
+            >
+              Business Management
+            </Link>
+
+            <Link
               to="/help"
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
                 location.pathname === '/help' ? 'opacity-80' : ''
