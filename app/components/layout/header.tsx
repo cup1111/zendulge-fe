@@ -53,7 +53,7 @@ export default function Header() {
           {/* Navigation Links */}
           <nav className="flex space-x-8 ml-12">
             <Link
-              to="/customer"
+              to="/"
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
                 location.pathname === '/customer' ? 'opacity-80' : ''
               }`}
@@ -85,10 +85,10 @@ export default function Header() {
             {!isAuthenticated ? (
               <>
                 <Button variant="secondary">
-                  <span>Sign In</span>
+                  <Link to="/login">Sign In</Link>
                 </Button>
-                <Button>
-                  <span>Sign Up</span>
+                <Button variant="default">
+                  <Link to="/signup">Sign Up</Link>
                 </Button>
               </>
             ) : (

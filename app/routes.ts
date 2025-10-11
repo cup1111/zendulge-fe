@@ -5,5 +5,7 @@ export default [
     route("help", "./routes/help.tsx"),
     route("business", "./routes/business-info.tsx"),
     route("deal-details/:id", "./routes/deal-details.$id.tsx"),
+    route("login", "./routes/login.tsx"),
+    route("signup", "./routes/signup.tsx"),
     route("*", "./routes/404.tsx"),
 ] satisfies RouteConfig;
