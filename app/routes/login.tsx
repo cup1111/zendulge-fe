@@ -1,27 +1,10 @@
 import {
     Card,
     CardContent,
-    CardDescription,
     CardHeader,
     CardTitle,
   } from "~/components/ui/card";
-  import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-  } from "~/components/ui/accordion";
   import { Button } from "~/components/ui/button";
-  import {
-    MessageCircle,
-    Phone,
-    Mail,
-    Clock,
-    Users,
-    Building,
-    ShoppingCart,
-    CreditCard,
-  } from "lucide-react";
 import heroBackground from "~/assets/massage.jpeg";
 import appIcon from "~/assets/app-icon.png";
 import { Input } from "~/components/ui/input";
@@ -33,7 +16,7 @@ import { Link } from "react-router";
         <div className="min-h-screen">
         {/* Hero Section */}
         <section
-          className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-frosted-lilac to-pure-white"
+          className="relative min-h-screen bg-gradient-to-br from-frosted-lilac to-pure-white pt-16 pb-16"
           style={{
             backgroundImage: `linear-gradient(rgba(248, 245, 255, 0.85), rgba(255, 255, 255, 0.85)), url(${heroBackground})`,
             backgroundSize: "cover",
@@ -50,8 +33,7 @@ import { Link } from "react-router";
                   alt="Zendulge App Icon"
                   className="w-24 h-24 rounded-2xl shadow-lg"
                 />
-              </div>
-
+            </div>
               {/* Tagline */}
               <h1
                 className="text-5xl text-gray-900 max-w-3xl mx-auto mb-8 font-semibold"
