@@ -1,4 +1,3 @@
-
 export interface Deal {
     id: number;
     businessName: string;
@@ -388,3 +387,192 @@ export interface Deal {
       amount: 75
     }
   ];
+  
+  // Business Management Mock Data
+export const mockBusinessStats = {
+  totalRevenue: 12485,
+  revenueGrowth: 12,
+  totalBookings: 147,
+  bookingsGrowth: 8,
+  activeDeals: 23,
+  expiringDeals: 5,
+  customerRating: 4.8,
+  reviewCount: 89,
+};
+
+export const mockBusinessUsers = [
+  {
+    id: 1,
+    name: "Jennifer Smith",
+    email: "jennifer@zenspa.com",
+    phone: "+1 (555) 123-4567",
+    role: "Manager",
+    status: "active" as const,
+    lastActive: "2 hours ago",
+    avatar: "JS",
+  },
+  {
+    id: 2,
+    name: "Michael Chen",
+    email: "michael@zenspa.com",
+    phone: "+1 (555) 234-5678",
+    role: "Therapist",
+    status: "active" as const,
+    lastActive: "5 minutes ago",
+    avatar: "MC",
+  },
+  {
+    id: 3,
+    name: "Sarah Wilson",
+    email: "sarah@zenspa.com",
+    phone: "+1 (555) 345-6789",
+    role: "Receptionist",
+    status: "active" as const,
+    lastActive: "1 hour ago",
+    avatar: "SW",
+  },
+  {
+    id: 4,
+    name: "David Rodriguez",
+    email: "david@zenspa.com",
+    phone: "+1 (555) 456-7890",
+    role: "Therapist",
+    status: "inactive" as const,
+    lastActive: "3 days ago",
+    avatar: "DR",
+  },
+  {
+    id: 5,
+    name: "Emma Thompson",
+    email: "emma@zenspa.com",
+    phone: "+1 (555) 567-8901",
+    role: "Admin",
+    status: "active" as const,
+    lastActive: "30 minutes ago",
+    avatar: "ET",
+  },
+];
+
+export const mockOperatingSites = [
+  {
+    id: 1,
+    name: "Zen Spa & Wellness - Downtown",
+    address: "123 Wellness Street, San Francisco, CA 94110",
+    phone: "+1 (555) 123-4567",
+    email: "downtown@zenspa.com",
+    status: "active" as const,
+    manager: "Jennifer Smith",
+    services: ["Massage", "Facial", "Sauna"],
+    hours: "9:00 AM - 8:00 PM",
+    revenue: "$45,200",
+    bookings: 89,
+  },
+  {
+    id: 2,
+    name: "Zen Spa & Wellness - Marina",
+    address: "456 Ocean Avenue, San Francisco, CA 94123",
+    phone: "+1 (555) 234-5678",
+    email: "marina@zenspa.com",
+    status: "active" as const,
+    manager: "Michael Chen",
+    services: ["Massage", "Yoga", "Meditation"],
+    hours: "10:00 AM - 7:00 PM",
+    revenue: "$32,800",
+    bookings: 67,
+  },
+  {
+    id: 3,
+    name: "Zen Spa & Wellness - SOMA",
+    address: "789 Market Street, San Francisco, CA 94103",
+    phone: "+1 (555) 345-6789",
+    email: "soma@zenspa.com",
+    status: "opening_soon" as const,
+    manager: "Sarah Wilson",
+    services: ["Massage", "Beauty", "Fitness"],
+    hours: "Coming Soon",
+    revenue: "$0",
+    bookings: 0,
+  },
+];
+
+export const mockRecentBookings = [
+  {
+    id: 1,
+    customer: "Sarah Johnson",
+    service: "Deep Tissue Massage",
+    date: "Today, 2:00 PM",
+    status: "confirmed" as const,
+    amount: "$89",
+  },
+  {
+    id: 2,
+    customer: "Mike Chen",
+    service: "Facial Treatment",
+    date: "Today, 4:30 PM",
+    status: "confirmed" as const,
+    amount: "$65",
+  },
+  {
+    id: 3,
+    customer: "Emma Wilson",
+    service: "Swedish Massage",
+    date: "Tomorrow, 10:00 AM",
+    status: "pending" as const,
+    amount: "$75",
+  },
+  {
+    id: 4,
+    customer: "David Lee",
+    service: "Hot Stone Massage",
+    date: "Tomorrow, 3:00 PM",
+    status: "confirmed" as const,
+    amount: "$95",
+  },
+];
+
+export const mockActiveDeals = [
+  {
+    id: 1,
+    title: "50% Off Deep Tissue Massage",
+    timeSlot: "2:00 PM - 4:00 PM",
+    bookings: 12,
+    status: "active" as const,
+  },
+  {
+    id: 2,
+    title: "30% Off Facial Treatment",
+    timeSlot: "10:00 AM - 12:00 PM",
+    bookings: 8,
+    status: "active" as const,
+  },
+  {
+    id: 3,
+    title: "40% Off Swedish Massage",
+    timeSlot: "6:00 PM - 8:00 PM",
+    bookings: 5,
+    status: "expiring" as const,
+  },
+];
+
+export const mockRecentActivity = [
+  {
+    action: "New booking received",
+    details: "Sarah Johnson booked Deep Tissue Massage",
+    time: "2 hours ago",
+  },
+  {
+    action: "Deal updated",
+    details: "50% Off Swedish Massage deal was modified",
+    time: "4 hours ago",
+  },
+  {
+    action: "Payment received",
+    details: "$89 payment processed for booking #1247",
+    time: "6 hours ago",
+  },
+  {
+    action: "Review received",
+    details: "5-star review from Emma Wilson",
+    time: "1 day ago",
+  },
+];

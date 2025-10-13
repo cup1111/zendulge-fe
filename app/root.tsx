@@ -9,6 +9,7 @@ import type { LinksFunction } from "react-router";
 
 import Header from "~/components/layout/header";
 import Footer from "~/components/layout/footer";
+import { CompanyProvider } from "~/contexts/CompanyContext";
 
 import "./app.css";
 
@@ -36,7 +37,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <CompanyProvider>
+          {children}
+        </CompanyProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
