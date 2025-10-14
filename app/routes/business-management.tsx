@@ -214,7 +214,7 @@ async function fetchRecentActivity(): Promise<RecentActivity[]> {
 }
 
 export default function BusinessManagement() {
-  const { user, currentCompany } = useAuth();
+  const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
   const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
     null
   );
@@ -223,17 +223,22 @@ export default function BusinessManagement() {
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [activeDeals, setActiveDeals] = useState<ActiveDeal[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        setLoading(true);
+        setDataLoading(true);
         setError(null);
 
+        // Wait for auth to finish loading
+        if (isLoading) {
+          return;
+        }
+
         // Check if user is authenticated
-        if (!user) {
+        if (!isAuthenticated || !user) {
           throw new Error("No user authentication found");
         }
 
@@ -268,14 +273,14 @@ export default function BusinessManagement() {
         setError(`Backend connection failed: ${errorMessage}`);
         console.error("Backend API error:", err);
       } finally {
-        setLoading(false);
+        setDataLoading(false);
       }
     }
 
     loadData();
-  }, [user, currentCompany]); // Re-run when user or company changes
+  }, [user, currentCompany, isAuthenticated, isLoading]); // Re-run when auth state changes
 
-  if (loading) {
+  if (isLoading || dataLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
