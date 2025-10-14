@@ -7,11 +7,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { useCompany } from "~/contexts/CompanyContext";
+import { useAuth } from "~/contexts/AuthContext";
 
 export default function Header() {
   const location = useLocation();
-  const { user, currentCompany, companies, setCurrentCompany } = useCompany();
+  const { user, currentCompany, companies, setCurrentCompany } = useAuth();
 
   // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
@@ -99,16 +99,18 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="text-shadow-lavender">
-                    {currentCompany?.name || 'Select Company'}
+                    {currentCompany?.name || "Select Company"}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {companies.map((company) => (
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       key={company.id}
                       onClick={() => setCurrentCompany(company)}
-                      className={currentCompany?.id === company.id ? 'bg-gray-100' : ''}
+                      className={
+                        currentCompany?.id === company.id ? "bg-gray-100" : ""
+                      }
                     >
                       {company.name}
                     </DropdownMenuItem>
@@ -139,7 +141,9 @@ export default function Header() {
 
                 {displayUser.role && (
                   <span className="px-2 py-1 text-xs font-medium bg-shadow-lavender text-white rounded-full capitalize">
-                    {displayUser.role === "super_admin" ? "Super Admin" : displayUser.role}
+                    {displayUser.role === "super_admin"
+                      ? "Super Admin"
+                      : displayUser.role}
                   </span>
                 )}
 

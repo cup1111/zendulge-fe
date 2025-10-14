@@ -26,7 +26,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useCompany, decodeJWTUser } from "~/contexts/CompanyContext";
+import { useAuth } from "~/contexts/AuthContext";
 import {
   mockBusinessStats,
   mockBusinessUsers,
@@ -106,21 +106,6 @@ const API_BASE_URL =
 const getAuthToken = () =>
   localStorage.getItem("accessToken") || localStorage.getItem("token");
 
-// Initialize user from JWT token
-function initializeUserFromToken() {
-  const token = getAuthToken();
-  if (token) {
-    // Decode JWT to get user data including companies
-    const userData = decodeJWTUser(token);
-    if (userData) {
-      return userData;
-    }
-  }
-  
-  // Fallback to API call if JWT decode fails or no token
-  return null;
-}
-
 async function fetchBusinessStats(): Promise<BusinessStats> {
   // Since there's no dedicated stats endpoint, we'll use mock data
   // In a real scenario, you'd calculate these from other endpoints
@@ -135,9 +120,11 @@ async function fetchBusinessUsers(): Promise<BusinessUser[]> {
   return mockBusinessUsers;
 }
 
-async function fetchOperatingSites(companyId: string): Promise<OperatingSite[]> {
+async function fetchOperatingSites(
+  companyId: string
+): Promise<OperatingSite[]> {
   if (!companyId) {
-    throw new Error('Company ID is required to fetch operating sites');
+    throw new Error("Company ID is required to fetch operating sites");
   }
 
   const token = getAuthToken();
@@ -227,7 +214,7 @@ async function fetchRecentActivity(): Promise<RecentActivity[]> {
 }
 
 export default function BusinessManagement() {
-  const { user, currentCompany, setUser } = useCompany();
+  const { user, currentCompany } = useAuth();
   const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
     null
   );
@@ -245,20 +232,14 @@ export default function BusinessManagement() {
         setLoading(true);
         setError(null);
 
-        // Initialize user from JWT token if not already set
+        // Check if user is authenticated
         if (!user) {
-          const userData = initializeUserFromToken();
-          if (userData) {
-            setUser(userData);
-            return; // Let the next useEffect handle data loading
-          } else {
-            throw new Error('No user authentication found');
-          }
+          throw new Error("No user authentication found");
         }
 
         // Ensure we have a current company selected
         if (!currentCompany) {
-          throw new Error('No company selected');
+          throw new Error("No company selected");
         }
 
         // Fetch operating sites from real backend (REQUIRED)
