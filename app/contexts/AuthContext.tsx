@@ -99,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setIsLoading(false);
       }
     };
-
+    login("user@example.com", "password123");
     initAuth();
   }, []);
 
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
           ? "https://api.zendulge.com"
           : "http://localhost:8000";
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
