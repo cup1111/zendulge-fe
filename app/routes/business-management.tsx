@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "~/contexts/AuthContext";
+import { buildApiUrl, API_CONFIG } from "~/config/api";
 import {
   mockBusinessStats,
   mockBusinessUsers,
@@ -96,12 +97,6 @@ interface RecentActivity {
   time: string;
 }
 
-// API functions - Using actual backend endpoints
-const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://api.zendulge.com"
-    : "http://localhost:8000";
-
 // Get auth token from localStorage
 const getAuthToken = () =>
   localStorage.getItem("accessToken") || localStorage.getItem("token");
@@ -138,7 +133,7 @@ async function fetchOperatingSites(
   }
 
   const response = await fetch(
-    `${API_BASE_URL}/api/v1/company/${companyId}/operate-sites`,
+    buildApiUrl(API_CONFIG.endpoints.company.operateSites(companyId)),
     {
       headers,
     }

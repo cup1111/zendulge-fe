@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { buildApiUrl, API_CONFIG } from "~/config/api";
 
 interface Company {
   id: string;
@@ -105,12 +106,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
     try {
-      const API_BASE_URL =
-        process.env.NODE_ENV === "production"
-          ? "https://api.zendulge.com"
-          : "http://localhost:8000";
-
-      const response = await fetch(`${API_BASE_URL}/api/v1/login`, {
+      const response = await fetch(buildApiUrl(API_CONFIG.endpoints.auth.login), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
