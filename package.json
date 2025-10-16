@@ -5,8 +5,9 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
-    "typecheck": "react-router typegen && tsc"
+    "start": "react-router-serve ./build",
+    "typecheck": "react-router typegen && tsc",
+    "deploy": "aws s3 sync build/client s3://zendulge.0l00000l.com"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -45,5 +46,8 @@
     "typescript": "^5.9.2",
     "vite": "^7.1.7",
     "vite-tsconfig-paths": "^5.1.4"
+  },
+  "engines": {
+    "node": "22.20.0"
   }
 }

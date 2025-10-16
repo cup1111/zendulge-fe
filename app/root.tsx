@@ -1,15 +1,10 @@
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import type { LinksFunction } from "react-router";
 
 import Header from "~/components/layout/header";
 import Footer from "~/components/layout/footer";
 import { Toaster } from "~/components/ui/toaster";
+import { AuthProvider } from "~/contexts/AuthContext";
 
 import "./app.css";
 
@@ -37,7 +32,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

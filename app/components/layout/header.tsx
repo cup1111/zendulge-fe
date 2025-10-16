@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router";
-import { Users } from "lucide-react";
+import { Users, Building2, ChevronDown } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -7,13 +7,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { useAuth } from "~/contexts/AuthContext";
 
 export default function Header() {
   const location = useLocation();
-  
-  // 静态展示：模拟已登录用户
-  const isAuthenticated = false;
-  const user = {
+
+  const { user, currentCompany, companies, setCurrentCompany } = useAuth();
+
+  // 静态展示：模拟已登录用户 (fallback for demo)
+  const isAuthenticated = !!user;
+  const displayUser = user || {
     firstName: "Demo",
     lastName: "User",
     email: "demo@zendulge.com",
@@ -27,20 +30,21 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <img 
-                src="/assets/app-icon.png" 
-                alt="Zendulge Logo" 
+              <img
+                src="/assets/app-icon.png"
+                alt="Zendulge Logo"
                 className="w-8 h-8 mr-3 rounded-lg"
                 onError={(e) => {
                   // 如果图片加载失败，显示渐变色方块
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
+                  e.currentTarget.style.display = "none";
+                  const fallback = e.currentTarget
+                    .nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = "flex";
                 }}
               />
-              <div 
+              <div
                 className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-400 rounded-lg flex items-center justify-center mr-3"
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               >
                 <span className="text-white font-bold text-xl">Z</span>
               </div>
@@ -55,7 +59,7 @@ export default function Header() {
             <Link
               to="/"
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
-                location.pathname === '/customer' ? 'opacity-80' : ''
+                location.pathname === "/customer" ? "opacity-80" : ""
               }`}
             >
               For Customer
@@ -64,21 +68,58 @@ export default function Header() {
             <Link
               to="/business"
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
-                location.pathname === '/business' ? 'opacity-80' : ''
+                location.pathname === "/business" ? "opacity-80" : ""
               }`}
             >
               For Business
             </Link>
 
             <Link
+              to="/business-management"
+              className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
+                location.pathname === "/business-management" ? "opacity-80" : ""
+              }`}
+            >
+              Business Management
+            </Link>
+
+            <Link
               to="/help"
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
-                location.pathname === '/help' ? 'opacity-80' : ''
+                location.pathname === "/help" ? "opacity-80" : ""
               }`}
             >
               Help
             </Link>
           </nav>
+
+          {/* Company Selector (if user has multiple companies) */}
+          {isAuthenticated && companies.length > 1 && (
+            <div className="flex items-center space-x-2">
+              <Building2 className="w-4 h-4 text-shadow-lavender" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-shadow-lavender">
+                    {currentCompany?.name || "Select Company"}
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {companies.map((company) => (
+                    <DropdownMenuItem
+                      key={company.id}
+                      onClick={() => setCurrentCompany(company)}
+                      className={
+                        currentCompany?.id === company.id ? "bg-gray-100" : ""
+                      }
+                    >
+                      {company.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
 
           {/* User Actions */}
           <div className="flex items-center space-x-4">
@@ -94,12 +135,16 @@ export default function Header() {
             ) : (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-gray-600">
-                  {user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.email}
+                  {displayUser.firstName
+                    ? `${displayUser.firstName} ${displayUser.lastName || ""}`.trim()
+                    : displayUser.email}
                 </span>
 
-                {user.role && (
+                {displayUser.role && (
                   <span className="px-2 py-1 text-xs font-medium bg-shadow-lavender text-white rounded-full capitalize">
-                    {user.role === 'super_admin' ? 'Super Admin' : user.role}
+                    {displayUser.role === "super_admin"
+                      ? "Super Admin"
+                      : displayUser.role}
                   </span>
                 )}
 
