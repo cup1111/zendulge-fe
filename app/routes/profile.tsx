@@ -39,7 +39,7 @@ import {
   type WellnessCategory,
   type UserProfile 
 } from "~/lib/mockData";
-import { useToast } from "~/components/ui/use-toast";
+import { useToast } from "~/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
