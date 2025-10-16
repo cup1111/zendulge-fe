@@ -115,6 +115,30 @@ async function fetchBusinessUsers(): Promise<BusinessUser[]> {
   return mockBusinessUsers;
 }
 
+// Helper function to format operating hours
+function formatOperatingHours(hours: any): string {
+  if (!hours) return 'Not configured';
+
+  const today = new Date().getDay();
+  const days = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+  ];
+  const todayName = days[today];
+  const todayHours = hours[todayName];
+
+  if (todayHours?.isClosed) {
+    return 'Closed today';
+  }
+
+  return `${todayHours?.open || '09:00'} - ${todayHours?.close || '17:00'}`;
+}
+
 async function fetchOperatingSites(
   companyId: string
 ): Promise<OperatingSite[]> {
@@ -165,30 +189,6 @@ async function fetchOperatingSites(
   }));
 
   return sites;
-}
-
-// Helper function to format operating hours
-function formatOperatingHours(hours: any): string {
-  if (!hours) return 'Not configured';
-
-  const today = new Date().getDay();
-  const days = [
-    'sunday',
-    'monday',
-    'tuesday',
-    'wednesday',
-    'thursday',
-    'friday',
-    'saturday',
-  ];
-  const todayName = days[today];
-  const todayHours = hours[todayName];
-
-  if (todayHours?.isClosed) {
-    return 'Closed today';
-  }
-
-  return `${todayHours?.open || '09:00'} - ${todayHours?.close || '17:00'}`;
 }
 
 async function fetchRecentBookings(): Promise<RecentBooking[]> {
@@ -491,13 +491,13 @@ export default function BusinessManagement() {
                               {booking.amount}
                             </p>
                             <span
-                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                booking.status === 'confirmed'
-                                  ? 'bg-green-100 text-green-800'
-                                  : booking.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                              }`}
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
+                                if (booking.status === 'confirmed')
+                                  return 'bg-green-100 text-green-800';
+                                if (booking.status === 'pending')
+                                  return 'bg-yellow-100 text-yellow-800';
+                                return 'bg-red-100 text-red-800';
+                              })()}`}
                             >
                               {booking.status}
                             </span>
@@ -596,13 +596,13 @@ export default function BusinessManagement() {
                               {deal.bookings} bookings
                             </span>
                             <span
-                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                deal.status === 'active'
-                                  ? 'bg-green-100 text-green-800'
-                                  : deal.status === 'expiring'
-                                    ? 'bg-orange-100 text-orange-800'
-                                    : 'bg-gray-100 text-gray-800'
-                              }`}
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
+                                if (deal.status === 'active')
+                                  return 'bg-green-100 text-green-800';
+                                if (deal.status === 'expiring')
+                                  return 'bg-orange-100 text-orange-800';
+                                return 'bg-gray-100 text-gray-800';
+                              })()}`}
                             >
                               {deal.status}
                             </span>
@@ -669,21 +669,21 @@ export default function BusinessManagement() {
                   </thead>
                   <tbody className='bg-white divide-y divide-gray-200'>
                     {businessUsers.length > 0 ? (
-                      businessUsers.map(user => (
-                        <tr key={user.id} className='hover:bg-gray-50'>
+                      businessUsers.map(businessUser => (
+                        <tr key={businessUser.id} className='hover:bg-gray-50'>
                           <td className='px-6 py-4 whitespace-nowrap'>
                             <div className='flex items-center'>
                               <div className='w-10 h-10 bg-shadow-lavender/10 rounded-full flex items-center justify-center'>
                                 <span className='text-sm font-medium text-shadow-lavender'>
-                                  {user.avatar}
+                                  {businessUser.avatar}
                                 </span>
                               </div>
                               <div className='ml-4'>
                                 <div className='text-sm font-medium text-gray-900'>
-                                  {user.name}
+                                  {businessUser.name}
                                 </div>
                                 <div className='text-sm text-gray-500'>
-                                  ID: #{user.id}
+                                  ID: #{businessUser.id}
                                 </div>
                               </div>
                             </div>
@@ -692,7 +692,7 @@ export default function BusinessManagement() {
                             <div className='flex items-center'>
                               <Shield className='w-4 h-4 mr-2 text-gray-400' />
                               <span className='text-sm text-gray-900'>
-                                {user.role}
+                                {businessUser.role}
                               </span>
                             </div>
                           </td>
@@ -700,28 +700,28 @@ export default function BusinessManagement() {
                             <div className='space-y-1'>
                               <div className='flex items-center text-sm text-gray-900'>
                                 <Mail className='w-3 h-3 mr-2 text-gray-400' />
-                                {user.email}
+                                {businessUser.email}
                               </div>
                               <div className='flex items-center text-sm text-gray-500'>
                                 <Phone className='w-3 h-3 mr-2 text-gray-400' />
-                                {user.phone}
+                                {businessUser.phone}
                               </div>
                             </div>
                           </td>
                           <td className='px-6 py-4 whitespace-nowrap'>
                             <span
                               className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                user.status === 'active'
+                                businessUser.status === 'active'
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-gray-100 text-gray-800'
                               }`}
                             >
                               <UserCheck className='w-3 h-3 mr-1' />
-                              {user.status}
+                              {businessUser.status}
                             </span>
                           </td>
                           <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            {user.lastActive}
+                            {businessUser.lastActive}
                           </td>
                           <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
                             <div className='flex items-center justify-end space-x-2'>
@@ -794,13 +794,13 @@ export default function BusinessManagement() {
                             {site.name}
                           </h3>
                           <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              site.status === 'active'
-                                ? 'bg-green-100 text-green-800'
-                                : site.status === 'opening_soon'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
-                            }`}
+                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
+                              if (site.status === 'active')
+                                return 'bg-green-100 text-green-800';
+                              if (site.status === 'opening_soon')
+                                return 'bg-yellow-100 text-yellow-800';
+                              return 'bg-gray-100 text-gray-800';
+                            })()}`}
                           >
                             {site.status.replace('_', ' ')}
                           </span>
@@ -849,9 +849,9 @@ export default function BusinessManagement() {
                         Services:
                       </p>
                       <div className='flex flex-wrap gap-1'>
-                        {site.services.map((service, index) => (
+                        {site.services.map(service => (
                           <span
-                            key={index}
+                            key={service}
                             className='inline-flex px-2 py-1 text-xs font-medium bg-shadow-lavender/10 text-shadow-lavender rounded-full'
                           >
                             {service}
@@ -967,8 +967,11 @@ export default function BusinessManagement() {
               </h2>
               <div className='space-y-3'>
                 {recentActivity.length > 0 ? (
-                  recentActivity.map((activity, index) => (
-                    <div key={index} className='p-3 bg-gray-50 rounded-lg'>
+                  recentActivity.map(activity => (
+                    <div
+                      key={`${activity.action}-${activity.time}`}
+                      className='p-3 bg-gray-50 rounded-lg'
+                    >
                       <p className='font-medium text-gray-900 text-sm'>
                         {activity.action}
                       </p>
