@@ -1,93 +1,119 @@
-import React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { Slot } from '@radix-ui/react-slot';
+import { ChevronRight, MoreHorizontal } from 'lucide-react';
+import React from 'react';
 
-import { combineClasses } from "~/lib/utils"
+import { combineClasses } from '~/lib/utils';
 
-const Breadcrumb = ({ ref, ...props }: React.ComponentPropsWithRef<"nav"> & {
-  separator?: React.ReactNode
-}) => <nav ref={ref} aria-label="breadcrumb" {...props} />
-Breadcrumb.displayName = "Breadcrumb"
+const Breadcrumb = ({
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'nav'> & {
+  separator?: React.ReactNode;
+}) => <nav ref={ref} aria-label='breadcrumb' {...props} />;
+Breadcrumb.displayName = 'Breadcrumb';
 
-const BreadcrumbList = ({ className, ref, ...props }: React.ComponentPropsWithRef<"ol">) => (
+const BreadcrumbList = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'ol'>) => (
   <ol
     ref={ref}
     className={combineClasses(
-      "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
+      'flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5',
       className
     )}
     {...props}
   />
-)
-BreadcrumbList.displayName = "BreadcrumbList"
+);
+BreadcrumbList.displayName = 'BreadcrumbList';
 
-const BreadcrumbItem = ({ className, ref, ...props }: React.ComponentPropsWithRef<"li">) => (
+const BreadcrumbItem = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'li'>) => (
   <li
     ref={ref}
-    className={combineClasses("inline-flex items-center gap-1.5", className)}
+    className={combineClasses('inline-flex items-center gap-1.5', className)}
     {...props}
   />
-)
-BreadcrumbItem.displayName = "BreadcrumbItem"
+);
+BreadcrumbItem.displayName = 'BreadcrumbItem';
 
-const BreadcrumbLink = ({ asChild, className, ref, ...props }: React.ComponentPropsWithRef<"a"> & {
-  asChild?: boolean
+const BreadcrumbLink = ({
+  asChild,
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'a'> & {
+  asChild?: boolean;
 }) => {
-  const Comp = asChild ? Slot : "a"
+  const Comp = asChild ? Slot : 'a';
 
   return (
     <Comp
       ref={ref}
-      className={combineClasses("transition-colors hover:text-foreground", className)}
+      className={combineClasses(
+        'transition-colors hover:text-foreground',
+        className
+      )}
       {...props}
     />
-  )
-}
-BreadcrumbLink.displayName = "BreadcrumbLink"
+  );
+};
+BreadcrumbLink.displayName = 'BreadcrumbLink';
 
-const BreadcrumbPage = ({ className, ref, ...props }: React.ComponentPropsWithRef<"span">) => (
+const BreadcrumbPage = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'span'>) => (
   <span
     ref={ref}
-    role="link"
-    aria-disabled="true"
-    aria-current="page"
-    className={combineClasses("font-normal text-foreground", className)}
+    role='link'
+    aria-disabled='true'
+    aria-current='page'
+    className={combineClasses('font-normal text-foreground', className)}
     {...props}
   />
-)
-BreadcrumbPage.displayName = "BreadcrumbPage"
+);
+BreadcrumbPage.displayName = 'BreadcrumbPage';
 
 const BreadcrumbSeparator = ({
   children,
   className,
   ...props
-}: React.ComponentProps<"li">) => (
+}: React.ComponentProps<'li'>) => (
   <li
-    role="presentation"
-    aria-hidden="true"
-    className={combineClasses("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
+    role='presentation'
+    aria-hidden='true'
+    className={combineClasses('[&>svg]:w-3.5 [&>svg]:h-3.5', className)}
     {...props}
   >
     {children ?? <ChevronRight />}
   </li>
-)
-BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
+);
+BreadcrumbSeparator.displayName = 'BreadcrumbSeparator';
 
 const BreadcrumbEllipsis = ({
   className,
   ...props
-}: React.ComponentProps<"span">) => (
+}: React.ComponentProps<'span'>) => (
   <span
-    role="presentation"
-    aria-hidden="true"
-    className={combineClasses("flex h-9 w-9 items-center justify-center", className)}
+    role='presentation'
+    aria-hidden='true'
+    className={combineClasses(
+      'flex h-9 w-9 items-center justify-center',
+      className
+    )}
     {...props}
   >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More</span>
+    <MoreHorizontal className='h-4 w-4' />
+    <span className='sr-only'>More</span>
   </span>
-)
-BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
+);
+BreadcrumbEllipsis.displayName = 'BreadcrumbElipssis';
 
 export {
   Breadcrumb,
@@ -97,4 +123,4 @@ export {
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
-}
+};
