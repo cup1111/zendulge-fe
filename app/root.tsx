@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { LinksFunction } from 'react-router';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
 import Footer from '~/components/layout/footer';
 import Header from '~/components/layout/header';
@@ -34,7 +34,7 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         'data-gr-ext-installed', // Grammarly
         'spellcheck', // Various extensions
       ];
-      
+
       extensionAttributes.forEach(attr => {
         if (body.hasAttribute(attr)) {
           body.removeAttribute(attr);
@@ -44,10 +44,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
     // Clean up immediately after hydration
     cleanupExtensionAttributes();
-    
+
     // Also clean up periodically in case extensions add attributes later
     const interval = setInterval(cleanupExtensionAttributes, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
