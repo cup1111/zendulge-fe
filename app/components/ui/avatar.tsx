@@ -1,38 +1,51 @@
-import React from "react"
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
-import { combineClasses } from "~/lib/utils"
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import React from 'react';
 
-const Avatar =({ className, ref, ...props }: React.ComponentPropsWithRef<typeof AvatarPrimitive.Root>) => (
+import { combineClasses } from '~/lib/utils';
+
+const Avatar = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<typeof AvatarPrimitive.Root>) => (
   <AvatarPrimitive.Root
     ref={ref}
     className={combineClasses(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      'relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full',
       className
     )}
     {...props}
   />
-)
-Avatar.displayName = AvatarPrimitive.Root.displayName
+);
+Avatar.displayName = AvatarPrimitive.Root.displayName;
 
-const AvatarImage = ({ className, ref, ...props }: React.ComponentPropsWithRef<typeof AvatarPrimitive.Image>) => (
+const AvatarImage = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<typeof AvatarPrimitive.Image>) => (
   <AvatarPrimitive.Image
     ref={ref}
-    className={combineClasses("aspect-square h-full w-full", className)}
+    className={combineClasses('aspect-square h-full w-full', className)}
     {...props}
   />
-)
-AvatarImage.displayName = AvatarPrimitive.Image.displayName
+);
+AvatarImage.displayName = AvatarPrimitive.Image.displayName;
 
-const AvatarFallback = ({ className, ref, ...props }: React.ComponentPropsWithRef<typeof AvatarPrimitive.Fallback>) => (
+const AvatarFallback = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<typeof AvatarPrimitive.Fallback>) => (
   <AvatarPrimitive.Fallback
     ref={ref}
     className={combineClasses(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      'flex h-full w-full items-center justify-center rounded-full bg-muted',
       className
     )}
     {...props}
   />
-)
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+);
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
-export { Avatar, AvatarImage, AvatarFallback }
+export { Avatar, AvatarFallback, AvatarImage };

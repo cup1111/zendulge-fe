@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import type { FieldError } from "react-hook-form";
+import { useEffect, useState } from 'react';
+import type { FieldError } from 'react-hook-form';
 
 interface ValidationState {
-  status: "idle" | "valid" | "invalid" | "warning" | "loading";
+  status: 'idle' | 'valid' | 'invalid' | 'warning' | 'loading';
   message?: string;
   isAnimating: boolean;
 }
@@ -10,7 +10,9 @@ interface ValidationState {
 interface UseAnimatedValidationProps {
   error?: FieldError;
   value?: any;
-  customValidation?: (value: any) => Promise<{ isValid: boolean; message?: string; type?: "warning" }>;
+  customValidation?: (
+    value: any
+  ) => Promise<{ isValid: boolean; message?: string; type?: 'warning' }>;
   debounceMs?: number;
 }
 
@@ -18,14 +20,16 @@ export function useAnimatedValidation({
   error,
   value,
   customValidation,
-  debounceMs = 300
+  debounceMs = 300,
 }: UseAnimatedValidationProps) {
   const [validationState, setValidationState] = useState<ValidationState>({
-    status: "idle",
-    isAnimating: false
+    status: 'idle',
+    isAnimating: false,
   });
 
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
+  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   useEffect(() => {
     // Clear existing timer
@@ -35,12 +39,13 @@ export function useAnimatedValidation({
 
     // If there's an error from form validation, show it immediately
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValidationState({
-        status: "invalid",
+        status: 'invalid',
         message: error.message,
-        isAnimating: true
+        isAnimating: true,
       });
-      
+
       // Stop animation after a brief period
       const animationTimer = setTimeout(() => {
         setValidationState(prev => ({ ...prev, isAnimating: false }));
@@ -50,45 +55,49 @@ export function useAnimatedValidation({
     }
 
     // If no value, reset to idle
-    if (!value || value === "") {
+    if (!value || value === '') {
       setValidationState({
-        status: "idle",
-        isAnimating: false
+        status: 'idle',
+        isAnimating: false,
       });
-      return;
+      return undefined;
     }
 
     // Set loading state and debounce custom validation
     if (customValidation) {
       setValidationState({
-        status: "loading",
-        isAnimating: true
+        status: 'loading',
+        isAnimating: true,
       });
 
       const timer = setTimeout(async () => {
         try {
           const result = await customValidation(value);
-          
+
+          let status: 'valid' | 'warning' | 'invalid';
+          if (result.isValid) {
+            status = 'valid';
+          } else if (result.type === 'warning') {
+            status = 'warning';
+          } else {
+            status = 'invalid';
+          }
+
           setValidationState({
-            status: result.isValid 
-              ? "valid" 
-              : result.type === "warning" 
-                ? "warning" 
-                : "invalid",
+            status,
             message: result.message,
-            isAnimating: true
+            isAnimating: true,
           });
 
           // Stop animation after showing result
           setTimeout(() => {
             setValidationState(prev => ({ ...prev, isAnimating: false }));
           }, 200);
-
         } catch (err) {
           setValidationState({
-            status: "invalid",
-            message: "Validation failed",
-            isAnimating: false
+            status: 'invalid',
+            message: 'Validation failed',
+            isAnimating: false,
           });
         }
       }, debounceMs);
@@ -100,8 +109,8 @@ export function useAnimatedValidation({
     // If no custom validation but has value and no errors, show valid
     if (value && !error) {
       setValidationState({
-        status: "valid",
-        isAnimating: true
+        status: 'valid',
+        isAnimating: true,
       });
 
       const animationTimer = setTimeout(() => {
@@ -111,65 +120,80 @@ export function useAnimatedValidation({
       return () => clearTimeout(animationTimer);
     }
 
-  }, [error, value, customValidation, debounceMs]);
+    return undefined;
+  }, [error, value, customValidation, debounceMs, debounceTimer]);
 
   return validationState;
 }
 
 // Email validation function for use with the hook
-export const validateEmail = async (email: string): Promise<{ isValid: boolean; message?: string; type?: "warning" }> => {
+export const validateEmail = async (
+  email: string
+): Promise<{ isValid: boolean; message?: string; type?: 'warning' }> => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
+
   if (!emailRegex.test(email)) {
-    return { isValid: false, message: "Please enter a valid email address" };
+    return { isValid: false, message: 'Please enter a valid email address' };
   }
 
   // Check for common disposable email domains
   const disposableDomains = [
-    "10minutemail.com", "guerrillamail.com", "mailinator.com", 
-    "tempmail.org", "yopmail.com", "throwaway.email"
+    '10minutemail.com',
+    'guerrillamail.com',
+    'mailinator.com',
+    'tempmail.org',
+    'yopmail.com',
+    'throwaway.email',
   ];
-  
+
   const domain = email.split('@')[1]?.toLowerCase();
   if (disposableDomains.includes(domain)) {
-    return { 
-      isValid: false, 
-      message: "Disposable email addresses are not allowed",
-      type: "warning" 
+    return {
+      isValid: false,
+      message: 'Disposable email addresses are not allowed',
+      type: 'warning',
     };
   }
 
   // Check for common typos in popular domains
   const popularDomains = {
-    "gmail.com": ["gmai.com", "gmial.com", "gamil.com"],
-    "yahoo.com": ["yaho.com", "yahooo.com", "yhoo.com"],
-    "hotmail.com": ["hotmial.com", "hotmeil.com", "hotmai.com"]
+    'gmail.com': ['gmai.com', 'gmial.com', 'gamil.com'],
+    'yahoo.com': ['yaho.com', 'yahooo.com', 'yhoo.com'],
+    'hotmail.com': ['hotmial.com', 'hotmeil.com', 'hotmai.com'],
   };
 
-  for (const [correct, typos] of Object.entries(popularDomains)) {
-    if (typos.includes(domain)) {
-      return {
-        isValid: false,
-        message: `Did you mean ${email.replace(domain, correct)}?`,
-        type: "warning"
-      };
-    }
+  const foundTypo = Object.entries(popularDomains).find(([, typos]) =>
+    typos.includes(domain)
+  );
+
+  if (foundTypo) {
+    const [correct] = foundTypo;
+    return {
+      isValid: false,
+      message: `Did you mean ${email.replace(domain, correct)}?`,
+      type: 'warning',
+    };
   }
 
-  return { isValid: true, message: "Email looks good!" };
+  return { isValid: true, message: 'Email looks good!' };
 };
 
 // Phone validation function
-export const validatePhone = async (phone: string): Promise<{ isValid: boolean; message?: string }> => {
+export const validatePhone = async (
+  phone: string
+): Promise<{ isValid: boolean; message?: string }> => {
   const cleanPhone = phone.replace(/\D/g, '');
-  
+
   if (cleanPhone.length < 10) {
-    return { isValid: false, message: "Phone number must be at least 10 digits" };
-  }
-  
-  if (cleanPhone.length > 15) {
-    return { isValid: false, message: "Phone number is too long" };
+    return {
+      isValid: false,
+      message: 'Phone number must be at least 10 digits',
+    };
   }
 
-  return { isValid: true, message: "Phone number is valid" };
+  if (cleanPhone.length > 15) {
+    return { isValid: false, message: 'Phone number is too long' };
+  }
+
+  return { isValid: true, message: 'Phone number is valid' };
 };

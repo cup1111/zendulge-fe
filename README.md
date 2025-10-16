@@ -78,6 +78,48 @@ Make sure to deploy the output of `npm run build`
 │   └── server/    # Server-side code
 ```
 
+## Code Quality & Git Hooks
+
+This project uses Husky to enforce code quality standards through git hooks:
+
+### Pre-commit Hook
+Before each commit, the following checks are automatically run:
+- **ESLint**: Checks for code style and potential errors
+- **ESLint --quiet**: Ensures no ESLint errors (warnings allowed, but errors block commits)
+
+```bash
+# Manually run pre-commit checks
+.husky/pre-commit
+```
+
+### Pre-push Hook
+Before each push, comprehensive quality checks are performed:
+- **TypeScript type checking**: Ensures no TypeScript errors
+- **ESLint --quiet**: Ensures no ESLint errors  
+- **Build check**: Verifies the project compiles successfully
+
+```bash
+# Manually run pre-push checks
+.husky/pre-push
+```
+
+### Manual Quality Checks
+You can also run quality checks manually:
+
+```bash
+# Check for linting issues
+npm run lint
+
+# Fix auto-fixable linting issues
+npm run lint:fix
+
+# Run TypeScript type checking
+npm run typecheck
+
+# Run all quality checks
+npm run quality
+```
+
 ## Styling
 
 This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.

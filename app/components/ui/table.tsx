@@ -1,85 +1,124 @@
-import React from "react"
+import React from 'react';
 
-import { combineClasses } from "~/lib/utils"
+import { combineClasses } from '~/lib/utils';
 
-const Table = ({ className, ref, ...props }: React.ComponentPropsWithRef<"table">) => (
-  <div className="relative w-full overflow-auto">
+const Table = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'table'>) => (
+  <div className='relative w-full overflow-auto'>
     <table
       ref={ref}
-      className={combineClasses("w-full caption-bottom text-sm", className)}
+      className={combineClasses('w-full caption-bottom text-sm', className)}
       {...props}
     />
   </div>
-)
-Table.displayName = "Table"
+);
+Table.displayName = 'Table';
 
-const TableHeader = ({ className, ref, ...props }: React.ComponentPropsWithRef<"thead">) => (
-  <thead ref={ref} className={combineClasses("[&_tr]:border-b", className)} {...props} />
-)
-TableHeader.displayName = "TableHeader"
-
-const TableBody = ({ className, ref, ...props }: React.ComponentPropsWithRef<"tbody">) => (
-  <tbody
+const TableHeader = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'thead'>) => (
+  <thead
     ref={ref}
-    className={combineClasses("[&_tr:last-child]:border-0", className)}
+    className={combineClasses('[&_tr]:border-b', className)}
     {...props}
   />
-)
-TableBody.displayName = "TableBody"
+);
+TableHeader.displayName = 'TableHeader';
 
-const TableFooter = ({ className, ref, ...props }: React.ComponentPropsWithRef<"tfoot">) => (
+const TableBody = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'tbody'>) => (
+  <tbody
+    ref={ref}
+    className={combineClasses('[&_tr:last-child]:border-0', className)}
+    {...props}
+  />
+);
+TableBody.displayName = 'TableBody';
+
+const TableFooter = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'tfoot'>) => (
   <tfoot
     ref={ref}
     className={combineClasses(
-      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+      'border-t bg-muted/50 font-medium [&>tr]:last:border-b-0',
       className
     )}
     {...props}
   />
-)
-TableFooter.displayName = "TableFooter"
+);
+TableFooter.displayName = 'TableFooter';
 
-const TableRow = ({ className, ref, ...props }: React.ComponentPropsWithRef<"tr">) => (
+const TableRow = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'tr'>) => (
   <tr
     ref={ref}
     className={combineClasses(
-      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      'border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted',
       className
     )}
     {...props}
   />
-)
-TableRow.displayName = "TableRow"
+);
+TableRow.displayName = 'TableRow';
 
-const TableHead = ({ className, ref, ...props }: React.ComponentPropsWithRef<"th">) => (
+const TableHead = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'th'>) => (
   <th
     ref={ref}
     className={combineClasses(
-      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      'h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0',
       className
     )}
     {...props}
   />
-)
-TableHead.displayName = "TableHead"
+);
+TableHead.displayName = 'TableHead';
 
-const TableCell = ({ className, ref, ...props }: React.ComponentPropsWithRef<"td">) => (
+const TableCell = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'td'>) => (
   <td
     ref={ref}
-    className={combineClasses("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={combineClasses(
+      'p-4 align-middle [&:has([role=checkbox])]:pr-0',
+      className
+    )}
     {...props}
   />
-)
-TableCell.displayName = "TableCell"
+);
+TableCell.displayName = 'TableCell';
 
-const TableCaption = ({ className, ref, ...props }: React.ComponentPropsWithRef<"caption">) => (
+const TableCaption = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'caption'>) => (
   <caption
     ref={ref}
-    className={combineClasses("mt-4 text-sm text-muted-foreground", className)}
+    className={combineClasses('mt-4 text-sm text-muted-foreground', className)}
     {...props}
   />
-)
-TableCaption.displayName = "TableCaption"
+);
+TableCaption.displayName = 'TableCaption';
 
 export {
   Table,
@@ -90,4 +129,4 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-}
+};
