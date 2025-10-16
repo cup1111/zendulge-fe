@@ -1,31 +1,31 @@
 import {
-  MapPin,
-  Clock,
-  Calendar,
-  Star,
-  Phone,
-  Mail,
-  Globe,
   ArrowLeft,
-  Users,
-  Tag,
   Building2,
+  Calendar,
   CheckCircle,
+  Clock,
+  Globe,
   Heart,
+  Mail,
+  MapPin,
+  Phone,
+  Star,
+  Tag,
+  Users,
 } from 'lucide-react';
-import { useParams, Link, useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
-import { getDealById, getRelatedDeals, type DealDetail } from '~/lib/mockData';
+import { getDealById, type DealDetail } from '~/lib/mockData';
 
 export default function DealDetailsPage() {
   const params = useParams();
   const navigate = useNavigate();
-  const dealId = params.id ? parseInt(params.id) : undefined;
+  const dealId = params.id ? parseInt(params.id, 10) : undefined;
 
   // 获取优惠详情
   const deal: DealDetail | undefined = dealId ? getDealById(dealId) : undefined;
@@ -91,6 +91,7 @@ export default function DealDetailsPage() {
   // 生成未来7天的时间段
   const generateTimeSlots = () => {
     const slots = [];
+    // eslint-disable-next-line no-plusplus
     for (let i = 1; i <= 7; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
@@ -198,9 +199,9 @@ export default function DealDetailsPage() {
               </CardHeader>
               <CardContent>
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                  {timeSlots.map((slot, i) => (
+                  {timeSlots.map(slot => (
                     <div
-                      key={i}
+                      key={slot.date.toISOString()}
                       className='p-3 border border-gray-200 rounded-lg hover:border-shadow-lavender hover:bg-gray-50 cursor-pointer transition-colors'
                     >
                       <div className='font-medium text-gray-900'>
@@ -304,18 +305,6 @@ export default function DealDetailsPage() {
                             <span className='text-xs text-gray-500'>
                               {new Date(review.date).toLocaleDateString()}
                             </span>
-                          </div>
-                          <div className='flex items-center mb-2'>
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-4 h-4 ${
-                                  i < review.rating
-                                    ? 'text-yellow-400 fill-yellow-400'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
                           </div>
                           <p className='text-sm text-gray-700'>
                             {review.comment}
