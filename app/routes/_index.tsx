@@ -1,4 +1,4 @@
-import { Search, MapPin, Percent, Calendar, Heart } from 'lucide-react';
+import { Calendar, Heart, MapPin, Percent, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router';
 
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import { mockDeals, categories, recentBookings } from '~/lib/mockData';
+import { categories, mockDeals, recentBookings } from '~/lib/mockData';
 
 // Deal Card Component
 const DealCard = ({ deal }: { deal: any }) => (
@@ -154,13 +154,6 @@ export default function Landing() {
       >
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='text-center mb-8'>
-            {/* Title */}
-            <h1 className='text-3xl md:text-4xl font-bold text-shadow-lavender mb-3'>
-              <span className='text-transparent bg-clip-text bg-gradient-to-r from-shadow-lavender to-purple-600'>
-                Wellness Deals
-              </span>
-            </h1>
-
             {/* App Icon */}
             <div className='flex justify-center mb-3'>
               <img

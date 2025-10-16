@@ -1,4 +1,4 @@
-import { Users, Building2, ChevronDown } from 'lucide-react';
+import { Building2, ChevronDown, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 
 import { Button } from '~/components/ui/button';
@@ -12,15 +12,16 @@ import { useAuth } from '~/contexts/AuthContext';
 
 export default function Header() {
   const location = useLocation();
+
   const { user, currentCompany, companies, setCurrentCompany } = useAuth();
 
   // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
-  const displayUser = user ?? {
+  const displayUser = user || {
     firstName: 'Demo',
     lastName: 'User',
     email: 'demo@zendulge.com',
-    role: 'customer' as const,
+    role: 'super_admin' as const,
   };
 
   return (
@@ -125,11 +126,11 @@ export default function Header() {
           <div className='flex items-center space-x-4'>
             {!isAuthenticated ? (
               <>
-                <Button variant='ghost'>
-                  <span>Sign In</span>
+                <Button variant='default'>
+                  <Link to='/login'>Sign In</Link>
                 </Button>
-                <Button>
-                  <span>Sign Up</span>
+                <Button variant='default'>
+                  <Link to='/signup'>Sign Up</Link>
                 </Button>
               </>
             ) : (

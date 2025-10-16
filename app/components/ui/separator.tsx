@@ -1,5 +1,5 @@
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
-import * as React from 'react';
+import React from 'react';
 
 import { combineClasses } from '~/lib/utils';
 

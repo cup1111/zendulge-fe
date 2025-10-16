@@ -4,6 +4,7 @@ import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
 import Footer from '~/components/layout/footer';
 import Header from '~/components/layout/header';
+import { Toaster } from '~/components/ui/toaster';
 import { AuthProvider } from '~/contexts/AuthContext';
 
 import './app.css';
@@ -76,8 +77,8 @@ export default function Root() {
       <main className='flex-1 pt-16'>
         <Outlet />
       </main>
-
       <Footer />
+      <Toaster />
     </div>
   );
 }

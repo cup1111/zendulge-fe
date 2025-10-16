@@ -41,14 +41,15 @@
   --radius-sm: calc(0.5rem - 4px);
 }
 
-/* 深色模式（可选） */
+/* 深色模式（可选）*/
+/*
 @media (prefers-color-scheme: dark) {
   @theme {
     --color-background: hsl(240, 10%, 3.9%);
     --color-foreground: hsl(0, 0%, 98%);
-    /* ... 其他深色模式颜色 */
-  }
+  }  
 }
+*/
 
 /* 基础样式 */
 @layer base {

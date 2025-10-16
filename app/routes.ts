@@ -6,5 +6,9 @@ export default [
   route('business', './routes/business-info.tsx'),
   route('business-management', './routes/business-management.tsx'),
   route('deal-details/:id', './routes/deal-details.$id.tsx'),
+  route('login', './routes/login.tsx'),
+  route('signup', './routes/signup.tsx'),
+  route('profile', './routes/profile.tsx'),
+  route('business-register', './routes/business-register.tsx'),
   route('*', './routes/404.tsx'),
 ] satisfies RouteConfig;
