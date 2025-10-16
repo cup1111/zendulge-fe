@@ -3,26 +3,6 @@ import React from 'react';
 
 import { combineClasses } from '~/lib/utils';
 
-const ScrollArea = ({
-  className,
-  children,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.Root>) => (
-  <ScrollAreaPrimitive.Root
-    ref={ref}
-    className={combineClasses('relative overflow-hidden', className)}
-    {...props}
-  >
-    <ScrollAreaPrimitive.Viewport className='h-full w-full rounded-[inherit]'>
-      {children}
-    </ScrollAreaPrimitive.Viewport>
-    <ScrollBar />
-    <ScrollAreaPrimitive.Corner />
-  </ScrollAreaPrimitive.Root>
-);
-ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
-
 const ScrollBar = ({
   className,
   orientation = 'vertical',
@@ -48,5 +28,25 @@ const ScrollBar = ({
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 );
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
+
+const ScrollArea = ({
+  className,
+  children,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<typeof ScrollAreaPrimitive.Root>) => (
+  <ScrollAreaPrimitive.Root
+    ref={ref}
+    className={combineClasses('relative overflow-hidden', className)}
+    {...props}
+  >
+    <ScrollAreaPrimitive.Viewport className='h-full w-full rounded-[inherit]'>
+      {children}
+    </ScrollAreaPrimitive.Viewport>
+    <ScrollBar />
+    <ScrollAreaPrimitive.Corner />
+  </ScrollAreaPrimitive.Root>
+);
+ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName;
 
 export { ScrollArea, ScrollBar };

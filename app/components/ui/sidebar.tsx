@@ -3,26 +3,25 @@ import { VariantProps, cva } from 'class-variance-authority';
 import { PanelLeft } from 'lucide-react';
 import React from 'react';
 
-import { combineClasses } from '~/lib/utils';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
+import { Button } from '~/components/ui/button';
+import { Input } from '~/components/ui/input';
+import { Separator } from '~/components/ui/separator';
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from '@/components/ui/sheet';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '~/components/ui/sheet';
+import { Skeleton } from '~/components/ui/skeleton';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useIsMobile } from '@/hooks/use-mobile';
+} from '~/components/ui/tooltip';
+import { useIsMobile } from '~/hooks/use-mobile';
+import { combineClasses } from '~/lib/utils';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -71,15 +70,15 @@ const SidebarProvider = ({
 
   // This is the internal state of the sidebar.
   // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen);
-  const open = openProp ?? _open;
+  const [internalOpen, setInternalOpen] = React.useState(defaultOpen);
+  const open = openProp ?? internalOpen;
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === 'function' ? value(open) : value;
       if (setOpenProp) {
         setOpenProp(openState);
       } else {
-        _setOpen(openState);
+        setInternalOpen(openState);
       }
 
       // This sets the cookie to keep the sidebar state.
@@ -90,7 +89,8 @@ const SidebarProvider = ({
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(
-    () => (isMobile ? setOpenMobile(open => !open) : setOpen(open => !open)),
+    () =>
+      isMobile ? setOpenMobile(isOpen => !isOpen) : setOpen(isOpen => !isOpen),
     [isMobile, setOpen, setOpenMobile]
   );
 
@@ -291,6 +291,7 @@ const SidebarRail = ({
   return (
     <button
       ref={ref}
+      type='button'
       data-sidebar='rail'
       aria-label='Toggle Sidebar'
       tabIndex={-1}
@@ -568,11 +569,8 @@ const SidebarMenuButton = ({
     return button;
   }
 
-  if (typeof tooltip === 'string') {
-    tooltip = {
-      children: tooltip,
-    };
-  }
+  const tooltipProps =
+    typeof tooltip === 'string' ? { children: tooltip } : tooltip;
 
   return (
     <Tooltip>
@@ -581,7 +579,7 @@ const SidebarMenuButton = ({
         side='right'
         align='center'
         hidden={state !== 'collapsed' || isMobile}
-        {...tooltip}
+        {...tooltipProps}
       />
     </Tooltip>
   );
@@ -653,9 +651,8 @@ const SidebarMenuSkeleton = ({
   showIcon?: boolean;
 }) => {
   // Random width between 50 to 90%.
-  const width = React.useMemo(
-    () => `${Math.floor(Math.random() * 40) + 50}%`,
-    []
+  const [width] = React.useState(
+    () => `${Math.floor(Math.random() * 40) + 50}%`
   );
 
   return (

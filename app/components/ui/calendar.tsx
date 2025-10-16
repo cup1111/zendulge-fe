@@ -7,6 +7,27 @@ import { combineClasses } from '~/lib/utils';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
+// Move components outside of render to avoid recreation on each render
+const IconLeftComponent = ({
+  className,
+  ...iconProps
+}: React.ComponentProps<'svg'>) => (
+  <ChevronLeft
+    className={combineClasses('h-4 w-4', className)}
+    {...iconProps}
+  />
+);
+
+const IconRightComponent = ({
+  className,
+  ...iconProps
+}: React.ComponentProps<'svg'>) => (
+  <ChevronRight
+    className={combineClasses('h-4 w-4', className)}
+    {...iconProps}
+  />
+);
+
 function Calendar({
   className,
   classNames,
@@ -51,20 +72,12 @@ function Calendar({
         day_hidden: 'invisible',
         ...classNames,
       }}
-      components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft
-            className={combineClasses('h-4 w-4', className)}
-            {...props}
-          />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight
-            className={combineClasses('h-4 w-4', className)}
-            {...props}
-          />
-        ),
-      }}
+      components={
+        {
+          IconLeft: IconLeftComponent,
+          IconRight: IconRightComponent,
+        } as Record<string, React.ComponentType<React.ComponentProps<'svg'>>>
+      }
       {...props}
     />
   );

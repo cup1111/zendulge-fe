@@ -23,15 +23,23 @@ const AnimatedFormMessage = ({
 
   useEffect(() => {
     if (children) {
-      setShouldRender(true);
-      // Small delay to trigger enter animation
-      const timer = setTimeout(() => setIsVisible(true), 10);
-      return () => clearTimeout(timer);
+      // Use requestAnimationFrame to defer state updates
+      requestAnimationFrame(() => {
+        setShouldRender(true);
+        // Small delay to trigger enter animation
+        setTimeout(() => setIsVisible(true), 10);
+      });
+      return undefined; // Return cleanup function or undefined
     }
-    setIsVisible(false);
-    // Wait for exit animation before unmounting
-    const timer = setTimeout(() => setShouldRender(false), 200);
-    return () => clearTimeout(timer);
+
+    // Handle no children case with timeout
+    const hideTimer = setTimeout(() => setIsVisible(false), 0);
+    const unmountTimer = setTimeout(() => setShouldRender(false), 200);
+
+    return () => {
+      clearTimeout(hideTimer);
+      clearTimeout(unmountTimer);
+    };
   }, [children]);
 
   if (!shouldRender) {

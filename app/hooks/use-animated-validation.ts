@@ -39,6 +39,7 @@ export function useAnimatedValidation({
 
     // If there's an error from form validation, show it immediately
     if (error) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setValidationState({
         status: 'invalid',
         message: error.message,
@@ -59,7 +60,7 @@ export function useAnimatedValidation({
         status: 'idle',
         isAnimating: false,
       });
-      return;
+      return undefined;
     }
 
     // Set loading state and debounce custom validation
@@ -73,12 +74,17 @@ export function useAnimatedValidation({
         try {
           const result = await customValidation(value);
 
+          let status: 'valid' | 'warning' | 'invalid';
+          if (result.isValid) {
+            status = 'valid';
+          } else if (result.type === 'warning') {
+            status = 'warning';
+          } else {
+            status = 'invalid';
+          }
+
           setValidationState({
-            status: result.isValid
-              ? 'valid'
-              : result.type === 'warning'
-                ? 'warning'
-                : 'invalid',
+            status,
             message: result.message,
             isAnimating: true,
           });
@@ -113,7 +119,9 @@ export function useAnimatedValidation({
 
       return () => clearTimeout(animationTimer);
     }
-  }, [error, value, customValidation, debounceMs]);
+
+    return undefined;
+  }, [error, value, customValidation, debounceMs, debounceTimer]);
 
   return validationState;
 }
@@ -154,14 +162,17 @@ export const validateEmail = async (
     'hotmail.com': ['hotmial.com', 'hotmeil.com', 'hotmai.com'],
   };
 
-  for (const [correct, typos] of Object.entries(popularDomains)) {
-    if (typos.includes(domain)) {
-      return {
-        isValid: false,
-        message: `Did you mean ${email.replace(domain, correct)}?`,
-        type: 'warning',
-      };
-    }
+  const foundTypo = Object.entries(popularDomains).find(([, typos]) =>
+    typos.includes(domain)
+  );
+
+  if (foundTypo) {
+    const [correct] = foundTypo;
+    return {
+      isValid: false,
+      message: `Did you mean ${email.replace(domain, correct)}?`,
+      type: 'warning',
+    };
   }
 
   return { isValid: true, message: 'Email looks good!' };

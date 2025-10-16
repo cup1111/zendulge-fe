@@ -73,43 +73,6 @@ function getPayloadConfigFromPayload(
     : config[key as keyof typeof config];
 }
 
-const ChartContainer = ({
-  id,
-  className,
-  children,
-  config,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<'div'> & {
-  config: ChartConfig;
-  children: React.ComponentProps<
-    typeof RechartsPrimitive.ResponsiveContainer
-  >['children'];
-}) => {
-  const uniqueId = React.useId();
-  const chartId = `chart-${id ?? uniqueId.replace(/:/g, '')}`;
-
-  return (
-    <ChartContext.Provider value={{ config }}>
-      <div
-        data-chart={chartId}
-        ref={ref}
-        className={combineClasses(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
-          className
-        )}
-        {...props}
-      >
-        <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
-          {children}
-        </RechartsPrimitive.ResponsiveContainer>
-      </div>
-    </ChartContext.Provider>
-  );
-};
-ChartContainer.displayName = 'Chart';
-
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([, con]) => con.theme ?? con.color
@@ -129,7 +92,7 @@ ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ??
       itemConfig.color;
     return color ? `  --color-${key}: ${color};` : null;
   })
@@ -142,6 +105,45 @@ ${colorConfig
     />
   );
 };
+
+const ChartContainer = ({
+  id,
+  className,
+  children,
+  config,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<'div'> & {
+  config: ChartConfig;
+  children: React.ComponentProps<
+    typeof RechartsPrimitive.ResponsiveContainer
+  >['children'];
+}) => {
+  const uniqueId = React.useId();
+  const chartId = `chart-${id ?? uniqueId.replace(/:/g, '')}`;
+
+  const contextValue = React.useMemo(() => ({ config }), [config]);
+
+  return (
+    <ChartContext.Provider value={contextValue}>
+      <div
+        data-chart={chartId}
+        ref={ref}
+        className={combineClasses(
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+          className
+        )}
+        {...props}
+      >
+        <ChartStyle id={chartId} config={config} />
+        <RechartsPrimitive.ResponsiveContainer>
+          {children}
+        </RechartsPrimitive.ResponsiveContainer>
+      </div>
+    </ChartContext.Provider>
+  );
+};
+ChartContainer.displayName = 'Chart';
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
@@ -177,11 +179,11 @@ const ChartTooltipContent = ({
     }
 
     const [item] = payload;
-    const key = `${labelKey || item?.dataKey || item?.name || 'value'}`;
+    const key = `${labelKey ?? item?.dataKey ?? item?.name ?? 'value'}`;
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === 'string'
-        ? config[label as keyof typeof config]?.label || label
+        ? (config[label as keyof typeof config]?.label ?? label)
         : itemConfig?.label;
 
     if (labelFormatter) {
@@ -278,7 +280,7 @@ const ChartTooltipContent = ({
                     <div className='grid gap-1.5'>
                       {nestLabel ? tooltipLabel : null}
                       <span className='text-muted-foreground'>
-                        {itemConfig?.label || item.name}
+                        {itemConfig?.label ?? item.name}
                       </span>
                     </div>
                     {item.value && (
@@ -330,7 +332,7 @@ const ChartLegendContent = ({
       {...props}
     >
       {payload.map(item => {
-        const key = `${nameKey || item.dataKey || 'value'}`;
+        const key = `${nameKey ?? item.dataKey ?? 'value'}`;
         const itemConfig = getPayloadConfigFromPayload(config, item, key);
 
         return (

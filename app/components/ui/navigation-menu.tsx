@@ -5,6 +5,27 @@ import React from 'react';
 
 import { combineClasses } from '~/lib/utils';
 
+const NavigationMenuViewport = ({
+  className,
+  ref,
+  ...props
+}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Viewport>) => (
+  <div
+    className={combineClasses('absolute left-0 top-full flex justify-center')}
+  >
+    <NavigationMenuPrimitive.Viewport
+      className={combineClasses(
+        'origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]',
+        className
+      )}
+      ref={ref}
+      {...props}
+    />
+  </div>
+);
+NavigationMenuViewport.displayName =
+  NavigationMenuPrimitive.Viewport.displayName;
+
 const NavigationMenu = ({
   className,
   children,
@@ -84,27 +105,6 @@ const NavigationMenuContent = ({
 NavigationMenuContent.displayName = NavigationMenuPrimitive.Content.displayName;
 
 const NavigationMenuLink = NavigationMenuPrimitive.Link;
-
-const NavigationMenuViewport = ({
-  className,
-  ref,
-  ...props
-}: React.ComponentPropsWithRef<typeof NavigationMenuPrimitive.Viewport>) => (
-  <div
-    className={combineClasses('absolute left-0 top-full flex justify-center')}
-  >
-    <NavigationMenuPrimitive.Viewport
-      className={combineClasses(
-        'origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]',
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  </div>
-);
-NavigationMenuViewport.displayName =
-  NavigationMenuPrimitive.Viewport.displayName;
 
 const NavigationMenuIndicator = ({
   className,

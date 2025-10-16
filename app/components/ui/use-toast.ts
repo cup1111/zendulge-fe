@@ -52,6 +52,12 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
+const listeners: Array<(state: State) => void> = [];
+let memoryState: State = { toasts: [] };
+
+// Forward declarations for circular dependencies
+let internalDispatch: (action: Action) => void;
+
 const addToRemoveQueue = (toastId: string) => {
   if (toastTimeouts.has(toastId)) {
     return;
@@ -59,7 +65,7 @@ const addToRemoveQueue = (toastId: string) => {
 
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId);
-    dispatch({
+    internalDispatch({
       type: 'REMOVE_TOAST',
       toastId,
     });
@@ -87,11 +93,12 @@ export const reducer = (state: State, action: Action): State => {
     case 'DISMISS_TOAST': {
       const { toastId } = action;
 
+      // Set up removal after reducer completes
       if (toastId) {
         addToRemoveQueue(toastId);
       } else {
-        state.toasts.forEach(toast => {
-          addToRemoveQueue(toast.id);
+        state.toasts.forEach(toastItem => {
+          addToRemoveQueue(toastItem.id);
         });
       }
 
@@ -118,29 +125,32 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: state.toasts.filter(t => t.id !== action.toastId),
       };
+
+    default:
+      return state;
   }
 };
 
-const listeners: Array<(state: State) => void> = [];
-
-let memoryState: State = { toasts: [] };
-
-function dispatch(action: Action) {
+// Initialize dispatch after reducer is defined
+// Assign the actual dispatch function
+internalDispatch = (action: Action): void => {
   memoryState = reducer(memoryState, action);
   listeners.forEach(listener => {
     listener(memoryState);
   });
-}
+};
+
+const dispatch = internalDispatch;
 
 type Toast = Omit<ToasterToast, 'id'>;
 
 function toast({ ...props }: Toast) {
   const id = genId();
 
-  const update = (props: ToasterToast) =>
+  const update = (updateProps: ToasterToast) =>
     dispatch({
       type: 'UPDATE_TOAST',
-      toast: { ...props, id },
+      toast: { ...updateProps, id },
     });
   const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id });
 
@@ -183,4 +193,4 @@ function useToast() {
   };
 }
 
-export { useToast, toast };
+export { toast, useToast };

@@ -91,13 +91,11 @@ export function AnimatedFormField<
         <AnimatedInput
           {...inputProps}
           {...field}
-          validationState={
-            error
-              ? 'invalid'
-              : validationState.status === 'loading'
-                ? 'idle'
-                : validationState.status
-          }
+          validationState={(() => {
+            if (error) return 'invalid';
+            if (validationState.status === 'loading') return 'idle';
+            return validationState.status;
+          })()}
           showValidationIcon={showValidationIcon}
           animateOnChange={animateOnChange}
           className={combineClasses(

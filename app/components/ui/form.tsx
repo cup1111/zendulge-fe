@@ -22,8 +22,12 @@ export const FormField = ({ children }: any) => (
 export const FormItem = ({ children, className }: any) => (
   <div className={combineClasses('space-y-1', className)}>{children}</div>
 );
-export const FormLabel = ({ children, className }: any) => (
-  <label className={combineClasses('text-sm font-medium', className)}>
+export const FormLabel = ({ children, className, htmlFor, ...props }: any) => (
+  <label
+    className={combineClasses('text-sm font-medium', className)}
+    htmlFor={htmlFor}
+    {...props}
+  >
     {children}
   </label>
 );

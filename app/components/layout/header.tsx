@@ -17,7 +17,7 @@ export default function Header() {
 
   // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
-  const displayUser = user || {
+  const displayUser = user ?? {
     firstName: 'Demo',
     lastName: 'User',
     email: 'demo@zendulge.com',
