@@ -1,15 +1,14 @@
 import {
+  Bath,
+  Dumbbell,
+  Heart,
+  Play,
+  Scissors,
+  Settings,
+  Sparkles,
   TrendingUp,
   Users,
-  Settings,
-  Play,
-  Bath,
-  Scissors,
-  Dumbbell,
-  Sparkles,
-  Heart,
 } from 'lucide-react';
-import { Link } from 'react-router';
 
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
@@ -139,8 +138,8 @@ export default function BusinessInfo() {
                   { icon: Bath, label: 'Sauna' },
                   { icon: Dumbbell, label: 'Yoga' },
                   { icon: Sparkles, label: 'Nails' },
-                ].map((category, index) => (
-                  <div key={index} className='text-center group'>
+                ].map(category => (
+                  <div key={category.label} className='text-center group'>
                     <div className='w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-2 bg-shadow-lavender/10 border-2 border-shadow-lavender hover:bg-shadow-lavender/20 transition-colors'>
                       <category.icon className='w-5 h-5 text-shadow-lavender' />
                     </div>

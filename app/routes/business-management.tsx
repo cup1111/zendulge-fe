@@ -1,40 +1,40 @@
 import {
-  TrendingUp,
-  Calendar,
-  Settings,
-  Users,
-  DollarSign,
   BarChart3,
-  Clock,
   Bell,
-  MapPin,
-  Star,
-  Edit3,
-  Plus,
-  Filter,
-  Download,
   Building2,
-  UserCheck,
-  Mail,
-  Phone,
-  Shield,
-  MoreHorizontal,
+  Calendar,
+  Clock,
+  DollarSign,
+  Download,
+  Edit3,
   Eye,
-  Trash2,
+  Filter,
   Loader2,
+  Mail,
+  MapPin,
+  MoreHorizontal,
+  Phone,
+  Plus,
+  Settings,
+  Shield,
+  Star,
+  Trash2,
+  TrendingUp,
+  UserCheck,
+  Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
-import { buildApiUrl, API_CONFIG } from '~/config/api';
+import { API_CONFIG, buildApiUrl } from '~/config/api';
 import { useAuth } from '~/contexts/AuthContext';
 import {
+  mockActiveDeals,
   mockBusinessStats,
   mockBusinessUsers,
-  mockRecentBookings,
-  mockActiveDeals,
   mockRecentActivity,
+  mockRecentBookings,
 } from '~/lib/mockData';
 
 // Types for our data
@@ -150,6 +150,7 @@ async function fetchOperatingSites(
 
   // Transform backend data to match frontend interface
   const sites = result.data.operateSites.map((site: any) => ({
+    // eslint-disable-next-line no-underscore-dangle
     id: site._id,
     name: site.name,
     address: site.address,
