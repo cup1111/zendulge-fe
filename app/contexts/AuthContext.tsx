@@ -1,5 +1,11 @@
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 import { API_CONFIG, buildApiUrl } from '~/config/api';
 
@@ -82,7 +88,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     localStorage.removeItem('token');
   };
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
       const response = await fetch(
         buildApiUrl(API_CONFIG.endpoints.auth.login),
@@ -125,7 +131,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       console.error('Login error:', error);
       throw error;
     }
-  };
+  }, []);
 
   const setCurrentCompany = (company: Company) => {
     setCurrentCompanyState(company);

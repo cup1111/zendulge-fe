@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import type { LinksFunction } from 'react-router';
 
@@ -21,21 +22,51 @@ export const links: LinksFunction = () => [
   },
 ];
 
-export const Layout = ({ children }: { children: React.ReactNode }) => (
-  <html lang='en'>
-    <head>
-      <meta charSet='utf-8' />
-      <meta name='viewport' content='width=device-width, initial-scale=1' />
-      <Meta />
-      <Links />
-    </head>
-    <body>
-      <AuthProvider>{children}</AuthProvider>
-      <ScrollRestoration />
-      <Scripts />
-    </body>
-  </html>
-);
+export const Layout = ({ children }: { children: React.ReactNode }) => {
+  useEffect(() => {
+    // Clean up any browser extension attributes that cause hydration mismatches
+    const cleanupExtensionAttributes = () => {
+      const { body } = document;
+      // Remove common browser extension attributes
+      const extensionAttributes = [
+        'cz-shortcut-listen', // ColorZilla
+        'data-new-gr-c-s-check-loaded', // Grammarly
+        'data-gr-ext-installed', // Grammarly
+        'spellcheck', // Various extensions
+      ];
+      
+      extensionAttributes.forEach(attr => {
+        if (body.hasAttribute(attr)) {
+          body.removeAttribute(attr);
+        }
+      });
+    };
+
+    // Clean up immediately after hydration
+    cleanupExtensionAttributes();
+    
+    // Also clean up periodically in case extensions add attributes later
+    const interval = setInterval(cleanupExtensionAttributes, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <html lang='en'>
+      <head>
+        <meta charSet='utf-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1' />
+        <Meta />
+        <Links />
+      </head>
+      <body suppressHydrationWarning>
+        <AuthProvider>{children}</AuthProvider>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+};
 
 export default function Root() {
   return (
