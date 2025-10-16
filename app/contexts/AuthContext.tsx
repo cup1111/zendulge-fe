@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-import { buildApiUrl, API_CONFIG } from '~/config/api';
+import { API_CONFIG, buildApiUrl } from '~/config/api';
 
 interface Company {
   id: string;
@@ -192,7 +192,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
     login('user@example.com', 'password123');
     initAuth();
-  }, [login]);
+  }, []);
 
   const value: AuthContextType = React.useMemo(
     () => ({

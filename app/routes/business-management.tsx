@@ -274,7 +274,8 @@ export default function BusinessManagement() {
     }
 
     loadData();
-  }, [user, currentCompany, isAuthenticated, isLoading]); // Re-run when auth state changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Re-run when auth state changes
 
   if (isLoading || dataLoading) {
     return (
