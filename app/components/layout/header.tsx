@@ -11,6 +11,7 @@ import { useAuth } from "~/contexts/AuthContext";
 
 export default function Header() {
   const location = useLocation();
+
   const { user, currentCompany, companies, setCurrentCompany } = useAuth();
 
   // 静态展示：模拟已登录用户 (fallback for demo)
@@ -19,7 +20,7 @@ export default function Header() {
     firstName: "Demo",
     lastName: "User",
     email: "demo@zendulge.com",
-    role: "customer" as const,
+    role: "super_admin" as const,
   };
 
   return (
@@ -56,7 +57,7 @@ export default function Header() {
           {/* Navigation Links */}
           <nav className="flex space-x-8 ml-12">
             <Link
-              to="/customer"
+              to="/"
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
                 location.pathname === "/customer" ? "opacity-80" : ""
               }`}
@@ -124,11 +125,11 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {!isAuthenticated ? (
               <>
-                <Button variant="ghost">
-                  <span>Sign In</span>
+                <Button variant="secondary">
+                  <Link to="/login">Sign In</Link>
                 </Button>
-                <Button>
-                  <span>Sign Up</span>
+                <Button variant="default">
+                  <Link to="/signup">Sign Up</Link>
                 </Button>
               </>
             ) : (

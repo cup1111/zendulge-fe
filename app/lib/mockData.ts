@@ -316,33 +316,6 @@ export interface Deal {
       .slice(0, 3);
   }
   
-  // Mock 用户数据
-  export interface UserProfile {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phone: string;
-    role: 'customer' | 'business' | 'admin';
-    address?: string;
-    joinedDate: string;
-    bookingsCount: number;
-    favoritesCount: number;
-  }
-  
-  export const mockUser: UserProfile = {
-    id: 1,
-    firstName: "Demo",
-    lastName: "User",
-    email: "demo@example.com",
-    phone: "+61 4XX XXX XXX",
-    role: "customer",
-    address: "123 Demo Street, Melbourne VIC 3000",
-    joinedDate: "2024-01-15",
-    bookingsCount: 12,
-    favoritesCount: 8
-  };
-  
   // Mock 预订历史
   export interface Booking {
     id: number;
@@ -387,6 +360,104 @@ export interface Deal {
       amount: 75
     }
   ];
+  
+  export const WELLNESS_CATEGORIES = [
+  "Massage Therapy",
+  "Spa & Recovery",
+  "Hair & Beauty",
+  "Fitness & Yoga",
+  "Holistic Healing",
+  "Skincare",
+  "Meditation",
+  "Nutrition"
+] as const;
+
+export type WellnessCategory = typeof WELLNESS_CATEGORIES[number];
+
+// 更新用户数据接口
+export interface UserProfile {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  role: 'customer' | 'business' | 'admin';
+  address?: {
+    country: string;
+    streetNumber: string;
+    streetName: string;
+    suburb: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    fullAddress?: string;
+  };
+  joinedDate: string;
+  bookingsCount: number;
+  favoritesCount: number;
+  interests?: WellnessCategory[];
+  businessesCount?: number; // For business users
+}
+
+// 更新 mockUser 为 Business 角色
+export const mockUser: UserProfile = {
+  id: 1,
+  firstName: "Business",
+  lastName: "Owner",
+  email: "business@example.com",
+  phone: "+61 4XX XXX XXX",
+  role: "business",
+  address: {
+    country: "Australia",
+    streetNumber: "456",
+    streetName: "Business Avenue",
+    suburb: "CBD",
+    city: "Sydney",
+    state: "NSW",
+    postalCode: "2000",
+    fullAddress: "456 Business Avenue, CBD, Sydney NSW 2000"
+  },
+  joinedDate: "2024-01-15",
+  bookingsCount: 0,
+  favoritesCount: 0,
+  interests: ["Massage Therapy", "Spa & Recovery"],
+  businessesCount: 2
+};
+
+// Mock 商家数据
+export interface Business {
+  id: number;
+  name: string;
+  description: string;
+  address: string;
+  isActive: boolean;
+  category: WellnessCategory;
+  totalRevenue: number;
+  totalBookings: number;
+}
+
+export const mockBusinesses: Business[] = [
+  {
+    id: 1,
+    name: "Serenity Spa & Wellness",
+    description: "Premium spa services offering massage, facials, and holistic treatments",
+    address: "123 Wellness St, Melbourne VIC 3000",
+    isActive: true,
+    category: "Spa & Recovery",
+    totalRevenue: 45000,
+    totalBookings: 320
+  },
+  {
+    id: 2,
+    name: "Zen Garden Beauty",
+    description: "Organic beauty treatments and skincare specialists",
+    address: "456 Beauty Lane, Sydney NSW 2000",
+    isActive: true,
+    category: "Hair & Beauty",
+    totalRevenue: 32000,
+    totalBookings: 215
+  }
+]
   
   // Business Management Mock Data
 export const mockBusinessStats = {
