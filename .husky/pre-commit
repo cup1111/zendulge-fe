@@ -1,0 +1,9 @@
+# Run ESLint to check for any errors
+echo "🔍 Running ESLint..."
+yarn lint
+
+# If ESLint passes, check for errors specifically (no warnings)
+echo "🔍 Checking for ESLint errors..."
+yarn lint --quiet
+
+echo "✅ ESLint checks passed! Proceeding with commit..."
