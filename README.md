@@ -21,7 +21,17 @@ A modern, production-ready template for building full-stack React applications u
 Install the dependencies:
 
 ```bash
-npm install
+yarn install
+```
+
+### Setup VS Code Extensions
+
+```bash
+# Fix VS Code CLI if needed
+yarn fix-vscode-cli
+
+# Install all recommended extensions
+yarn setup-vscode
 ```
 
 ### Development
@@ -29,7 +39,7 @@ npm install
 Start the development server with HMR:
 
 ```bash
-npm run dev
+yarn dev
 ```
 
 Your application will be available at `http://localhost:5173`.
@@ -39,7 +49,7 @@ Your application will be available at `http://localhost:5173`.
 Create a production build:
 
 ```bash
-npm run build
+yarn build
 ```
 
 ## Deployment
@@ -68,7 +78,7 @@ The containerized application can be deployed to any platform that supports Dock
 
 If you're familiar with deploying Node applications, the built-in app server is production-ready.
 
-Make sure to deploy the output of `npm run build`
+Make sure to deploy the output of `yarn build`
 
 ```
 ├── package.json
@@ -108,16 +118,16 @@ You can also run quality checks manually:
 
 ```bash
 # Check for linting issues
-npm run lint
+yarn lint
 
 # Fix auto-fixable linting issues
-npm run lint:fix
+yarn lint:fix
 
 # Run TypeScript type checking
-npm run typecheck
+yarn typecheck
 
 # Run all quality checks
-npm run quality
+yarn quality
 ```
 
 ## Styling

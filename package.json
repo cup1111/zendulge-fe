@@ -15,7 +15,9 @@
     "check": "npm run typecheck && npm run lint && npm run format:check",
     "lint:quiet": "eslint . --quiet",
     "quality": "npm run typecheck && npm run lint:quiet && npm run format:check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "setup-vscode": "node .vscode/setup.js",
+    "fix-vscode-cli": "node .vscode/fix-vscode-cli.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
