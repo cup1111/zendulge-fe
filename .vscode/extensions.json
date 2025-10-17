@@ -5,7 +5,6 @@
     "bradlc.vscode-tailwindcss",
     "ms-vscode.vscode-typescript-next",
     "formulahendry.auto-rename-tag",
-    "christian-kohler.path-intellisense",
-    "ms-vscode.vscode-json"
+    "christian-kohler.path-intellisense"
   ]
 }
