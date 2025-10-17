@@ -16,23 +16,20 @@ import {
   Phone,
   Plus,
   Settings,
-  Shield,
   Star,
-  Trash2,
   TrendingUp,
-  UserCheck,
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
+import UserManagement from '~/components/UserManagement';
 import { API_CONFIG, buildApiUrl } from '~/config/api';
 import { useAuth } from '~/contexts/AuthContext';
 import {
   mockActiveDeals,
   mockBusinessStats,
-  mockBusinessUsers,
   mockRecentActivity,
   mockRecentBookings,
 } from '~/lib/mockData';
@@ -47,17 +44,6 @@ interface BusinessStats {
   expiringDeals: number;
   customerRating: number;
   reviewCount: number;
-}
-
-interface BusinessUser {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-  status: 'active' | 'inactive';
-  lastActive: string;
-  avatar: string;
 }
 
 interface OperatingSite {
@@ -106,13 +92,6 @@ async function fetchBusinessStats(): Promise<BusinessStats> {
   // In a real scenario, you'd calculate these from other endpoints
   console.warn('No stats endpoint available, using mock data');
   return mockBusinessStats;
-}
-
-async function fetchBusinessUsers(): Promise<BusinessUser[]> {
-  // The backend doesn't have a dedicated users endpoint for business management
-  // You'd need to create one or fetch from company/user relationships
-  console.warn('No business users endpoint available, using mock data');
-  return mockBusinessUsers;
 }
 
 // Helper function to format operating hours
@@ -214,7 +193,7 @@ export default function BusinessManagement() {
   const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
     null
   );
-  const [businessUsers, setBusinessUsers] = useState<BusinessUser[]>([]);
+
   const [operatingSites, setOperatingSites] = useState<OperatingSite[]>([]);
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [activeDeals, setActiveDeals] = useState<ActiveDeal[]>([]);
@@ -248,17 +227,15 @@ export default function BusinessManagement() {
         setOperatingSites(sitesData);
 
         // Fetch other data (using mock data where endpoints don't exist yet)
-        const [statsData, usersData, bookingsData, dealsData, activityData] =
+        const [statsData, bookingsData, dealsData, activityData] =
           await Promise.all([
             fetchBusinessStats(),
-            fetchBusinessUsers(),
             fetchRecentBookings(),
             fetchActiveDeals(),
             fetchRecentActivity(),
           ]);
 
         setBusinessStats(statsData);
-        setBusinessUsers(usersData);
         setRecentBookings(bookingsData);
         setActiveDeals(dealsData);
         setRecentActivity(activityData);
@@ -627,135 +604,7 @@ export default function BusinessManagement() {
       {/* Users Management Section */}
       <section className='py-8 border-t border-gray-200 bg-white'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='mb-8'>
-            <div className='flex items-center justify-between mb-6'>
-              <div>
-                <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
-                  Business Users
-                </h2>
-                <p className='text-gray-600'>
-                  Manage staff members and their access permissions
-                </p>
-              </div>
-              <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                <Plus className='w-4 h-4 mr-2' />
-                Add User
-              </Button>
-            </div>
-
-            <div className='bg-white border border-gray-200 rounded-lg overflow-hidden'>
-              <div className='overflow-x-auto'>
-                <table className='min-w-full divide-y divide-gray-200'>
-                  <thead className='bg-gray-50'>
-                    <tr>
-                      <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        User
-                      </th>
-                      <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        Role
-                      </th>
-                      <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        Contact
-                      </th>
-                      <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        Status
-                      </th>
-                      <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        Last Active
-                      </th>
-                      <th className='px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className='bg-white divide-y divide-gray-200'>
-                    {businessUsers.length > 0 ? (
-                      businessUsers.map(businessUser => (
-                        <tr key={businessUser.id} className='hover:bg-gray-50'>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='flex items-center'>
-                              <div className='w-10 h-10 bg-shadow-lavender/10 rounded-full flex items-center justify-center'>
-                                <span className='text-sm font-medium text-shadow-lavender'>
-                                  {businessUser.avatar}
-                                </span>
-                              </div>
-                              <div className='ml-4'>
-                                <div className='text-sm font-medium text-gray-900'>
-                                  {businessUser.name}
-                                </div>
-                                <div className='text-sm text-gray-500'>
-                                  ID: #{businessUser.id}
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='flex items-center'>
-                              <Shield className='w-4 h-4 mr-2 text-gray-400' />
-                              <span className='text-sm text-gray-900'>
-                                {businessUser.role}
-                              </span>
-                            </div>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <div className='space-y-1'>
-                              <div className='flex items-center text-sm text-gray-900'>
-                                <Mail className='w-3 h-3 mr-2 text-gray-400' />
-                                {businessUser.email}
-                              </div>
-                              <div className='flex items-center text-sm text-gray-500'>
-                                <Phone className='w-3 h-3 mr-2 text-gray-400' />
-                                {businessUser.phone}
-                              </div>
-                            </div>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap'>
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                businessUser.status === 'active'
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}
-                            >
-                              <UserCheck className='w-3 h-3 mr-1' />
-                              {businessUser.status}
-                            </span>
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                            {businessUser.lastActive}
-                          </td>
-                          <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                            <div className='flex items-center justify-end space-x-2'>
-                              <Button variant='ghost' size='sm'>
-                                <Eye className='w-4 h-4' />
-                              </Button>
-                              <Button variant='ghost' size='sm'>
-                                <Edit3 className='w-4 h-4' />
-                              </Button>
-                              <Button
-                                variant='ghost'
-                                size='sm'
-                                className='text-red-600 hover:text-red-700'
-                              >
-                                <Trash2 className='w-4 h-4' />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={6} className='px-6 py-8 text-center'>
-                          <Users className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                          <p className='text-gray-500'>No users found</p>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+          {currentCompany && <UserManagement companyId={currentCompany.id} />}
         </div>
       </section>
 
