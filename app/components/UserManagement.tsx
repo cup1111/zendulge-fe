@@ -79,11 +79,13 @@ export default function UserManagement({
 
       // Load users
       const usersData = await UserManagementService.getCompanyUsers(companyId);
+      console.log('Loaded users data:', usersData);
+      console.log('First user role:', usersData[0]?.role);
 
-      // Load roles (admin only for now)
+      // Load roles - use company roles for company admins, global roles for super admins
       const rolesData = isAdmin
         ? await UserManagementService.getAllRoles()
-        : [];
+        : await UserManagementService.getCompanyRoles(companyId);
 
       setCompanyUsers(usersData);
       setRoles(rolesData);
@@ -220,6 +222,11 @@ export default function UserManagement({
                       {user.firstName} {user.lastName}
                     </div>
                     <div className='text-sm text-gray-500'>{user.email}</div>
+                    {user.phoneNumber && (
+                      <div className='text-xs text-gray-400'>
+                        📞 {user.phoneNumber}
+                      </div>
+                    )}
                     {user.jobTitle && (
                       <div className='text-xs text-gray-400'>
                         {user.jobTitle}
@@ -392,6 +399,27 @@ export default function UserManagement({
                     setCreateForm({ ...createForm, jobTitle: e.target.value })
                   }
                   className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor='phoneNumber'
+                  className='block text-sm font-medium text-gray-700 mb-1'
+                >
+                  Phone Number
+                </label>
+                <input
+                  id='phoneNumber'
+                  type='tel'
+                  value={createForm.phoneNumber}
+                  onChange={e =>
+                    setCreateForm({
+                      ...createForm,
+                      phoneNumber: e.target.value,
+                    })
+                  }
+                  className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  placeholder='e.g., +1234567890'
                 />
               </div>
               <div>

@@ -112,6 +112,16 @@ export class UserManagementService {
     await api.delete(API_CONFIG.endpoints.company.user(companyId, userId));
   }
 
+  /**
+   * Get all available roles for a company
+   */
+  static async getCompanyRoles(companyId: string): Promise<Role[]> {
+    const response = await api.get<ApiResponse<Role[]>>(
+      API_CONFIG.endpoints.company.roles(companyId)
+    );
+    return response.data.data;
+  }
+
   // Super admin operations (global)
 
   /**
@@ -126,8 +136,10 @@ export class UserManagementService {
    * Get all available roles (super admin only)
    */
   static async getAllRoles(): Promise<Role[]> {
-    const response = await api.get<Role[]>(API_CONFIG.endpoints.admin.roles);
-    return response.data;
+    const response = await api.get<ApiResponse<Role[]>>(
+      API_CONFIG.endpoints.admin.roles
+    );
+    return response.data.data;
   }
 }
 
