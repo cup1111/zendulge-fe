@@ -1,3 +1,4 @@
+import { Edit2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -139,25 +140,6 @@ export default function UserManagement({
     }
   };
 
-  const handleRemoveUserRole = async (user: User) => {
-    showConfirmation(
-      'Remove Role',
-      `Remove role from ${user.firstName} ${user.lastName}?`,
-      async () => {
-        try {
-          setError(null);
-          await UserManagementService.removeCompanyUserRole(companyId, user.id);
-          await loadData(); // Refresh the list
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to remove role'
-          );
-        }
-        hideConfirmation();
-      }
-    );
-  };
-
   const handleDeleteUser = async (user: User) => {
     showConfirmation(
       'Delete User',
@@ -280,24 +262,19 @@ export default function UserManagement({
                           setSelectedUser(user);
                           setShowRoleModal(true);
                         }}
-                        className='text-blue-600 hover:text-blue-900'
+                        className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors'
+                        title='Edit Role'
                       >
+                        <Edit2 className='w-4 h-4 mr-1' />
                         Edit Role
                       </button>
-                      {user.role && (
-                        <button
-                          type='button'
-                          onClick={() => handleRemoveUserRole(user)}
-                          className='text-yellow-600 hover:text-yellow-900'
-                        >
-                          Remove Role
-                        </button>
-                      )}
                       <button
                         type='button'
                         onClick={() => handleDeleteUser(user)}
-                        className='text-red-600 hover:text-red-900'
+                        className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors'
+                        title='Delete User'
                       >
+                        <Trash2 className='w-4 h-4 mr-1' />
                         Delete
                       </button>
                     </>

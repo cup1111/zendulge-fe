@@ -33,8 +33,6 @@ export const API_CONFIG = {
         `/company/${companyId}/users/${userId}`,
       userRole: (companyId: string, userId: string) =>
         `/company/${companyId}/users/${userId}/role`,
-      userRoleRemoval: (companyId: string, userId: string) =>
-        `/company/${companyId}/users/${userId}/remove-role`,
     },
     admin: {
       users: '/admin/users',

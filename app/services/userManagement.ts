@@ -103,19 +103,6 @@ export class UserManagementService {
   }
 
   /**
-   * Remove a user's role in a company
-   */
-  static async removeCompanyUserRole(
-    companyId: string,
-    userId: string
-  ): Promise<User> {
-    const response = await api.patch<User>(
-      API_CONFIG.endpoints.company.userRoleRemoval(companyId, userId)
-    );
-    return response.data;
-  }
-
-  /**
    * Delete a user from a company
    */
   static async deleteCompanyUser(
