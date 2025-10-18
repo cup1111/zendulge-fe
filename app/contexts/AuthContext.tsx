@@ -7,7 +7,8 @@ import React, {
   useState,
 } from 'react';
 
-import { API_CONFIG, buildApiUrl } from '~/config/api';
+import { API_CONFIG } from '~/config/api';
+import zendulgeAxios from '~/config/axios';
 
 interface Company {
   id: string;
@@ -90,23 +91,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await fetch(
-        buildApiUrl(API_CONFIG.endpoints.auth.login),
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        }
+      const response = await zendulgeAxios.post(
+        API_CONFIG.endpoints.auth.login,
+        { email, password }
       );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
-
-      const data = await response.json();
+      const { data } = response;
       const { accessToken } = data.data;
 
       // Store token

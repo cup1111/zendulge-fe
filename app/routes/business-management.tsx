@@ -25,7 +25,8 @@ import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
-import { API_CONFIG, buildApiUrl } from '~/config/api';
+import { API_CONFIG } from '~/config/api';
+import zendulgeAxios from '~/config/axios';
 import { useAuth } from '~/contexts/AuthContext';
 import {
   mockActiveDeals,
@@ -83,10 +84,6 @@ interface RecentActivity {
   time: string;
 }
 
-// Get auth token from localStorage
-const getAuthToken = () =>
-  localStorage.getItem('accessToken') ?? localStorage.getItem('token');
-
 async function fetchBusinessStats(): Promise<BusinessStats> {
   // Since there's no dedicated stats endpoint, we'll use mock data
   // In a real scenario, you'd calculate these from other endpoints
@@ -108,13 +105,13 @@ function formatOperatingHours(hours: Record<string, unknown>): string {
     'saturday',
   ];
   const todayName = days[today];
-  const todayHours = hours[todayName];
+  const todayHours = hours[todayName] as Record<string, unknown>;
 
   if (todayHours?.isClosed) {
     return 'Closed today';
   }
 
-  return `${todayHours?.open || '09:00'} - ${todayHours?.close || '17:00'}`;
+  return `${(todayHours?.open as string) || '09:00'} - ${(todayHours?.close as string) || '17:00'}`;
 }
 
 async function fetchOperatingSites(
@@ -124,30 +121,11 @@ async function fetchOperatingSites(
     throw new Error('Company ID is required to fetch operating sites');
   }
 
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  // Only add Authorization header if we have a token (development bypass allows no token)
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(
-    buildApiUrl(API_CONFIG.endpoints.company.operateSites(companyId)),
-    {
-      headers,
-    }
+  const response = await zendulgeAxios.get(
+    API_CONFIG.endpoints.company.operateSites(companyId)
   );
 
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch operating sites: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const result = await response.json();
+  const result = response.data;
 
   // Transform backend data to match frontend interface
   const sites = result.data.operateSites.map(
@@ -160,7 +138,9 @@ async function fetchOperatingSites(
       status: site.isActive ? 'active' : 'inactive',
       manager: 'To be assigned', // Backend doesn't have manager field yet
       services: ['To be configured'], // Backend doesn't have services field yet
-      hours: formatOperatingHours(site.operatingHours),
+      hours: formatOperatingHours(
+        (site.operatingHours as Record<string, unknown>) || {}
+      ),
       revenue: '$0', // Backend doesn't track revenue yet
       bookings: 0, // Backend doesn't track bookings yet
     })
