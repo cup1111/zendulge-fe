@@ -3,7 +3,7 @@ import api from '../config/axios';
 
 // Types for user management
 export interface User {
-  _id: string;
+  id: string;
   email: string;
   firstName: string;
   lastName: string;
@@ -19,7 +19,7 @@ export interface User {
 }
 
 export interface Role {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   permissions?: string[];

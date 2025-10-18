@@ -153,8 +153,7 @@ async function fetchOperatingSites(
 
   // Transform backend data to match frontend interface
   const sites = result.data.operateSites.map((site: any) => ({
-    // eslint-disable-next-line no-underscore-dangle
-    id: site._id,
+    id: site.id,
     name: site.name,
     address: site.address,
     phone: site.phoneNumber,

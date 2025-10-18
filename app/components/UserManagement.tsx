@@ -71,12 +71,6 @@ export default function UserManagement({
     });
   };
 
-  // Helper to get user ID
-  // eslint-disable-next-line no-underscore-dangle
-  const getUserId = (user: User): string => user._id;
-  // eslint-disable-next-line no-underscore-dangle
-  const getRoleId = (role: Role): string => role._id;
-
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
@@ -134,7 +128,7 @@ export default function UserManagement({
       setError(null);
       await UserManagementService.updateCompanyUserRole(
         companyId,
-        getUserId(selectedUser),
+        selectedUser.id,
         { role: roleId }
       );
       setShowRoleModal(false);
@@ -152,10 +146,7 @@ export default function UserManagement({
       async () => {
         try {
           setError(null);
-          await UserManagementService.removeCompanyUserRole(
-            companyId,
-            getUserId(user)
-          );
+          await UserManagementService.removeCompanyUserRole(companyId, user.id);
           await loadData(); // Refresh the list
         } catch (err) {
           setError(
@@ -174,10 +165,7 @@ export default function UserManagement({
       async () => {
         try {
           setError(null);
-          await UserManagementService.deleteCompanyUser(
-            companyId,
-            getUserId(user)
-          );
+          await UserManagementService.deleteCompanyUser(companyId, user.id);
           await loadData(); // Refresh the list
         } catch (err) {
           setError(
@@ -243,7 +231,7 @@ export default function UserManagement({
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
             {companyUsers?.map(user => (
-              <tr key={getUserId(user)}>
+              <tr key={user.id}>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <div>
                     <div className='text-sm font-medium text-gray-900'>
@@ -446,7 +434,7 @@ export default function UserManagement({
                 >
                   <option value=''>Select a role</option>
                   {roles.map(role => (
-                    <option key={getRoleId(role)} value={getRoleId(role)}>
+                    <option key={role.id} value={role.id}>
                       {role.name}
                     </option>
                   ))}
@@ -484,8 +472,8 @@ export default function UserManagement({
               {roles.map(role => (
                 <button
                   type='button'
-                  key={getRoleId(role)}
-                  onClick={() => handleUpdateUserRole(getRoleId(role))}
+                  key={role.id}
+                  onClick={() => handleUpdateUserRole(role.id)}
                   className='w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50'
                 >
                   <div className='font-medium'>{role.name}</div>
