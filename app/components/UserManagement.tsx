@@ -238,11 +238,6 @@ export default function UserManagement({
                   <div className='text-sm text-gray-900'>
                     {user.role?.name ?? 'No role assigned'}
                   </div>
-                  {user.role?.description && (
-                    <div className='text-xs text-gray-500'>
-                      {user.role.description}
-                    </div>
-                  )}
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <span

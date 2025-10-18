@@ -90,12 +90,11 @@ const getAuthToken = () =>
 async function fetchBusinessStats(): Promise<BusinessStats> {
   // Since there's no dedicated stats endpoint, we'll use mock data
   // In a real scenario, you'd calculate these from other endpoints
-  console.warn('No stats endpoint available, using mock data');
   return mockBusinessStats;
 }
 
 // Helper function to format operating hours
-function formatOperatingHours(hours: any): string {
+function formatOperatingHours(hours: Record<string, unknown>): string {
   if (!hours) return 'Not configured';
 
   const today = new Date().getDay();
@@ -149,41 +148,39 @@ async function fetchOperatingSites(
   }
 
   const result = await response.json();
-  console.log('Backend operating sites response:', result);
 
   // Transform backend data to match frontend interface
-  const sites = result.data.operateSites.map((site: any) => ({
-    id: site.id,
-    name: site.name,
-    address: site.address,
-    phone: site.phoneNumber,
-    email: site.emailAddress,
-    status: site.isActive ? 'active' : 'inactive',
-    manager: 'To be assigned', // Backend doesn't have manager field yet
-    services: ['To be configured'], // Backend doesn't have services field yet
-    hours: formatOperatingHours(site.operatingHours),
-    revenue: '$0', // Backend doesn't track revenue yet
-    bookings: 0, // Backend doesn't track bookings yet
-  }));
+  const sites = result.data.operateSites.map(
+    (site: Record<string, unknown>) => ({
+      id: site.id,
+      name: site.name,
+      address: site.address,
+      phone: site.phoneNumber,
+      email: site.emailAddress,
+      status: site.isActive ? 'active' : 'inactive',
+      manager: 'To be assigned', // Backend doesn't have manager field yet
+      services: ['To be configured'], // Backend doesn't have services field yet
+      hours: formatOperatingHours(site.operatingHours),
+      revenue: '$0', // Backend doesn't track revenue yet
+      bookings: 0, // Backend doesn't track bookings yet
+    })
+  );
 
   return sites;
 }
 
 async function fetchRecentBookings(): Promise<RecentBooking[]> {
   // Backend doesn't have booking system yet
-  console.warn('No booking endpoint available, using mock data');
   return mockRecentBookings;
 }
 
 async function fetchActiveDeals(): Promise<ActiveDeal[]> {
   // Backend doesn't have deals system yet
-  console.warn('No deals endpoint available, using mock data');
   return mockActiveDeals;
 }
 
 async function fetchRecentActivity(): Promise<RecentActivity[]> {
   // Backend doesn't have activity tracking yet
-  console.warn('No activity endpoint available, using mock data');
   return mockRecentActivity;
 }
 
@@ -217,12 +214,14 @@ export default function BusinessManagement() {
         }
 
         // Ensure we have a current company selected
-        if (!currentCompany) {
-          throw new Error('No company selected');
+        if (!currentCompany?.id) {
+          throw new Error('No company selected or invalid company ID');
         }
 
+        const companyIdString = currentCompany.id;
+
         // Fetch operating sites from real backend (REQUIRED)
-        const sitesData = await fetchOperatingSites(currentCompany.id);
+        const sitesData = await fetchOperatingSites(companyIdString);
         setOperatingSites(sitesData);
 
         // Fetch other data (using mock data where endpoints don't exist yet)
@@ -243,7 +242,6 @@ export default function BusinessManagement() {
         const errorMessage =
           err instanceof Error ? err.message : 'Unknown error occurred';
         setError(`Backend connection failed: ${errorMessage}`);
-        console.error('Backend API error:', err);
       } finally {
         setDataLoading(false);
       }
@@ -270,7 +268,7 @@ export default function BusinessManagement() {
         <div className='text-center'>
           <p className='text-red-600 mb-4'>Error: {error}</p>
           <Button
-            onClick={() => window.location.reload()}
+            onClick={() => globalThis.location.reload()}
             className='bg-shadow-lavender hover:bg-shadow-lavender/90'
           >
             Retry
@@ -603,7 +601,9 @@ export default function BusinessManagement() {
       {/* Users Management Section */}
       <section className='py-8 border-t border-gray-200 bg-white'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          {currentCompany && <UserManagement companyId={currentCompany.id} />}
+          {currentCompany?.id && (
+            <UserManagement companyId={currentCompany.id} />
+          )}
         </div>
       </section>
 
