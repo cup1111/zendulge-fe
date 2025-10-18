@@ -121,26 +121,6 @@ export class UserManagementService {
     );
     return response.data.data;
   }
-
-  // Super admin operations (global)
-
-  /**
-   * Get all users across all companies (super admin only)
-   */
-  static async getAllUsers(): Promise<User[]> {
-    const response = await api.get<User[]>(API_CONFIG.endpoints.admin.users);
-    return response.data;
-  }
-
-  /**
-   * Get all available roles (super admin only)
-   */
-  static async getAllRoles(): Promise<Role[]> {
-    const response = await api.get<ApiResponse<Role[]>>(
-      API_CONFIG.endpoints.admin.roles
-    );
-    return response.data.data;
-  }
 }
 
 export default UserManagementService;

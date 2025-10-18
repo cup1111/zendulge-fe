@@ -35,10 +35,6 @@ export const API_CONFIG = {
         `/company/${companyId}/users/${userId}/role`,
       roles: (companyId: string) => `/company/${companyId}/roles`,
     },
-    admin: {
-      users: '/admin/users',
-      roles: '/admin/roles',
-    },
   },
 };
 

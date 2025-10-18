@@ -10,12 +10,10 @@ import {
 
 interface UserManagementProps {
   companyId: string;
-  isAdmin?: boolean; // For super admin view
 }
 
 export default function UserManagement({
   companyId,
-  isAdmin = false,
 }: Readonly<UserManagementProps>) {
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -79,13 +77,9 @@ export default function UserManagement({
 
       // Load users
       const usersData = await UserManagementService.getCompanyUsers(companyId);
-      console.log('Loaded users data:', usersData);
-      console.log('First user role:', usersData[0]?.role);
 
-      // Load roles - use company roles for company admins, global roles for super admins
-      const rolesData = isAdmin
-        ? await UserManagementService.getAllRoles()
-        : await UserManagementService.getCompanyRoles(companyId);
+      // Load roles
+      const rolesData = await UserManagementService.getCompanyRoles(companyId);
 
       setCompanyUsers(usersData);
       setRoles(rolesData);
@@ -94,7 +88,7 @@ export default function UserManagement({
     } finally {
       setLoading(false);
     }
-  }, [companyId, isAdmin]);
+  }, [companyId]);
 
   // Load users and roles on component mount
   useEffect(() => {
@@ -173,18 +167,14 @@ export default function UserManagement({
     <div className='space-y-6'>
       {/* Header */}
       <div className='flex items-center justify-between'>
-        <h2 className='text-2xl font-bold'>
-          {isAdmin ? 'All Users' : 'Company Users'}
-        </h2>
-        {!isAdmin && (
-          <button
-            onClick={() => setShowCreateForm(true)}
-            type='button'
-            className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700'
-          >
-            Add User
-          </button>
-        )}
+        <h2 className='text-2xl font-bold'>Company Users</h2>
+        <button
+          onClick={() => setShowCreateForm(true)}
+          type='button'
+          className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700'
+        >
+          Add User
+        </button>
       </div>
 
       {/* Error Message */}
@@ -256,31 +246,27 @@ export default function UserManagement({
                   )}
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
-                  {!isAdmin && (
-                    <>
-                      <button
-                        type='button'
-                        onClick={() => {
-                          setSelectedUser(user);
-                          setShowRoleModal(true);
-                        }}
-                        className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors'
-                        title='Edit Role'
-                      >
-                        <Edit2 className='w-4 h-4 mr-1' />
-                        Edit Role
-                      </button>
-                      <button
-                        type='button'
-                        onClick={() => handleDeleteUser(user)}
-                        className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors'
-                        title='Delete User'
-                      >
-                        <Trash2 className='w-4 h-4 mr-1' />
-                        Delete
-                      </button>
-                    </>
-                  )}
+                  <button
+                    type='button'
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setShowRoleModal(true);
+                    }}
+                    className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors'
+                    title='Edit Role'
+                  >
+                    <Edit2 className='w-4 h-4 mr-1' />
+                    Edit Role
+                  </button>
+                  <button
+                    type='button'
+                    onClick={() => handleDeleteUser(user)}
+                    className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors'
+                    title='Delete User'
+                  >
+                    <Trash2 className='w-4 h-4 mr-1' />
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}

@@ -21,7 +21,7 @@ export default function Header() {
     firstName: 'Demo',
     lastName: 'User',
     email: 'demo@zendulge.com',
-    role: 'super_admin' as const,
+    role: 'owner' as const,
   };
 
   return (
@@ -143,9 +143,7 @@ export default function Header() {
 
                 {displayUser.role && (
                   <span className='px-2 py-1 text-xs font-medium bg-shadow-lavender text-white rounded-full capitalize'>
-                    {displayUser.role === 'super_admin'
-                      ? 'Super Admin'
-                      : displayUser.role}
+                    {displayUser.role.replace('_', ' ')}
                   </span>
                 )}
 
