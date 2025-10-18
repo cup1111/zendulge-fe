@@ -73,7 +73,7 @@ const businessSchema = z.object({
     .string()
     .min(1, 'ABN registered business name is required'),
 
-  // Business Group Admin Information
+  // Business Group Owner Information
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   jobTitle: z.string().min(1, 'Job title is required'),
@@ -161,7 +161,7 @@ export default function BusinessRegister() {
   const [sectionsOpen, setSectionsOpen] = useState({
     basicInfo: true,
     abnInfo: false,
-    adminInfo: false,
+    ownerInfo: false,
     categories: false,
     address: false,
     contact: false,
@@ -196,7 +196,7 @@ export default function BusinessRegister() {
         return !!(values.name && values.description);
       case 'abnInfo':
         return !!(values.abn && values.abnRegisteredName);
-      case 'adminInfo':
+      case 'ownerInfo':
         return !!(values.firstName && values.lastName && values.jobTitle);
       case 'categories':
         return !!(values.categories?.length && values.primaryCategory);
@@ -427,11 +427,11 @@ export default function BusinessRegister() {
               </Collapsible>
 
               {/* ============================================ */}
-              {/* Section 3: Admin Information */}
+              {/* Section 3: Owner Information */}
               {/* ============================================ */}
               <Collapsible
-                open={sectionsOpen.adminInfo}
-                onOpenChange={() => toggleSection('adminInfo')}
+                open={sectionsOpen.ownerInfo}
+                onOpenChange={() => toggleSection('ownerInfo')}
               >
                 <Card>
                   <CollapsibleTrigger className='w-full'>
@@ -440,13 +440,13 @@ export default function BusinessRegister() {
                         <div className='flex items-center gap-3'>
                           <User className='w-5 h-5 text-shadow-lavender' />
                           <CardTitle className='text-lg'>
-                            Administrator Information
+                            Owner Information
                           </CardTitle>
-                          {getFieldCompletion('adminInfo') && (
+                          {getFieldCompletion('ownerInfo') && (
                             <CheckCircle className='w-5 h-5 text-green-500' />
                           )}
                         </div>
-                        {sectionsOpen.adminInfo ? (
+                        {sectionsOpen.ownerInfo ? (
                           <ChevronDown className='w-5 h-5 text-gray-500' />
                         ) : (
                           <ChevronRight className='w-5 h-5 text-gray-500' />
