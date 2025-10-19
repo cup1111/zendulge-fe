@@ -186,7 +186,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setIsLoading(false);
       }
     };
-    login('user@example.com', 'password123');
     initAuth();
   }, []);
 
