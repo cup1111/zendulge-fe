@@ -370,7 +370,7 @@ export interface UserProfile {
   lastName: string;
   email: string;
   phone: string;
-  role: 'customer' | 'business' | 'admin';
+  role: 'customer' | 'business' | 'owner';
   address?: Address;
   joinedDate: string;
   bookingsCount: number;
@@ -543,7 +543,7 @@ export const mockBusinessUsers = [
     name: 'Emma Thompson',
     email: 'emma@zenspa.com',
     phone: '+1 (555) 567-8901',
-    role: 'Admin',
+    role: 'Owner',
     status: 'active' as const,
     lastActive: '30 minutes ago',
     avatar: 'ET',

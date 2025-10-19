@@ -29,6 +29,11 @@ export const API_CONFIG = {
       operateSites: (companyId: string) =>
         `/company/${companyId}/operate-sites`,
       users: (companyId: string) => `/company/${companyId}/users`,
+      user: (companyId: string, userId: string) =>
+        `/company/${companyId}/users/${userId}`,
+      userRole: (companyId: string, userId: string) =>
+        `/company/${companyId}/users/${userId}/role`,
+      roles: (companyId: string) => `/company/${companyId}/roles`,
     },
   },
 };
