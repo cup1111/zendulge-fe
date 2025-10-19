@@ -7,7 +7,6 @@ export default [
     route("business-management", "./routes/business-management.tsx"),
     route("deal-details/:id", "./routes/deal-details.$id.tsx"),
     route("login", "./routes/login.tsx"),
-    route("signup", "./routes/signup.tsx"),
     route("profile", "./routes/profile.tsx"),
     route("business-registration", "./routes/business-registration.tsx"),// 末尾加上提示收到邮箱验证 查看邮箱做验证 验证之后可能再审核之类
     route("customer-registration", "./routes/customer-registration.tsx"),// 分开 customer和business

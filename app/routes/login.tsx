@@ -9,9 +9,26 @@ import heroBackground from "~/assets/massage.jpeg";
 import appIcon from "~/assets/app-icon.png";
 import { Input } from "~/components/ui/input";
 import { Link } from "react-router";
+import { useContext } from "react";
+import { useState } from "react";
+import { useAuth } from "~/contexts/AuthContext"
+import { useNavigate } from 'react-router';
 
 
-  export default function Login() {
+export default function Login() {
+  const navigate = useNavigate();
+    const authContext = useAuth();
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    })
+    const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    };
+    const handleLogin = () => {
+      authContext.login(formData.email, formData.password)
+      navigate('/');
+    }
     return (
         <div className="min-h-screen">
         {/* Hero Section */}
@@ -53,15 +70,18 @@ import { Link } from "react-router";
                   className="h-12 text-base" 
                   type="email" 
                   placeholder="Email" 
+                  onChange = {(e) => handleInputChange('email', e.target.value)}
                 />
                 <Input 
                   className="h-12 text-base" 
                   type="password" 
                   placeholder="Password" 
+                  onChange = {(e) => handleInputChange('password', e.target.value)}
                 />
                 <Button 
                   variant="default" 
                   className="w-full h-12 text-base mt-6"
+                  onClick={handleLogin}
                 >
                   Login
                 </Button>

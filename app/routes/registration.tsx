@@ -13,6 +13,7 @@ import {
   Globe,
   UserCheck
 } from "lucide-react";
+import { registerCustomer } from '~/api/register';
 
 // 服务类别常量（直接在页面中定义）
 const WELLNESS_CATEGORIES = [
@@ -26,6 +27,7 @@ const WELLNESS_CATEGORIES = [
 interface TestingRegistrationProps {
   type: 'customer' | 'business';
 }
+
 
 export default function TestingRegistration({ type }: TestingRegistrationProps) {
   const [step, setStep] = useState(1);
@@ -86,6 +88,11 @@ function CustomerRegistrationFlow({ step, formData, onInputChange, onNext, onPre
 
   const currentSection = sections[step - 1];
   const maxSteps = sections.length;
+
+  const handleSubmit = async () => {
+   await registerCustomer(formData);
+    onNext();
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -205,7 +212,7 @@ function CustomerRegistrationFlow({ step, formData, onInputChange, onNext, onPre
           )}
 
           {/* Section 4: Wellness Interests - 完全一样的布局 */}
-          {step === 4 && (
+          {step === 4 && (// TODO 使用 enum来判断
             <div className="space-y-6">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <p className="text-blue-800 text-sm">
@@ -293,6 +300,12 @@ function CustomerRegistrationFlow({ step, formData, onInputChange, onNext, onPre
               </button>
             )}
             <div className="flex-1" />
+
+            {step === 4 && 
+            <button onClick={handleSubmit} className="px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90">
+            Next ARRRR
+          </button>
+            }
             {step < maxSteps ? (
               <button onClick={onNext} className="px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90">
                 Next

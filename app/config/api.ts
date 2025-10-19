@@ -6,7 +6,7 @@ export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 
     (import.meta.env.MODE === "production" 
       ? "https://zendulge-be-production.up.railway.app"
-      : "http://localhost:8000"),
+      : "https://zendulge-be-production.up.railway.app"),
   
   // API version prefix (from environment variable or fallback)
   API_PREFIX: import.meta.env.VITE_API_PREFIX || "/api/v1",
