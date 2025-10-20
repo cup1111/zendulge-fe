@@ -1,4 +1,4 @@
-import { combineClasses } from "~/lib/utils"
+import { combineClasses } from '~/lib/utils';
 
 function Skeleton({
   className,
@@ -6,10 +6,10 @@ function Skeleton({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={combineClasses("animate-pulse rounded-md bg-muted", className)}
+      className={combineClasses('animate-pulse rounded-md bg-muted', className)}
       {...props}
     />
-  )
+  );
 }
 
-export { Skeleton }
+export { Skeleton };

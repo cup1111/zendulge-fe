@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react"
-import { combineClasses } from "~/lib/utils";
+import React, { useEffect, useState } from 'react';
+import { combineClasses } from '~/lib/utils';
 
-export function DropdownMenu({ children }: { children: React.ReactNode }) {
+export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
   const handleMouseEnter = () => {
@@ -25,9 +25,11 @@ export function DropdownMenu({ children }: { children: React.ReactNode }) {
     };
   }, [timeoutId]);
   return (
-    <div className="relative inline-block" 
-    onMouseEnter={handleMouseEnter}
-    onMouseLeave={handleMouseLeave}>
+    <div
+      className='relative inline-block'
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {React.Children.map(children, child =>
         React.isValidElement(child)
           ? React.cloneElement(child as any, { isOpen, setIsOpen })
@@ -35,38 +37,45 @@ export function DropdownMenu({ children }: { children: React.ReactNode }) {
       )}
     </div>
   );
-}
+};
 
-
-export function DropdownMenuContent({ children, align = "center", className, isOpen }: any) {
+export const DropdownMenuContent = ({
+  children,
+  align = 'center',
+  className,
+  isOpen,
+}: any) => {
   if (!isOpen) return null;
-  
-  return (
-    <div
-      className={combineClasses(
-        "absolute z-50 min-w-[200px] rounded-md border bg-white p-1 shadow-md",
-        align === "center" && "left-1/2 -translate-x-1/2",
-        align === "end" && "right-0",
-        align === "start" && "left-0",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
-}
 
-export function DropdownMenuItem({ children, asChild, onClick, className }: any) {
   return (
     <div
       className={combineClasses(
-        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-        "hover:bg-gray-100 transition-colors",
+        'absolute z-50 min-w-[200px] rounded-md border bg-white p-1 shadow-md',
+        align === 'center' && 'left-1/2 -translate-x-1/2',
+        align === 'end' && 'right-0',
+        align === 'start' && 'left-0',
         className
       )}
-      onClick={onClick}
     >
       {children}
     </div>
   );
-}
+};
+
+export const DropdownMenuItem = ({
+  children,
+  asChild: _asChild,
+  onClick,
+  className,
+}: any) => (
+  <div
+    className={combineClasses(
+      'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
+      'hover:bg-gray-100 transition-colors',
+      className
+    )}
+    onClick={onClick}
+  >
+    {children}
+  </div>
+);

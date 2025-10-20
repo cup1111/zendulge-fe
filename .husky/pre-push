@@ -1,0 +1,16 @@
+# Run full quality checks before pushing
+echo "🚀 Running pre-push quality checks..."
+
+# Type check
+echo "🔍 Running TypeScript type check..."
+yarn typecheck
+
+# ESLint errors check (fail if any errors)
+echo "🔍 Running ESLint error check..."
+yarn lint --quiet
+
+# Build check to ensure everything compiles
+echo "🔨 Running build check..."
+yarn build
+
+echo "✅ All quality checks passed! Proceeding with push..."
