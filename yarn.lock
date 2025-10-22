@@ -1630,6 +1630,11 @@
   dependencies:
     tslib "^2.4.0"
 
+"@types/axios@^0.9.36":
+  version "0.9.36"
+  resolved "https://registry.yarnpkg.com/@types/axios/-/axios-0.9.36.tgz#94d156269562c726ce38115aeb8f34f09bfa3cd8"
+  integrity sha512-NLOpedx9o+rxo/X5ChbdiX6mS1atE4WHmEEIcR9NLenRVa5HoVjAvjafwU3FPTqnZEstpoqCaW7fagqSoTDNeg==
+
 "@types/d3-array@^3.0.3":
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/@types/d3-array/-/d3-array-3.2.2.tgz#e02151464d02d4a1b44646d0fcdb93faf88fde8c"
@@ -2271,11 +2276,6 @@ class-variance-authority@^0.7.1:
 classnames@^2.3.2:
   version "2.5.1"
   resolved "https://registry.npmjs.org/classnames/-/classnames-2.5.1.tgz"
-  integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
-
-classnames@^2.5.1:
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.5.1.tgz#ba774c614be0f016da105c858e7159eae8e7687b"
   integrity sha512-saHYOzhIQs6wy2sVxTM6bUDsQO4F50V9RQ22qBpEdCW+I+/Wmke2HOl6lS6dTpdxVhb88/I6+Hs+438c3lfUow==
 
 clsx@^2.1.1:
