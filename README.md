@@ -82,17 +82,17 @@ app/
 
 ## 🔧 Available Scripts
 
-| Script              | Description                              |
-| ------------------- | ---------------------------------------- |
-| `yarn dev`          | Start development server with HMR       |
-| `yarn build`        | Build for production                     |
-| `yarn start`        | Start production server                  |
-| `yarn typecheck`    | Run TypeScript type checking             |
-| `yarn lint`         | Run ESLint                               |
-| `yarn lint:fix`     | Fix auto-fixable ESLint issues           |
-| `yarn format`       | Format code with Prettier                |
-| `yarn format:check` | Check code formatting                    |
-| `yarn quality`      | Run all quality checks                   |
+| Script              | Description                       |
+| ------------------- | --------------------------------- |
+| `yarn dev`          | Start development server with HMR |
+| `yarn build`        | Build for production              |
+| `yarn start`        | Start production server           |
+| `yarn typecheck`    | Run TypeScript type checking      |
+| `yarn lint`         | Run ESLint                        |
+| `yarn lint:fix`     | Fix auto-fixable ESLint issues    |
+| `yarn format`       | Format code with Prettier         |
+| `yarn format:check` | Check code formatting             |
+| `yarn quality`      | Run all quality checks            |
 
 ## 🧪 Testing
 
@@ -149,6 +149,7 @@ docker run -p 5173:5173 zendulge-frontend
 ### Production Deployment
 
 1. **Build the application**:
+
    ```bash
    yarn build
    ```
@@ -179,7 +180,9 @@ build/
 This project uses Husky to enforce code quality standards through git hooks:
 
 ### Pre-commit Hook
+
 Before each commit, the following checks are automatically run:
+
 - **ESLint**: Checks for code style and potential errors
 - **ESLint --quiet**: Ensures no ESLint errors (warnings allowed, but errors block commits)
 
@@ -189,9 +192,11 @@ Before each commit, the following checks are automatically run:
 ```
 
 ### Pre-push Hook
+
 Before each push, comprehensive quality checks are performed:
+
 - **TypeScript type checking**: Ensures no TypeScript errors
-- **ESLint --quiet**: Ensures no ESLint errors  
+- **ESLint --quiet**: Ensures no ESLint errors
 - **Build check**: Verifies the project compiles successfully
 
 ```bash
@@ -202,12 +207,14 @@ Before each push, comprehensive quality checks are performed:
 ## 🎨 Styling & UI Components
 
 ### TailwindCSS Configuration
+
 - **TailwindCSS 4.x**: Latest version with CSS-first configuration
 - **Custom Design System**: Consistent colors, spacing, and typography
 - **Dark Mode Support**: Built-in dark mode capabilities
 - **Responsive Design**: Mobile-first approach
 
 ### UI Component Library
+
 - **Radix UI**: Accessible, unstyled component primitives
 - **Custom Components**: Built on top of Radix with TailwindCSS
 - **Form Components**: React Hook Form integration
@@ -216,6 +223,7 @@ Before each push, comprehensive quality checks are performed:
 ## 📊 Development Guidelines
 
 ### Code Standards
+
 - Follow TypeScript best practices
 - Use React Hook Form for form handling
 - Implement proper error boundaries
@@ -223,12 +231,14 @@ Before each push, comprehensive quality checks are performed:
 - Use semantic HTML elements
 
 ### Component Development
+
 - Create reusable UI components in `app/components/ui/`
 - Follow the established component patterns
 - Use TypeScript interfaces for props
 - Implement proper prop validation
 
 ### State Management
+
 - Use React Router's built-in data loading
 - Implement React Context for global state
 - Use custom hooks for shared logic
@@ -253,10 +263,11 @@ Before each push, comprehensive quality checks are performed:
 ## 📈 Goals & Roadmap
 
 ### Month 1 (Nov 2025)
+
 - ✅ Frontend folder setup (ESLint, TypeScript, security, folder structure)
 - 🚧 Pages implementation:
   - Home page
-  - Login page (customer & business)  
+  - Login page (customer & business)
   - Register page (customer & business)
   - 404 Not Found page
   - Help page
@@ -264,16 +275,19 @@ Before each push, comprehensive quality checks are performed:
 - 🚧 Error handling implementation
 
 ### Month 2 (Dec 2025)
+
 - Deal cards and browsing functionality
 - Categories and filters
 - Advanced UI components
 
-### Month 3 (Jan 2026) 
+### Month 3 (Jan 2026)
+
 - Booking flow implementation
 - Notifications system
 - User dashboard
 
 ### Month 4 (Feb 2026)
+
 - Payment integration (Stripe)
 - Order lifecycle management
 - Final MVP completion

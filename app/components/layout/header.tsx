@@ -1,18 +1,17 @@
 import { Building2, ChevronDown, Users } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { useAuth } from '~/contexts/AuthContext';
 
 export default function Header() {
   const location = useLocation();
-
+  const navigate = useNavigate();
   const { user, currentCompany, companies, setCurrentCompany } = useAuth();
 
   // 静态展示：模拟已登录用户 (fallback for demo)
@@ -21,9 +20,29 @@ export default function Header() {
     firstName: 'Demo',
     lastName: 'User',
     email: 'demo@zendulge.com',
-    role: 'owner' as const,
+    role: 'super_admin' as const,
   };
 
+  // context useCOntext = useAuth()
+  // 1. I need to get the context
+  // 2. you need use a variable call useContext with useAuth function
+
+  // 需要意识到这个问题，这是我惯用的思维模式，最好在写之前想清楚，或者是想明白自己在想什么
+  // 先意识到，然后想办法改正
+
+  // I need to create a variable call authContext which uses the useAuth hook
+  // 1. create a var const/let keyword + variable name +
+  // 2.. If you see there is use keywork this is a hook
+  // 3. normal function that has no 'use' at front cannot use useState or other hooks inside
+  const authContext = useAuth();
+
+  const handleSignOut = () => {
+    authContext.logout();
+  };
+  // 把这个handleSignOut 函数放到sign out Button的onclick变量上
+  const handleLinkToProfile = () => {
+    navigate('/profile');
+  };
   return (
     <header className='fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40'>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -58,7 +77,7 @@ export default function Header() {
           {/* Navigation Links */}
           <nav className='flex space-x-8 ml-12'>
             <Link
-              to='/customer'
+              to='/'
               className={`text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat ${
                 location.pathname === '/customer' ? 'opacity-80' : ''
               }`}
@@ -99,12 +118,11 @@ export default function Header() {
             <div className='flex items-center space-x-2'>
               <Building2 className='w-4 h-4 text-shadow-lavender' />
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='ghost' className='text-shadow-lavender'>
-                    {currentCompany?.name ?? 'Select Company'}
-                    <ChevronDown className='ml-1 h-4 w-4' />
-                  </Button>
-                </DropdownMenuTrigger>
+                <Button variant='ghost' className='text-shadow-lavender'>
+                  {currentCompany?.name ?? 'Select Company'}
+                  <ChevronDown className='ml-1 h-4 w-4' />
+                </Button>
+
                 <DropdownMenuContent align='end'>
                   {companies.map(company => (
                     <DropdownMenuItem
@@ -126,7 +144,7 @@ export default function Header() {
           <div className='flex items-center space-x-4'>
             {!isAuthenticated ? (
               <>
-                <Button variant='default'>
+                <Button variant='secondary'>
                   <Link to='/login'>Sign In</Link>
                 </Button>
                 <Button variant='default'>
@@ -143,21 +161,21 @@ export default function Header() {
 
                 {displayUser.role && (
                   <span className='px-2 py-1 text-xs font-medium bg-shadow-lavender text-white rounded-full capitalize'>
-                    {displayUser.role.replace('_', ' ')}
+                    {displayUser.role === 'super_admin'
+                      ? 'Super Admin'
+                      : displayUser.role}
                   </span>
                 )}
 
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' size='sm'>
-                      <Users className='w-4 h-4' />
-                    </Button>
-                  </DropdownMenuTrigger>
+                  <Button variant='ghost' size='sm'>
+                    <Users className='w-4 h-4' />
+                  </Button>
                   <DropdownMenuContent align='end' className='mt-2 z-50'>
-                    <DropdownMenuItem asChild>
-                      <Link to='/profile'>Profile</Link>
+                    <DropdownMenuItem onClick={handleLinkToProfile}>
+                      <span>Profile</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>
                       <span>Sign Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>

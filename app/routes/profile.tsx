@@ -33,7 +33,6 @@ import {
 import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { useToast } from '~/components/ui/use-toast';
 import {
   mockBusinesses,
   mockUser,
@@ -41,6 +40,8 @@ import {
   type UserProfile,
   type WellnessCategory,
 } from '~/lib/mockData';
+
+import { useToast } from '../hooks/use-toast';
 
 // 表单验证 Schema
 const profileSchema = z.object({
