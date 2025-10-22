@@ -1,4 +1,4 @@
-import React from 'react';
+import { Card, CardContent } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import {
@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import { Card, CardContent } from '~/components/ui/card';
 
 interface AddressData {
   country: string;
@@ -24,15 +23,11 @@ interface AddressData {
 interface SimpleStructuredAddressInputProps {
   value: AddressData;
   onChange: (address: AddressData) => void;
-  country: string;
-  onCountryChange: (country: string) => void;
 }
 
 export default function SimpleStructuredAddressInput({
   value,
   onChange,
-  country,
-  onCountryChange,
 }: SimpleStructuredAddressInputProps) {
   const handleFieldChange = (field: keyof AddressData, newValue: string) => {
     onChange({ ...value, [field]: newValue });

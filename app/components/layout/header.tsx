@@ -1,5 +1,6 @@
 import { Building2, ChevronDown, Users } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router';
+
 import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
@@ -15,23 +16,23 @@ export default function Header() {
 
   // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
-  const displayUser = user || {
+  const displayUser = user ?? {
     firstName: 'Demo',
     lastName: 'User',
     email: 'demo@zendulge.com',
     role: 'super_admin' as const,
   };
 
-  //context useCOntext = useAuth()
-  //1. I need to get the context
-  //2. you need use a variable call useContext with useAuth function
+  // context useCOntext = useAuth()
+  // 1. I need to get the context
+  // 2. you need use a variable call useContext with useAuth function
 
   // 需要意识到这个问题，这是我惯用的思维模式，最好在写之前想清楚，或者是想明白自己在想什么
   // 先意识到，然后想办法改正
 
-  //I need to create a variable call authContext which uses the useAuth hook
-  //1. create a var const/let keyword + variable name +
-  //2.. If you see there is use keywork this is a hook
+  // I need to create a variable call authContext which uses the useAuth hook
+  // 1. create a var const/let keyword + variable name +
+  // 2.. If you see there is use keywork this is a hook
   // 3. normal function that has no 'use' at front cannot use useState or other hooks inside
   const authContext = useAuth();
 
@@ -118,7 +119,7 @@ export default function Header() {
               <Building2 className='w-4 h-4 text-shadow-lavender' />
               <DropdownMenu>
                 <Button variant='ghost' className='text-shadow-lavender'>
-                  {currentCompany?.name || 'Select Company'}
+                  {currentCompany?.name ?? 'Select Company'}
                   <ChevronDown className='ml-1 h-4 w-4' />
                 </Button>
 
@@ -154,7 +155,7 @@ export default function Header() {
               <div className='flex items-center space-x-4'>
                 <span className='text-sm text-gray-600'>
                   {displayUser.firstName
-                    ? `${displayUser.firstName} ${displayUser.lastName || ''}`.trim()
+                    ? `${displayUser.firstName} ${displayUser.lastName ?? ''}`.trim()
                     : displayUser.email}
                 </span>
 

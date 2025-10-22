@@ -1,7 +1,8 @@
+import { CheckCircle, Mail, XCircle } from 'lucide-react';
 import React from 'react';
+
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { Mail, CheckCircle, XCircle } from 'lucide-react';
 
 interface SimpleEmailValidatorProps {
   value: string;
@@ -26,6 +27,13 @@ export default function SimpleEmailValidator({
   const hasError =
     value && value.length > 0 && (!value.includes('@') || !value.includes('.'));
 
+  function emailFieldClass() {
+    const borderClass = 'border-gray-300';
+    if (isValid) return 'border-green-500 focus:border-green-500';
+    if (hasError) return 'border-red-500 focus:border-red-500';
+    return borderClass;
+  }
+
   return (
     <div className='space-y-2'>
       <Label className='flex items-center space-x-2'>
@@ -41,13 +49,7 @@ export default function SimpleEmailValidator({
           value={value}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className={`pl-10 ${
-            isValid
-              ? 'border-green-500 focus:border-green-500'
-              : hasError
-                ? 'border-red-500 focus:border-red-500'
-                : 'border-gray-300'
-          }`}
+          className={emailFieldClass()}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
           <Mail className='h-4 w-4 text-gray-400' />

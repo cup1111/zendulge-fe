@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import { combineClasses } from '~/lib/utils';
 
 export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
@@ -17,13 +18,14 @@ export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
     }, 150); // 150ms 延迟，给用户时间移动鼠标到子元素
     setTimeoutId(id);
   };
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-    };
-  }, [timeoutId]);
+    },
+    [timeoutId]
+  );
   return (
     <div
       className='relative inline-block'

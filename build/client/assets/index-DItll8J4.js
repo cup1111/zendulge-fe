@@ -1,0 +1,1 @@
+import{a as r,z as i}from"./chunk-NISHYRIK-qw7nT2B7.js";import{u as n}from"./index-B5WhblA5.js";var s=r.createContext(void 0);function x(e){const t=r.useContext(s);return e||t||"ltr"}var u=i[" useId ".trim().toString()]||(()=>{}),c=0;function m(e){const[t,o]=r.useState(u());return n(()=>{o(a=>a??String(c++))},[e]),t?`radix-${t}`:""}export{x as a,m as u};

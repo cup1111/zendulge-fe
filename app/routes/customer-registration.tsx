@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+
 import { registerCustomer } from '~/api/register';
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';

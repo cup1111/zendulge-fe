@@ -1,4 +1,6 @@
+import { CheckCircle, Phone, XCircle } from 'lucide-react';
 import React from 'react';
+
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import {
@@ -8,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import { Phone, CheckCircle, XCircle } from 'lucide-react';
 
 interface SimplePhoneValidatorProps {
   value: string;
@@ -60,6 +61,12 @@ export default function SimplePhoneValidator({
   const isValid = value && value.length > 8;
   const hasError = value && value.length > 0 && value.length <= 8;
 
+  function telFieldClass() {
+    if (!value) return 'flex-1 border-green-500 focus:border-green-500';
+    if (hasError) return 'flex-1 border-red-500 focus:border-red-500';
+    return 'flex-1';
+  }
+
   return (
     <div className='space-y-2'>
       <Label className='flex items-center space-x-2'>
@@ -92,13 +99,7 @@ export default function SimplePhoneValidator({
           value={value}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className={`flex-1 ${
-            isValid
-              ? 'border-green-500 focus:border-green-500'
-              : hasError
-                ? 'border-red-500 focus:border-red-500'
-                : ''
-          }`}
+          className={telFieldClass()}
         />
       </div>
 
