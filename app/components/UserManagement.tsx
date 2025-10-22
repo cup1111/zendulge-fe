@@ -1,9 +1,12 @@
 import { Edit2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { API_CONFIG } from '../config/api';
+import api from '../config/axios';
 import {
   UserManagementService,
   type CreateUserRequest,
+  type UpdateUserRequest,
   type Role,
   type User,
 } from '../services/userManagement';
@@ -12,16 +15,31 @@ interface UserManagementProps {
   companyId: string;
 }
 
+// Helper function to capitalize first letter of role names
+const capitalizeFirstLetter = (str: string) => {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+// Interface for operate sites (simplified version for user management)
+interface OperateSite {
+  id: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+}
+
 export default function UserManagement({
   companyId,
 }: Readonly<UserManagementProps>) {
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [operateSites, setOperateSites] = useState<OperateSite[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -37,7 +55,6 @@ export default function UserManagement({
   // Create user form state
   const [createForm, setCreateForm] = useState<CreateUserRequest>({
     email: '',
-    password: '',
     firstName: '',
     lastName: '',
     phoneNumber: '',
@@ -45,6 +62,21 @@ export default function UserManagement({
     department: '',
     location: '',
     role: '',
+    operateSiteIds: [],
+  });
+
+  // Edit user form state
+  const [editForm, setEditForm] = useState<
+    UpdateUserRequest & { operateSiteIds: string[] }
+  >({
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    jobTitle: '',
+    department: '',
+    location: '',
+    role: '',
+    operateSiteIds: [],
   });
 
   // Custom confirmation function
@@ -70,19 +102,41 @@ export default function UserManagement({
     });
   };
 
+  // Function to fetch operate sites
+  const fetchOperateSites = async (
+    companyIdParam: string
+  ): Promise<OperateSite[]> => {
+    const response = await api.get(
+      API_CONFIG.endpoints.company.operateSites(companyIdParam)
+    );
+
+    const sites = response.data.data.operateSites.map(
+      (site: Record<string, unknown>) => ({
+        id: site.id as string,
+        name: site.name as string,
+        address: site.address as string,
+        isActive: site.isActive as boolean,
+      })
+    );
+
+    return sites;
+  };
+
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Load users
-      const usersData = await UserManagementService.getCompanyUsers(companyId);
-
-      // Load roles
-      const rolesData = await UserManagementService.getCompanyRoles(companyId);
+      // Load users, roles, and operate sites
+      const [usersData, rolesData, sitesData] = await Promise.all([
+        UserManagementService.getCompanyUsers(companyId),
+        UserManagementService.getCompanyRoles(companyId),
+        fetchOperateSites(companyId),
+      ]);
 
       setCompanyUsers(usersData);
       setRoles(rolesData);
+      setOperateSites(sitesData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
@@ -103,7 +157,6 @@ export default function UserManagement({
       setShowCreateForm(false);
       setCreateForm({
         email: '',
-        password: '',
         firstName: '',
         lastName: '',
         phoneNumber: '',
@@ -111,6 +164,7 @@ export default function UserManagement({
         department: '',
         location: '',
         role: '',
+        operateSiteIds: [],
       });
       await loadData(); // Refresh the list
     } catch (err) {
@@ -118,21 +172,49 @@ export default function UserManagement({
     }
   };
 
-  const handleUpdateUserRole = async (roleId: string) => {
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    // Populate edit form with current user data
+    setEditForm({
+      firstName: user.firstName ?? '',
+      lastName: user.lastName ?? '',
+      phoneNumber: user.phoneNumber ?? '',
+      jobTitle: user.jobTitle ?? '',
+      department: user.department ?? '',
+      location: user.location ?? '',
+      role: user.role?.id ?? '',
+      operateSiteIds: [], // Note: User's current store access would need to be fetched from API
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!selectedUser) return;
 
     try {
       setError(null);
-      await UserManagementService.updateCompanyUserRole(
+      await UserManagementService.updateCompanyUser(
         companyId,
         selectedUser.id,
-        { role: roleId }
+        editForm
       );
-      setShowRoleModal(false);
+      setShowEditModal(false);
       setSelectedUser(null);
+      // Reset form
+      setEditForm({
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        jobTitle: '',
+        department: '',
+        location: '',
+        role: '',
+        operateSiteIds: [],
+      });
       await loadData(); // Refresh the list
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update role');
+      setError(err instanceof Error ? err.message : 'Failed to update user');
     }
   };
 
@@ -171,7 +253,7 @@ export default function UserManagement({
         <button
           onClick={() => setShowCreateForm(true)}
           type='button'
-          className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700'
+          className='bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 cursor-pointer'
         >
           Add User
         </button>
@@ -226,7 +308,9 @@ export default function UserManagement({
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <div className='text-sm text-gray-900'>
-                    {user.role?.name ?? 'No role assigned'}
+                    {user.role?.name
+                      ? capitalizeFirstLetter(user.role.name)
+                      : 'No role assigned'}
                   </div>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
@@ -234,34 +318,26 @@ export default function UserManagement({
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       user.active
                         ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
-                    {user.active ? 'Active' : 'Inactive'}
+                    {user.active ? 'Active' : 'Email Unverified'}
                   </span>
-                  {!user.isEmailVerified && (
-                    <span className='ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800'>
-                      Email Unverified
-                    </span>
-                  )}
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
                   <button
                     type='button'
-                    onClick={() => {
-                      setSelectedUser(user);
-                      setShowRoleModal(true);
-                    }}
-                    className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors'
-                    title='Edit Role'
+                    onClick={() => handleEditUser(user)}
+                    className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors cursor-pointer'
+                    title='Edit User'
                   >
                     <Edit2 className='w-4 h-4 mr-1' />
-                    Edit Role
+                    Edit User
                   </button>
                   <button
                     type='button'
                     onClick={() => handleDeleteUser(user)}
-                    className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors'
+                    className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors cursor-pointer'
                     title='Delete User'
                   >
                     <Trash2 className='w-4 h-4 mr-1' />
@@ -299,24 +375,6 @@ export default function UserManagement({
                   value={createForm.email}
                   onChange={e =>
                     setCreateForm({ ...createForm, email: e.target.value })
-                  }
-                  className='w-full border border-gray-300 rounded-lg px-3 py-2'
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor='password'
-                  className='block text-sm font-medium text-gray-700 mb-1'
-                >
-                  Password *
-                </label>
-                <input
-                  id='password'
-                  type='password'
-                  required
-                  value={createForm.password}
-                  onChange={e =>
-                    setCreateForm({ ...createForm, password: e.target.value })
                   }
                   className='w-full border border-gray-300 rounded-lg px-3 py-2'
                 />
@@ -421,22 +479,70 @@ export default function UserManagement({
                   <option value=''>Select a role</option>
                   {roles.map(role => (
                     <option key={role.id} value={role.id}>
-                      {role.name}
+                      {capitalizeFirstLetter(role.name)}
                     </option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Store Access
+                </label>
+                <div className='space-y-2 max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-2'>
+                  {operateSites.some(site => site.isActive) ? (
+                    operateSites
+                      .filter(site => site.isActive)
+                      .map(site => (
+                        <label key={site.id} className='flex items-center'>
+                          <input
+                            type='checkbox'
+                            checked={
+                              createForm.operateSiteIds?.includes(site.id) ??
+                              false
+                            }
+                            onChange={e => {
+                              const isChecked = e.target.checked;
+                              const currentSites =
+                                createForm.operateSiteIds ?? [];
+                              const newSites = isChecked
+                                ? [...currentSites, site.id]
+                                : currentSites.filter(id => id !== site.id);
+                              setCreateForm({
+                                ...createForm,
+                                operateSiteIds: newSites,
+                              });
+                            }}
+                            className='mr-2'
+                          />
+                          <span className='text-sm'>
+                            {site.name}
+                            <span className='text-xs text-gray-500 ml-1'>
+                              ({site.address})
+                            </span>
+                          </span>
+                        </label>
+                      ))
+                  ) : (
+                    <p className='text-sm text-gray-500'>
+                      No active stores available
+                    </p>
+                  )}
+                </div>
+                <p className='text-xs text-gray-500 mt-1'>
+                  Select which stores this user can access and manage
+                </p>
               </div>
               <div className='flex justify-end space-x-3 pt-4'>
                 <button
                   type='button'
                   onClick={() => setShowCreateForm(false)}
-                  className='px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50'
+                  className='px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer'
                 >
                   Cancel
                 </button>
                 <button
                   type='submit'
-                  className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+                  className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer'
                 >
                   Create User
                 </button>
@@ -447,42 +553,191 @@ export default function UserManagement({
         </div>
       )}
 
-      {/* Role Assignment Modal */}
-      {showRoleModal && selectedUser && (
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-          <div className='bg-white rounded-lg p-6 w-full max-w-md'>
+          <div className='bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
             <h3 className='text-lg font-semibold mb-4'>
-              Update Role for {selectedUser.firstName} {selectedUser.lastName}
+              Edit User: {selectedUser.firstName} {selectedUser.lastName}
             </h3>
-            <div className='space-y-3'>
-              {roles.map(role => (
+            {/* eslint-disable jsx-a11y/label-has-associated-control */}
+            <form onSubmit={handleUpdateUser} className='space-y-4'>
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    htmlFor='editFirstName'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    First Name *
+                  </label>
+                  <input
+                    id='editFirstName'
+                    type='text'
+                    required
+                    value={editForm.firstName}
+                    onChange={e =>
+                      setEditForm({ ...editForm, firstName: e.target.value })
+                    }
+                    className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor='editLastName'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Last Name *
+                  </label>
+                  <input
+                    id='editLastName'
+                    type='text'
+                    required
+                    value={editForm.lastName}
+                    onChange={e =>
+                      setEditForm({ ...editForm, lastName: e.target.value })
+                    }
+                    className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  />
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                <div>
+                  <label
+                    htmlFor='editPhoneNumber'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    id='editPhoneNumber'
+                    type='tel'
+                    value={editForm.phoneNumber}
+                    onChange={e =>
+                      setEditForm({ ...editForm, phoneNumber: e.target.value })
+                    }
+                    className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor='editJobTitle'
+                    className='block text-sm font-medium text-gray-700 mb-1'
+                  >
+                    Job Title
+                  </label>
+                  <input
+                    id='editJobTitle'
+                    type='text'
+                    value={editForm.jobTitle}
+                    onChange={e =>
+                      setEditForm({ ...editForm, jobTitle: e.target.value })
+                    }
+                    className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor='editRole'
+                  className='block text-sm font-medium text-gray-700 mb-1'
+                >
+                  Role *
+                </label>
+                <select
+                  id='editRole'
+                  required
+                  value={editForm.role}
+                  onChange={e =>
+                    setEditForm({ ...editForm, role: e.target.value })
+                  }
+                  className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                >
+                  <option value=''>Select a role</option>
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>
+                      {capitalizeFirstLetter(role.name)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Store Access Section */}
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>
+                  Store Access
+                </label>
+                <div className='max-h-32 overflow-y-auto border border-gray-300 rounded-lg p-3 space-y-2'>
+                  {operateSites.length === 0 ? (
+                    <p className='text-sm text-gray-500'>
+                      No operate sites available
+                    </p>
+                  ) : (
+                    operateSites.map(site => (
+                      <label
+                        key={site.id}
+                        className='flex items-center space-x-2 cursor-pointer'
+                      >
+                        <input
+                          type='checkbox'
+                          checked={editForm.operateSiteIds?.includes(site.id)}
+                          onChange={e => {
+                            const currentIds = editForm.operateSiteIds ?? [];
+                            if (e.target.checked) {
+                              setEditForm({
+                                ...editForm,
+                                operateSiteIds: [...currentIds, site.id],
+                              });
+                            } else {
+                              setEditForm({
+                                ...editForm,
+                                operateSiteIds: currentIds.filter(
+                                  id => id !== site.id
+                                ),
+                              });
+                            }
+                          }}
+                          className='rounded border-gray-300'
+                        />
+                        <span className='text-sm'>
+                          {site.name} - {site.address}
+                        </span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className='flex justify-end space-x-3 pt-4'>
                 <button
                   type='button'
-                  key={role.id}
-                  onClick={() => handleUpdateUserRole(role.id)}
-                  className='w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50'
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setSelectedUser(null);
+                    setEditForm({
+                      firstName: '',
+                      lastName: '',
+                      phoneNumber: '',
+                      jobTitle: '',
+                      department: '',
+                      location: '',
+                      role: '',
+                      operateSiteIds: [],
+                    });
+                  }}
+                  className='px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer'
                 >
-                  <div className='font-medium'>{role.name}</div>
-                  {role.description && (
-                    <div className='text-sm text-gray-500'>
-                      {role.description}
-                    </div>
-                  )}
+                  Cancel
                 </button>
-              ))}
-            </div>
-            <div className='flex justify-end pt-4'>
-              <button
-                type='button'
-                onClick={() => {
-                  setShowRoleModal(false);
-                  setSelectedUser(null);
-                }}
-                className='px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50'
-              >
-                Cancel
-              </button>
-            </div>
+                <button
+                  type='submit'
+                  className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer'
+                >
+                  Update User
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -499,7 +754,7 @@ export default function UserManagement({
               <button
                 type='button'
                 onClick={hideConfirmation}
-                className='px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50'
+                className='px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer'
               >
                 Cancel
               </button>
@@ -509,7 +764,7 @@ export default function UserManagement({
                   confirmDialog.onConfirm();
                   hideConfirmation();
                 }}
-                className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+                className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 cursor-pointer'
               >
                 Confirm
               </button>
