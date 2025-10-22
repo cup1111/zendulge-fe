@@ -1,14 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { combineClasses } from '~/lib/utils';
 
 export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const handleMouseEnter = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      setTimeoutId(null);
+    }
+    setIsOpen(true);
+  };
+  const handleMouseLeave = () => {
+    const id = setTimeout(() => {
+      setIsOpen(false);
+    }, 150); // 150ms 延迟，给用户时间移动鼠标到子元素
+    setTimeoutId(id);
+  };
+  useEffect(
+    () => () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    },
+    [timeoutId]
+  );
   return (
     <div
       className='relative inline-block'
-      onMouseLeave={() => setIsOpen(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {React.Children.map(children, child =>
         React.isValidElement(child)
@@ -18,21 +40,6 @@ export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
     </div>
   );
 };
-
-export const DropdownMenuTrigger = ({
-  children,
-  asChild: _asChild,
-  isOpen,
-  setIsOpen,
-}: any) => (
-  <div
-    onMouseEnter={() => setIsOpen(true)}
-    onClick={() => setIsOpen(!isOpen)}
-    className='cursor-pointer'
-  >
-    {children}
-  </div>
-);
 
 export const DropdownMenuContent = ({
   children,
