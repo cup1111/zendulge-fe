@@ -8,7 +8,8 @@ import SimpleStructuredAddressInput from '~/components/validator/SimpleAddressIn
 import SimpleEmailValidator from '~/components/validator/SimpleEmailInput';
 import SimplePhoneValidator from '~/components/validator/SimplePhoneInput';
 
-// 服务类别常量（直接在页面中定义）
+// why 能不能直接造小表单，这样就可以直接每一步存储了？
+
 const WELLNESS_CATEGORIES = [
   'massage',
   'yoga',

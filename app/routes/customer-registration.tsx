@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { registerCustomer } from '~/api/register';
 import appIcon from '~/assets/app-icon.png';
@@ -12,9 +12,19 @@ export default function CustomerRegistration() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
   });
+
+  const navigatory = useNavigate();
+
   const handleSubmit = async () => {
-    await registerCustomer(formData);
+    const submitForm = { email: formData.email, password: formData.password };
+    const response = await registerCustomer(submitForm);
+    if (response.success) {
+      navigatory('/customer-registration-validate', {
+        state: { email: submitForm.email },
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -76,6 +86,9 @@ export default function CustomerRegistration() {
                 className='h-12 text-base'
                 type='Password'
                 placeholder='Confirm Password'
+                onChange={e =>
+                  handleInputChange('confirm-password', e.target.value)
+                }
               />
               <Button
                 variant='default'
