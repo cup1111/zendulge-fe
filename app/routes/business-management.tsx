@@ -90,6 +90,15 @@ async function fetchBusinessStats(): Promise<BusinessStats> {
   return mockBusinessStats;
 }
 
+// Helper function to format status with proper capitalization
+function formatStatus(status: string): string {
+  return status
+    .replace('_', ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 // Helper function to format operating hours
 function formatOperatingHours(hours: Record<string, unknown>): string {
   if (!hours) return 'Not configured';
@@ -631,7 +640,7 @@ export default function BusinessManagement() {
                               return 'bg-gray-100 text-gray-800';
                             })()}`}
                           >
-                            {site.status.replace('_', ' ')}
+                            {formatStatus(site.status)}
                           </span>
                         </div>
                       </div>

@@ -27,7 +27,6 @@ export interface Role {
 
 export interface CreateUserRequest {
   email: string;
-  password: string;
   firstName: string;
   lastName: string;
   phoneNumber?: string;
@@ -35,10 +34,22 @@ export interface CreateUserRequest {
   department?: string;
   location?: string;
   role: string; // Role ID
+  operateSiteIds?: string[]; // Array of operate site IDs the user has access to
 }
 
 export interface UpdateUserRoleRequest {
   role: string; // Role ID
+}
+
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  jobTitle?: string;
+  department?: string;
+  location?: string;
+  role?: string; // Role ID
+  operateSiteIds?: string[]; // Array of operate site IDs the user has access to
 }
 
 export interface ApiResponse<T> {
@@ -55,7 +66,7 @@ export class UserManagementService {
    */
   static async getCompanyUsers(companyId: string): Promise<User[]> {
     const response = await api.get<User[]>(
-      API_CONFIG.endpoints.company.users(companyId)
+      API_CONFIG.endpoints.company.getUsers(companyId)
     );
     return response.data;
   }
@@ -81,7 +92,7 @@ export class UserManagementService {
     userData: CreateUserRequest
   ): Promise<User> {
     const response = await api.post<User>(
-      API_CONFIG.endpoints.company.users(companyId),
+      API_CONFIG.endpoints.company.inviteUser(companyId),
       userData
     );
     return response.data;
@@ -98,6 +109,21 @@ export class UserManagementService {
     const response = await api.patch<User>(
       API_CONFIG.endpoints.company.userRole(companyId, userId),
       roleData
+    );
+    return response.data;
+  }
+
+  /**
+   * Update a user's information in a company
+   */
+  static async updateCompanyUser(
+    companyId: string,
+    userId: string,
+    userData: UpdateUserRequest
+  ): Promise<User> {
+    const response = await api.patch<User>(
+      API_CONFIG.endpoints.company.user(companyId, userId),
+      userData
     );
     return response.data;
   }
