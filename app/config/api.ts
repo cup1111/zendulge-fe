@@ -24,6 +24,7 @@ export const API_CONFIG = {
       logout: '/logout',
       refresh: '/refresh-token',
       profile: '/me',
+      role: (companyId: string) => `/company/${companyId}/me/role`,
     },
     company: {
       operateSites: (companyId: string) =>

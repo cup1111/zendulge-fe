@@ -47,32 +47,6 @@ jobs:
           distribution_id: E28E7CS1KHPD0K
           paths: /*
 
-  build_staging:
-    docker:
-      - image: cimg/node:22.20.0-browsers
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
-      - run: yarn install
-      - save_cache:
-          paths:
-            - node_modules
-            - ~/.npm
-            - ~/.cache
-          key: v1-dependencies-{{ checksum "package.json" }}
-      - run: yarn build
-      - aws-s3/copy:
-          from: build/
-          to: s3://staging.techscrumapp.com
-          arguments: --recursive
-      - aws-cloudfront/invalidate:
-          distribution_id: E28E7CS1KHPD0K
-          paths: /*
-
   build_dev:
     docker:
       - image: cimg/node:22.20.0-browsers
@@ -92,8 +66,8 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
       - run: yarn build
       - aws-s3/copy:
-          from: build/
-          to: s3://dev.techscrumapp.com
+          from: build/client
+          to: s3://zendulge.0l00000l.com
           arguments: --recursive
       - aws-cloudfront/invalidate:
           distribution_id: E28E7CS1KHPD0K
@@ -198,14 +172,6 @@ workflows:
             branches:
               only:
                 - main
-      - build_staging:
-          requires:
-            - sast
-            - dast
-          filters:
-            branches:
-              only:
-                - staging
       - build_dev:
           requires:
             - sast

@@ -10,6 +10,8 @@ import React, {
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 
+import type { UserRole } from '../constants/enums';
+
 interface Company {
   id: string;
   name: string;
@@ -22,7 +24,7 @@ interface User {
   lastName?: string;
   userName?: string;
   avatarIcon?: string;
-  role?: string;
+  role?: { slug: UserRole; name: string; id: string };
   companies: Company[];
 }
 
@@ -64,13 +66,29 @@ function decodeJWTUser(token: string): User | null {
       lastName: payload.lastName,
       userName: payload.userName,
       avatarIcon: payload.avatarIcon,
-      role: payload.role,
       companies: payload.companies || [],
     };
   } catch (error) {
     console.error('Error decoding JWT:', error);
     return null;
   }
+}
+
+function getCurrentCompany(userData: User): Company | null {
+  const savedCurrentCompany = localStorage.getItem('currentCompany');
+  if (savedCurrentCompany) {
+    try {
+      return JSON.parse(savedCurrentCompany);
+    } catch {
+      // Ignore parse error, fallback to first company
+    }
+  }
+  if (userData.companies && userData.companies.length > 0) {
+    const [firstCompany] = userData.companies;
+    localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
+    return firstCompany;
+  }
+  return null;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
@@ -161,24 +179,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
 
-        // Token is valid, set user data
-        setUserState(userData);
-
         // Load saved company or auto-select first one
-        const savedCurrentCompany = localStorage.getItem('currentCompany');
-        if (savedCurrentCompany) {
-          try {
-            const parsedCompany = JSON.parse(savedCurrentCompany);
-            setCurrentCompanyState(parsedCompany);
-          } catch (error) {
-            console.error('Error parsing saved company:', error);
-          }
-        } else if (userData.companies && userData.companies.length > 0) {
-          // Auto-select first company if none selected
-          const firstCompany = userData.companies[0];
-          setCurrentCompanyState(firstCompany);
-          localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
-        }
+        const company = getCurrentCompany(userData);
+        setCurrentCompanyState(company);
+
+        const response = await zendulgeAxios.get(
+          API_CONFIG.endpoints.auth.role(company?.id ?? '')
+        );
+        // Token is valid, set user data
+        setUserState({ ...userData, role: response.data.role });
       } catch (error) {
         console.error('Error initializing auth:', error);
         logout();

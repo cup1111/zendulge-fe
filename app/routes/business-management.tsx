@@ -27,6 +27,7 @@ import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
+import { OperatingSiteStatus, UserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import {
   mockActiveDeals,
@@ -53,7 +54,7 @@ interface OperatingSite {
   address: string;
   phone: string;
   email: string;
-  status: 'active' | 'inactive' | 'opening_soon';
+  status: OperatingSiteStatus;
   manager: string;
   services: string[];
   hours: string;
@@ -91,7 +92,7 @@ async function fetchBusinessStats(): Promise<BusinessStats> {
 }
 
 // Helper function to format status with proper capitalization
-function formatStatus(status: string): string {
+function formatStatus(status: OperatingSiteStatus): string {
   return status
     .replace('_', ' ')
     .split(' ')
@@ -137,23 +138,28 @@ async function fetchOperatingSites(
   const result = response.data;
 
   // Transform backend data to match frontend interface
-  const sites = result.data.operateSites.map(
-    (site: Record<string, unknown>) => ({
-      id: site.id,
-      name: site.name,
-      address: site.address,
-      phone: site.phoneNumber,
-      email: site.emailAddress,
-      status: site.isActive ? 'active' : 'inactive',
-      manager: 'To be assigned', // Backend doesn't have manager field yet
-      services: ['To be configured'], // Backend doesn't have services field yet
-      hours: formatOperatingHours(
-        (site.operatingHours as Record<string, unknown>) || {}
-      ),
-      revenue: '$0', // Backend doesn't track revenue yet
-      bookings: 0, // Backend doesn't track bookings yet
-    })
-  );
+  const sites = result.data.operateSites.map((site: any) => ({
+    id: site.id,
+    name: site.name,
+    address: site.address,
+    phone: site.phoneNumber ?? '',
+    email: site.emailAddress ?? '',
+    status: site.isActive
+      ? OperatingSiteStatus.Active
+      : OperatingSiteStatus.Inactive,
+    manager:
+      site.members && site.members.length > 0
+        ? `${site.members[0].firstName || ''} ${site.members[0].lastName || ''}`.trim() ||
+          'To be assigned'
+        : 'To be assigned',
+    services:
+      site.services && Array.isArray(site.services) && site.services.length > 0
+        ? site.services
+        : ['To be configured'],
+    hours: formatOperatingHours(site.operatingHours || {}),
+    revenue: site.revenue ? `$${site.revenue}` : '$0',
+    bookings: site.bookings ?? 0,
+  }));
 
   return sites;
 }
@@ -238,7 +244,7 @@ export default function BusinessManagement() {
 
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Re-run when auth state changes
+  }, [isLoading]); // Re-run when auth state changes
 
   if (isLoading || dataLoading) {
     return (
@@ -322,7 +328,12 @@ export default function BusinessManagement() {
                     ${businessStats?.totalRevenue.toLocaleString()}
                   </p>
                   <p
-                    className={`text-sm ${businessStats?.revenueGrowth && businessStats.revenueGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-sm ${
+                      businessStats?.revenueGrowth &&
+                      businessStats.revenueGrowth > 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
                   >
                     {businessStats?.revenueGrowth &&
                     businessStats.revenueGrowth > 0
@@ -345,7 +356,12 @@ export default function BusinessManagement() {
                     {businessStats?.totalBookings}
                   </p>
                   <p
-                    className={`text-sm ${businessStats?.bookingsGrowth && businessStats.bookingsGrowth > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-sm ${
+                      businessStats?.bookingsGrowth &&
+                      businessStats.bookingsGrowth > 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
                   >
                     {businessStats?.bookingsGrowth &&
                     businessStats.bookingsGrowth > 0
@@ -590,164 +606,172 @@ export default function BusinessManagement() {
       {/* Users Management Section */}
       <section className='py-8 border-t border-gray-200 bg-white'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          {currentCompany?.id && (
-            <UserManagement companyId={currentCompany.id} />
+          {currentCompany?.id && user?.id && (
+            <UserManagement
+              companyId={currentCompany.id}
+              excludeUserId={user.id}
+            />
           )}
         </div>
       </section>
 
-      {/* Operating Sites Section */}
-      <section className='py-8 border-t border-gray-200 bg-gray-50'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='mb-8'>
-            <div className='flex items-center justify-between mb-6'>
-              <div>
-                <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
-                  Operating Sites
-                </h2>
-                <p className='text-gray-600'>
-                  Manage all business locations and their details
-                </p>
-              </div>
-              <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                <Plus className='w-4 h-4 mr-2' />
-                Add Location
-              </Button>
-            </div>
-
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {operatingSites.length > 0 ? (
-                operatingSites.map(site => (
-                  <div
-                    key={site.id}
-                    className='bg-white border border-gray-200 rounded-lg p-6'
-                  >
-                    <div className='flex items-start justify-between mb-4'>
-                      <div className='flex items-center'>
-                        <div className='w-12 h-12 bg-shadow-lavender/10 rounded-lg flex items-center justify-center mr-3'>
-                          <Building2 className='w-6 h-6 text-shadow-lavender' />
-                        </div>
-                        <div>
-                          <h3 className='text-lg font-semibold text-gray-900 mb-1'>
-                            {site.name}
-                          </h3>
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
-                              if (site.status === 'active')
-                                return 'bg-green-100 text-green-800';
-                              if (site.status === 'opening_soon')
-                                return 'bg-yellow-100 text-yellow-800';
-                              return 'bg-gray-100 text-gray-800';
-                            })()}`}
-                          >
-                            {formatStatus(site.status)}
-                          </span>
-                        </div>
-                      </div>
-                      <Button variant='ghost' size='sm'>
-                        <MoreHorizontal className='w-4 h-4' />
-                      </Button>
-                    </div>
-
-                    <div className='space-y-3 mb-4'>
-                      <div className='flex items-start'>
-                        <MapPin className='w-4 h-4 mr-2 text-gray-400 mt-0.5' />
-                        <div>
-                          <p className='text-sm text-gray-900'>
-                            {site.address}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center'>
-                        <Phone className='w-4 h-4 mr-2 text-gray-400' />
-                        <p className='text-sm text-gray-900'>{site.phone}</p>
-                      </div>
-
-                      <div className='flex items-center'>
-                        <Mail className='w-4 h-4 mr-2 text-gray-400' />
-                        <p className='text-sm text-gray-900'>{site.email}</p>
-                      </div>
-
-                      <div className='flex items-center'>
-                        <Users className='w-4 h-4 mr-2 text-gray-400' />
-                        <p className='text-sm text-gray-900'>
-                          Manager: {site.manager}
-                        </p>
-                      </div>
-
-                      <div className='flex items-center'>
-                        <Clock className='w-4 h-4 mr-2 text-gray-400' />
-                        <p className='text-sm text-gray-900'>{site.hours}</p>
-                      </div>
-                    </div>
-
-                    <div className='mb-4'>
-                      <p className='text-sm font-medium text-gray-900 mb-2'>
-                        Services:
-                      </p>
-                      <div className='flex flex-wrap gap-1'>
-                        {site.services.map(service => (
-                          <span
-                            key={service}
-                            className='inline-flex px-2 py-1 text-xs font-medium bg-shadow-lavender/10 text-shadow-lavender rounded-full'
-                          >
-                            {service}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {site.status === 'active' && (
-                      <div className='grid grid-cols-2 gap-4 mb-4'>
-                        <div className='text-center p-3 bg-gray-50 rounded-lg'>
-                          <p className='text-sm text-gray-600'>Revenue</p>
-                          <p className='text-lg font-semibold text-gray-900'>
-                            {site.revenue}
-                          </p>
-                        </div>
-                        <div className='text-center p-3 bg-gray-50 rounded-lg'>
-                          <p className='text-sm text-gray-600'>Bookings</p>
-                          <p className='text-lg font-semibold text-gray-900'>
-                            {site.bookings}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className='flex gap-2'>
-                      <Button
-                        variant='ghost'
-                        className='flex-1 border border-gray-300 hover:bg-gray-50'
-                      >
-                        <Eye className='w-4 h-4 mr-2' />
-                        View Details
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        className='flex-1 border border-gray-300 hover:bg-gray-50'
-                      >
-                        <Edit3 className='w-4 h-4 mr-2' />
-                        Edit
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className='col-span-full text-center py-12'>
-                  <Building2 className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-                  <p className='text-gray-500 text-lg'>
-                    No operating sites found
-                  </p>
-                  <p className='text-gray-400 text-sm'>
-                    Add your first location to get started
+      {/* Operating Sites Section (only for owner) */}
+      {user?.role?.slug === UserRole.Owner && (
+        <section className='py-8 border-t border-gray-200 bg-gray-50'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            <div className='mb-8'>
+              <div className='flex items-center justify-between mb-6'>
+                <div>
+                  <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
+                    Operating Sites
+                  </h2>
+                  <p className='text-gray-600'>
+                    Manage all business locations and their details
                   </p>
                 </div>
-              )}
+                <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
+                  <Plus className='w-4 h-4 mr-2' />
+                  Add Location
+                </Button>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                {operatingSites.length > 0 ? (
+                  operatingSites.map(site => (
+                    <div
+                      key={site.id}
+                      className='bg-white border border-gray-200 rounded-lg p-6'
+                    >
+                      <div className='flex items-start justify-between mb-4'>
+                        <div className='flex items-center'>
+                          <div className='w-12 h-12 bg-shadow-lavender/10 rounded-lg flex items-center justify-center mr-3'>
+                            <Building2 className='w-6 h-6 text-shadow-lavender' />
+                          </div>
+                          <div>
+                            <h3 className='text-lg font-semibold text-gray-900 mb-1'>
+                              {site.name}
+                            </h3>
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
+                                if (site.status === OperatingSiteStatus.Active)
+                                  return 'bg-green-100 text-green-800';
+                                if (
+                                  site.status ===
+                                  OperatingSiteStatus.OpeningSoon
+                                )
+                                  return 'bg-yellow-100 text-yellow-800';
+                                return 'bg-gray-100 text-gray-800';
+                              })()}`}
+                            >
+                              {formatStatus(site.status)}
+                            </span>
+                          </div>
+                        </div>
+                        <Button variant='ghost' size='sm'>
+                          <MoreHorizontal className='w-4 h-4' />
+                        </Button>
+                      </div>
+
+                      <div className='space-y-3 mb-4'>
+                        <div className='flex items-start'>
+                          <MapPin className='w-4 h-4 mr-2 text-gray-400 mt-0.5' />
+                          <div>
+                            <p className='text-sm text-gray-900'>
+                              {site.address}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className='flex items-center'>
+                          <Phone className='w-4 h-4 mr-2 text-gray-400' />
+                          <p className='text-sm text-gray-900'>{site.phone}</p>
+                        </div>
+
+                        <div className='flex items-center'>
+                          <Mail className='w-4 h-4 mr-2 text-gray-400' />
+                          <p className='text-sm text-gray-900'>{site.email}</p>
+                        </div>
+
+                        <div className='flex items-center'>
+                          <Users className='w-4 h-4 mr-2 text-gray-400' />
+                          <p className='text-sm text-gray-900'>
+                            Manager: {site.manager}
+                          </p>
+                        </div>
+
+                        <div className='flex items-center'>
+                          <Clock className='w-4 h-4 mr-2 text-gray-400' />
+                          <p className='text-sm text-gray-900'>{site.hours}</p>
+                        </div>
+                      </div>
+
+                      <div className='mb-4'>
+                        <p className='text-sm font-medium text-gray-900 mb-2'>
+                          Services:
+                        </p>
+                        <div className='flex flex-wrap gap-1'>
+                          {site.services.map(service => (
+                            <span
+                              key={service}
+                              className='inline-flex px-2 py-1 text-xs font-medium bg-shadow-lavender/10 text-shadow-lavender rounded-full'
+                            >
+                              {service}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {site.status === OperatingSiteStatus.Active && (
+                        <div className='grid grid-cols-2 gap-4 mb-4'>
+                          <div className='text-center p-3 bg-gray-50 rounded-lg'>
+                            <p className='text-sm text-gray-600'>Revenue</p>
+                            <p className='text-lg font-semibold text-gray-900'>
+                              {site.revenue}
+                            </p>
+                          </div>
+                          <div className='text-center p-3 bg-gray-50 rounded-lg'>
+                            <p className='text-sm text-gray-600'>Bookings</p>
+                            <p className='text-lg font-semibold text-gray-900'>
+                              {site.bookings}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className='flex gap-2'>
+                        <Button
+                          variant='ghost'
+                          className='flex-1 border border-gray-300 hover:bg-gray-50'
+                        >
+                          <Eye className='w-4 h-4 mr-2' />
+                          View Details
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          className='flex-1 border border-gray-300 hover:bg-gray-50'
+                        >
+                          <Edit3 className='w-4 h-4 mr-2' />
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className='col-span-full text-center py-12'>
+                    <Building2 className='w-16 h-16 text-gray-400 mx-auto mb-4' />
+                    <p className='text-gray-500 text-lg'>
+                      No operating sites found
+                    </p>
+                    <p className='text-gray-400 text-sm'>
+                      Add your first location to get started
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Business Info Section */}
       <section className='py-8 border-t border-gray-200 bg-white'>
