@@ -1,6 +1,8 @@
 import { Edit2, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
+import { useAuth } from '~/contexts/AuthContext';
+
 import { API_CONFIG } from '../config/api';
 import api from '../config/axios';
 import {
@@ -13,6 +15,7 @@ import {
 
 interface UserManagementProps {
   companyId: string;
+  excludeUserId?: string;
 }
 
 // Helper function to capitalize first letter of role names
@@ -32,7 +35,9 @@ interface OperateSite {
 
 export default function UserManagement({
   companyId,
+  excludeUserId,
 }: Readonly<UserManagementProps>) {
+  const { user } = useAuth();
   const [companyUsers, setCompanyUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [operateSites, setOperateSites] = useState<OperateSite[]>([]);
@@ -176,24 +181,26 @@ export default function UserManagement({
     }
   };
 
-  const handleEditUser = (user: User) => {
-    setSelectedUser(user);
+  const handleEditUser = (targetUser: User) => {
+    setSelectedUser(targetUser);
     // Find all operateSites where this user is a member
     const assignedSiteIds = operateSites
       .filter(
         site =>
           Array.isArray(site.members) &&
-          site.members.some((member: { id: string }) => member.id === user.id)
+          site.members.some(
+            (member: { id: string }) => member.id === targetUser.id
+          )
       )
       .map(site => site.id);
     setEditForm({
-      firstName: user.firstName ?? '',
-      lastName: user.lastName ?? '',
-      phoneNumber: user.phoneNumber ?? '',
-      jobTitle: user.jobTitle ?? '',
-      department: user.department ?? '',
-      location: user.location ?? '',
-      role: user.role?.id ?? '',
+      firstName: targetUser.firstName ?? '',
+      lastName: targetUser.lastName ?? '',
+      phoneNumber: targetUser.phoneNumber ?? '',
+      jobTitle: targetUser.jobTitle ?? '',
+      department: targetUser.department ?? '',
+      location: targetUser.location ?? '',
+      role: targetUser.role?.id ?? '',
       operateSiteIds: assignedSiteIds,
     });
     setShowEditModal(true);
@@ -229,14 +236,17 @@ export default function UserManagement({
     }
   };
 
-  const handleDeleteUser = async (user: User) => {
+  const handleDeleteUser = async (targetUser: User) => {
     showConfirmation(
       'Delete User',
-      `Are you sure you want to delete ${user.firstName} ${user.lastName}? This action cannot be undone.`,
+      `Are you sure you want to delete ${targetUser.firstName} ${targetUser.lastName}? This action cannot be undone.`,
       async () => {
         try {
           setError(null);
-          await UserManagementService.deleteCompanyUser(companyId, user.id);
+          await UserManagementService.deleteCompanyUser(
+            companyId,
+            targetUser.id
+          );
           await loadData(); // Refresh the list
         } catch (err) {
           setError(
@@ -297,66 +307,70 @@ export default function UserManagement({
             </tr>
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
-            {companyUsers?.map(user => (
-              <tr key={user.id}>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div>
-                    <div className='text-sm font-medium text-gray-900'>
-                      {user.firstName} {user.lastName}
+            {companyUsers
+              .filter(u => !excludeUserId || u.id !== excludeUserId)
+              .map(companyUser => (
+                <tr key={companyUser.id}>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div>
+                      <div className='text-sm font-medium text-gray-900'>
+                        {companyUser.firstName} {companyUser.lastName}
+                      </div>
+                      <div className='text-sm text-gray-500'>
+                        {companyUser.email}
+                      </div>
+                      {companyUser.phoneNumber && (
+                        <div className='text-xs text-gray-400'>
+                          📞 {companyUser.phoneNumber}
+                        </div>
+                      )}
+                      {companyUser.jobTitle && (
+                        <div className='text-xs text-gray-400'>
+                          {companyUser.jobTitle}
+                        </div>
+                      )}
                     </div>
-                    <div className='text-sm text-gray-500'>{user.email}</div>
-                    {user.phoneNumber && (
-                      <div className='text-xs text-gray-400'>
-                        📞 {user.phoneNumber}
-                      </div>
-                    )}
-                    {user.jobTitle && (
-                      <div className='text-xs text-gray-400'>
-                        {user.jobTitle}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <div className='text-sm text-gray-900'>
-                    {user.role?.name
-                      ? capitalizeFirstLetter(user.role.name)
-                      : 'No role assigned'}
-                  </div>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap'>
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
-                  >
-                    {user.active ? 'Active' : 'Email Unverified'}
-                  </span>
-                </td>
-                <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
-                  <button
-                    type='button'
-                    onClick={() => handleEditUser(user)}
-                    className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors cursor-pointer'
-                    title='Edit User'
-                  >
-                    <Edit2 className='w-4 h-4 mr-1' />
-                    Edit User
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => handleDeleteUser(user)}
-                    className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors cursor-pointer'
-                    title='Delete User'
-                  >
-                    <Trash2 className='w-4 h-4 mr-1' />
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <div className='text-sm text-gray-900'>
+                      {companyUser.role?.name
+                        ? capitalizeFirstLetter(companyUser.role.name)
+                        : 'No role assigned'}
+                    </div>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap'>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        companyUser.active
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {companyUser.active ? 'Active' : 'Email Unverified'}
+                    </span>
+                  </td>
+                  <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
+                    <button
+                      type='button'
+                      onClick={() => handleEditUser(companyUser)}
+                      className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors cursor-pointer'
+                      title='Edit User'
+                    >
+                      <Edit2 className='w-4 h-4 mr-1' />
+                      Edit User
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => handleDeleteUser(companyUser)}
+                      className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors cursor-pointer'
+                      title='Delete User'
+                    >
+                      <Trash2 className='w-4 h-4 mr-1' />
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
 
@@ -486,13 +500,21 @@ export default function UserManagement({
                     setCreateForm({ ...createForm, role: e.target.value })
                   }
                   className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  disabled={user?.role?.slug !== 'owner'}
                 >
                   <option value=''>Select a role</option>
-                  {roles.map(role => (
-                    <option key={role.id} value={role.id}>
-                      {capitalizeFirstLetter(role.name)}
-                    </option>
-                  ))}
+                  {roles
+                    .filter(role => {
+                      if (user?.role?.slug === 'owner') {
+                        return true;
+                      }
+                      return role.name.toLowerCase() !== 'owner';
+                    })
+                    .map(role => (
+                      <option key={role.id} value={role.id}>
+                        {capitalizeFirstLetter(role.name)}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div>
@@ -664,13 +686,21 @@ export default function UserManagement({
                     setEditForm({ ...editForm, role: e.target.value })
                   }
                   className='w-full border border-gray-300 rounded-lg px-3 py-2'
+                  disabled={user?.role?.slug !== 'owner'}
                 >
                   <option value=''>Select a role</option>
-                  {roles.map(role => (
-                    <option key={role.id} value={role.id}>
-                      {capitalizeFirstLetter(role.name)}
-                    </option>
-                  ))}
+                  {roles
+                    .filter(role => {
+                      if (user?.role?.slug === 'owner') {
+                        return true;
+                      }
+                      return role.name.toLowerCase() !== 'owner';
+                    })
+                    .map(role => (
+                      <option key={role.id} value={role.id}>
+                        {capitalizeFirstLetter(role.name)}
+                      </option>
+                    ))}
                 </select>
               </div>
 
