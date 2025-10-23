@@ -172,14 +172,6 @@ workflows:
             branches:
               only:
                 - main
-      - build_staging:
-          requires:
-            - sast
-            - dast
-          filters:
-            branches:
-              only:
-                - staging
       - build_dev:
           requires:
             - sast
