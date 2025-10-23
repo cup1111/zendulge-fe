@@ -16,6 +16,7 @@ export interface User {
   isEmailVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  operateSites?: OperateSite[]; // Added for frontend store access
 }
 
 export interface Role {
@@ -56,6 +57,14 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+}
+
+export interface OperateSite {
+  id: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+  members?: { id: string }[]; // Add members for user assignment
 }
 
 export class UserManagementService {

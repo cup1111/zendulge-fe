@@ -6,8 +6,8 @@ import api from '../config/axios';
 import {
   UserManagementService,
   type CreateUserRequest,
-  type UpdateUserRequest,
   type Role,
+  type UpdateUserRequest,
   type User,
 } from '../services/userManagement';
 
@@ -27,6 +27,7 @@ interface OperateSite {
   name: string;
   address: string;
   isActive: boolean;
+  members?: { id: string }[]; // Add members for user assignment
 }
 
 export default function UserManagement({
@@ -116,6 +117,9 @@ export default function UserManagement({
         name: site.name as string,
         address: site.address as string,
         isActive: site.isActive as boolean,
+        members: Array.isArray(site.members)
+          ? (site.members as { id: string }[])
+          : [],
       })
     );
 
@@ -174,7 +178,14 @@ export default function UserManagement({
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
-    // Populate edit form with current user data
+    // Find all operateSites where this user is a member
+    const assignedSiteIds = operateSites
+      .filter(
+        site =>
+          Array.isArray(site.members) &&
+          site.members.some((member: { id: string }) => member.id === user.id)
+      )
+      .map(site => site.id);
     setEditForm({
       firstName: user.firstName ?? '',
       lastName: user.lastName ?? '',
@@ -183,7 +194,7 @@ export default function UserManagement({
       department: user.department ?? '',
       location: user.location ?? '',
       role: user.role?.id ?? '',
-      operateSiteIds: [], // Note: User's current store access would need to be fetched from API
+      operateSiteIds: assignedSiteIds,
     });
     setShowEditModal(true);
   };
