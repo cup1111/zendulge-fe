@@ -28,7 +28,7 @@ const countries = [
   { code: '+81', name: 'Japan', flag: '🇯🇵' },
 ];
 
-export default function SimplePhoneValidator({
+export default function PhoneValidator({
   value,
   onChange,
   placeholder = 'Enter phone number',

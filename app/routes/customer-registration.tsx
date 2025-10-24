@@ -6,7 +6,10 @@ import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
+
+import ConfirmPasswordValidator from '../components/validator/ConfirmPasswordInput';
+import SimpleEmailValidator from '../components/validator/EmailInput';
+import PasswordValidator from '../components/validator/PasswordInput';
 
 export default function CustomerRegistration() {
   const [formData, setFormData] = useState({
@@ -14,6 +17,21 @@ export default function CustomerRegistration() {
     password: '',
     confirmPassword: '',
   });
+  // New state to track validity for email and password and confirm password
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const onPasswordValidityChange = (isValid: boolean) => {
+    setIsPasswordValid(isValid);
+  };
+
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  const onEmailValidityChange = (isValid: boolean) => {
+    setIsEmailValid(isValid);
+  };
+
+  const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
+  const onConfirmPasswordValidityChange = (isValid: boolean) => {
+    setIsConfirmPasswordValid(isValid);
+  };
 
   const navigatory = useNavigate();
 
@@ -68,29 +86,32 @@ export default function CustomerRegistration() {
               <CardTitle className='text-3xl'>Sign Up</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <Input
-                className='h-12 text-base'
-                type='email'
-                placeholder='Email'
+              <SimpleEmailValidator
+                onEmailValidityChange={onEmailValidityChange}
                 value={formData.email}
-                onChange={e => handleInputChange('email', e.target.value)}
+                onChange={(email: string) => handleInputChange('email', email)}
               />
-              <Input
-                className='h-12 text-base'
-                type='password'
-                placeholder='Password'
+              <PasswordValidator
+                onPasswordValidityChange={onPasswordValidityChange}
                 value={formData.password}
-                onChange={e => handleInputChange('password', e.target.value)}
+                onChange={(password: string) =>
+                  handleInputChange('password', password)
+                }
               />
-              <Input
-                className='h-12 text-base'
-                type='Password'
-                placeholder='Confirm Password'
-                onChange={e =>
-                  handleInputChange('confirm-password', e.target.value)
+              <ConfirmPasswordValidator
+                onConfirmPasswordValidityChange={
+                  onConfirmPasswordValidityChange
+                }
+                password={formData.password}
+                value={formData.confirmPassword}
+                onChange={(confirmPassword: string) =>
+                  handleInputChange('confirmPassword', confirmPassword)
                 }
               />
               <Button
+                disabled={
+                  !(isEmailValid && isPasswordValid && isConfirmPasswordValid)
+                }
                 variant='default'
                 className='w-full h-12 text-base mt-6'
                 onClick={handleSubmit}

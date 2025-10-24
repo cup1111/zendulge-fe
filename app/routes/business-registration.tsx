@@ -4,11 +4,9 @@ import { MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 import { registerBusiness } from '~/api/register';
+import SimpleEmailValidator from '~/components/validator/EmailInput';
 import SimpleStructuredAddressInput from '~/components/validator/SimpleAddressInput';
-import SimpleEmailValidator from '~/components/validator/SimpleEmailInput';
-import SimplePhoneValidator from '~/components/validator/SimplePhoneInput';
-
-// why 能不能直接造小表单，这样就可以直接每一步存储了？
+import PhoneValidator from '~/components/validator/SimplePhoneInput';
 
 const WELLNESS_CATEGORIES = [
   'massage',
@@ -33,15 +31,63 @@ function BusinessRegistrationFlow({
   onNext,
   onPrev,
 }: any) {
+  enum SectionNumber {
+    basicInformation = 1,
+    adminInformation,
+    serviceCategories,
+    businessAddress,
+    contactInformation,
+    contactPerson,
+    brandingSocialMedia,
+    loginInformation,
+    completed,
+  }
   const sections = [
-    { key: 'basicInfo', title: 'Basic Information', number: 1 },
-    { key: 'adminInfo', title: 'Business Group Admin Information', number: 2 },
-    { key: 'categories', title: 'Service Categories', number: 3 },
-    { key: 'address', title: 'Business Address', number: 4 },
-    { key: 'contact', title: 'Contact Information', number: 5 },
-    { key: 'contactPerson', title: 'Contact Person', number: 6 },
-    { key: 'branding', title: 'Branding & Social Media', number: 7 },
-    { key: 'login', title: 'login information', number: 8 },
+    {
+      key: 'basicInfo',
+      title: 'Basic Information',
+      number: SectionNumber.basicInformation,
+    },
+    {
+      key: 'adminInfo',
+      title: 'Business Group Admin Information',
+      number: SectionNumber.adminInformation,
+    },
+    {
+      key: 'categories',
+      title: 'Service Categories',
+      number: SectionNumber.serviceCategories,
+    },
+    {
+      key: 'address',
+      title: 'Business Address',
+      number: SectionNumber.businessAddress,
+    },
+    {
+      key: 'contact',
+      title: 'Contact Information',
+      number: SectionNumber.contactInformation,
+    },
+    {
+      key: 'contactPerson',
+      title: 'Contact Person',
+      number: SectionNumber.contactPerson,
+    },
+    {
+      key: 'branding',
+      title: 'Branding & Social Media',
+      number: SectionNumber.brandingSocialMedia,
+    },
+    {
+      key: 'login',
+      title: 'login information',
+      number: SectionNumber.loginInformation,
+    },
+    {
+      key: 'completed',
+      title: 'Completed',
+      number: SectionNumber.completed,
+    },
   ];
 
   const currentSection = sections[step - 1];
@@ -82,7 +128,7 @@ function BusinessRegistrationFlow({
           </div>
 
           {/* Section 1: Basic Information - 完全一样的布局 */}
-          {step === 1 && (
+          {step === SectionNumber.basicInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -130,7 +176,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Section 2: Business Group Admin Information - 完全一样的布局 */}
-          {step === 2 && (
+          {step === SectionNumber.adminInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <h4 className='font-medium text-blue-900 mb-1'>
@@ -199,7 +245,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Section 3: Service Categories - 完全一样的布局 */}
-          {step === 3 && (
+          {step === SectionNumber.serviceCategories && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -283,7 +329,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Section 4: Business Address - 完全一样的布局 */}
-          {step === 4 && (
+          {step === SectionNumber.businessAddress && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -327,7 +373,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Section 5: Contact Information - 完全一样的布局 */}
-          {step === 5 && (
+          {step === SectionNumber.contactInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -335,7 +381,7 @@ function BusinessRegistrationFlow({
                 </p>
               </div>
               <div>
-                <SimplePhoneValidator
+                <PhoneValidator
                   value={formData.phone || ''}
                   onChange={value => onInputChange('phone', value)}
                   label='Business Phone Number * (for customer contact)'
@@ -362,7 +408,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Section 6: Contact Person - 完全一样的布局 */}
-          {step === 6 && (
+          {step === SectionNumber.contactPerson && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -398,7 +444,7 @@ function BusinessRegistrationFlow({
                 />
               </div>
               <div>
-                <SimplePhoneValidator
+                <PhoneValidator
                   value={formData.contactPersonPhone || ''}
                   onChange={value => onInputChange('contactPersonPhone', value)}
                   label='Business Group Admin Mobile Phone *'
@@ -414,7 +460,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Section 7: Branding & Social Media - 完全一样的布局 */}
-          {step === 7 && (
+          {step === SectionNumber.brandingSocialMedia && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -491,7 +537,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {step === 8 && (
+          {step === SectionNumber.loginInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -552,7 +598,7 @@ function BusinessRegistrationFlow({
           )}
 
           {/* Completion Screen - 完全一样的样式 */}
-          {step === 9 && (
+          {step === SectionNumber.completed && (
             <div className='space-y-6 text-center'>
               <h2 className='text-xl font-semibold'>
                 Business Registration Complete!
