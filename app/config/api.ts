@@ -24,11 +24,13 @@ export const API_CONFIG = {
       logout: '/logout',
       refresh: '/refresh-token',
       profile: '/me',
+      role: (companyId: string) => `/company/${companyId}/me/role`,
     },
     company: {
       operateSites: (companyId: string) =>
         `/company/${companyId}/operate-sites`,
-      users: (companyId: string) => `/company/${companyId}/users`,
+      inviteUser: (companyId: string) => `/company/${companyId}/invite`,
+      getUsers: (companyId: string) => `/company/${companyId}/users`,
       user: (companyId: string, userId: string) =>
         `/company/${companyId}/users/${userId}`,
       userRole: (companyId: string, userId: string) =>
