@@ -39,7 +39,7 @@ export default function CustomerRegistration() {
     const submitForm = { email: formData.email, password: formData.password };
     const response = await registerCustomer(submitForm);
     if (response.success) {
-      navigatory('/customer-registration-validate', {
+      navigatory('/verify-email', {
         state: { email: submitForm.email },
       });
     }
