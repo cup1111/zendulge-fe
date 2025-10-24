@@ -500,7 +500,6 @@ export default function UserManagement({
                     setCreateForm({ ...createForm, role: e.target.value })
                   }
                   className='w-full border border-gray-300 rounded-lg px-3 py-2'
-                  disabled={user?.role?.slug !== 'owner'}
                 >
                   <option value=''>Select a role</option>
                   {roles
@@ -686,7 +685,6 @@ export default function UserManagement({
                     setEditForm({ ...editForm, role: e.target.value })
                   }
                   className='w-full border border-gray-300 rounded-lg px-3 py-2'
-                  disabled={user?.role?.slug !== 'owner'}
                 >
                   <option value=''>Select a role</option>
                   {roles

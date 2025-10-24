@@ -272,6 +272,19 @@ export default function BusinessManagement() {
       </div>
     );
   }
+
+  if (operatingSites.length === 0) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center p-6'>
+          <p className='text-gray-600'>
+            You have no access to any store, please contact your Admin
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Development Mode Indicator */}
