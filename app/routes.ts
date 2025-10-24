@@ -10,6 +10,6 @@ export default [
   route('profile', './routes/profile.tsx'),
   route('business-registration', './routes/business-registration.tsx'),
   route('customer-registration', './routes/customer-registration.tsx'),
-  route('/verify-email', './routes/customer-registration-validate.tsx'),
+  route('/verify-email', './routes/customer-verify-email.tsx'),
   route('*', './routes/404.tsx'),
 ] satisfies RouteConfig;
