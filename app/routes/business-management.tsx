@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import DealManagement from '~/components/DealManagement';
 import ServiceManagement from '~/components/ServiceManagement';
 import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
@@ -247,6 +248,17 @@ export default function BusinessManagement() {
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
             {currentCompany?.id && (
               <ServiceManagement companyId={currentCompany.id} />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Deal Management Section (only for owner) */}
+      {user?.role?.slug === UserRole.Owner && (
+        <section className='py-8 border-t border-gray-200 bg-white'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && (
+              <DealManagement companyId={currentCompany.id} />
             )}
           </div>
         </section>
