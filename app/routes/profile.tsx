@@ -15,7 +15,6 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
-import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
@@ -276,20 +275,6 @@ export default function Profile() {
     if (!user?.firstName || !user?.lastName) return 'U';
     return `${user.firstName[0]}${user.lastName[0]}`;
   };
-
-  const getRoleBadgeColor = (role: string) => {
-    switch (role) {
-      case 'owner':
-        return 'bg-red-100 text-red-800';
-      case 'business':
-        return 'bg-blue-100 text-blue-800';
-      case 'customer':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   // Show loading state
   if (isLoading) {
     return (
@@ -344,9 +329,6 @@ export default function Profile() {
                 <CardTitle className='text-xl'>
                   {user?.firstName ?? ''} {user?.lastName ?? ''}
                 </CardTitle>
-                <Badge className={`${getRoleBadgeColor('customer')} mt-2`}>
-                  Customer
-                </Badge>
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
