@@ -63,7 +63,7 @@ export default function ConfirmPasswordValidator({
           {shouldShowError && (
             <div className='text-xs text-red-600'>
               <XCircle className='w-3 h-3 inline mr-1' />
-              Please enter a same confirm password
+              Passwords do not match
             </div>
           )}
         </div>

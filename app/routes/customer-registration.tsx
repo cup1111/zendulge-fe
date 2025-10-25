@@ -48,6 +48,7 @@ export default function CustomerRegistration() {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}

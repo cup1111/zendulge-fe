@@ -93,8 +93,6 @@ function BusinessRegistrationFlow({
   const currentSection = sections[step - 1];
   const maxSteps = sections.length;
 
-  const testName = 'BusinessRegistrationFlow';
-
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Banner */}
@@ -113,7 +111,7 @@ function BusinessRegistrationFlow({
             <h1 className='text-3xl font-bold text-gray-900 mb-4'>
               Register Your Wellness Business
             </h1>
-            {/* 进度条 - 完全一样的样式 */}
+            {/* 进度条 */}
             <div className='flex space-x-2 mb-6'>
               {sections.map((_, i) => (
                 <div
@@ -138,12 +136,12 @@ function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor={testName}
+                  htmlFor='BusinessRegistrationFlow'
                 >
                   Business Name *
                   <input
                     type='text'
-                    id={testName}
+                    id='BusinessRegistrationFlow'
                     placeholder='e.g., Zen Wellness Spa'
                     value={formData.businessName}
                     onChange={e =>

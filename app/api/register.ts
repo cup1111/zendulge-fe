@@ -43,6 +43,8 @@ export const registerBusiness = async (data: any) => {
       facebook: data.facebook,
       twitter: data.twitter,
       logo: data.logo,
+      loginEmail: data.loginEmail,
+      password: data.password,
     }
   );
   return response.data;
