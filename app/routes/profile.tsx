@@ -2,15 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Building,
   Calendar,
-  DollarSign,
   Edit,
-  Heart,
   Mail,
   MapPin,
   Phone,
   Save,
   Settings,
-  TrendingUp,
   User,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -23,23 +20,13 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
 import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import {
-  mockBusinesses,
-  mockUser,
-  WELLNESS_CATEGORIES,
-  type UserProfile,
-  type WellnessCategory,
-} from '~/lib/mockData';
+import { UserRole } from '~/constants/enums';
+import { useAuth } from '~/contexts/AuthContext';
+import CompanyService, { type CompanyInfo } from '~/services/companyService';
+import ProfileService, { type UserProfile } from '~/services/profileService';
 
 import { useToast } from '../hooks/use-toast';
 
@@ -47,83 +34,174 @@ import { useToast } from '../hooks/use-toast';
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName: z.string().min(1, 'Last name is required').max(50),
-  email: z.email('Invalid email address'),
-  phone: z.string().min(8, 'Phone number is required'),
-  address: z.object({
-    country: z.string().min(1, 'Country is required'),
-    streetNumber: z.string().min(1, 'Street number is required'),
-    streetName: z.string().min(1, 'Street name is required'),
-    suburb: z.string().min(1, 'Suburb is required'),
+  phoneNumber: z.string().min(8, 'Phone number is required').max(20),
+  userName: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30)
+    .optional(),
+});
+
+// Company form validation schema
+const companySchema = z.object({
+  name: z.string().min(1, 'Company name is required').max(100),
+  email: z.string().email('Invalid email address'),
+  description: z.string().max(500).optional(),
+  serviceCategory: z.string().min(1, 'Service category is required'),
+  businessAddress: z.object({
+    street: z.string().min(1, 'Street address is required'),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(1, 'State is required'),
-    postalCode: z.string().min(1, 'Postal code is required'),
-    fullAddress: z.string().min(1, 'Full address is required'),
+    postcode: z.string().min(1, 'Postcode is required'),
+    country: z.string().min(1, 'Country is required'),
   }),
-  interests: z.array(z.enum(WELLNESS_CATEGORIES)).optional(),
+  abn: z.string().optional(),
+  website: z.string().url('Invalid website URL').optional().or(z.literal('')),
+  facebookUrl: z
+    .string()
+    .url('Invalid Facebook URL')
+    .optional()
+    .or(z.literal('')),
+  twitterUrl: z
+    .string()
+    .url('Invalid Twitter URL')
+    .optional()
+    .or(z.literal('')),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
+type CompanyFormData = z.infer<typeof companySchema>;
 
 export default function Profile() {
   const { toast } = useToast();
+  const { user: authUser, isAuthenticated, currentCompany } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [user, setUser] = useState<UserProfile>(mockUser);
-  const businesses = mockBusinesses;
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [company, setCompany] = useState<CompanyInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCompanyLoading, setIsCompanyLoading] = useState(false);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      address: user.address ?? {
-        country: 'Australia',
-        streetNumber: '',
-        streetName: '',
-        suburb: '',
-        city: '',
-        state: '',
-        postalCode: '',
-        fullAddress: '',
-      },
-      interests: user.interests ?? [],
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      userName: '',
     },
   });
 
-  // 重置表单当用户数据变化
-  useEffect(() => {
-    form.reset({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      phone: user.phone,
-      address: user.address ?? {
-        country: 'Australia',
-        streetNumber: '',
-        streetName: '',
-        suburb: '',
+  const companyForm = useForm<CompanyFormData>({
+    resolver: zodResolver(companySchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      description: '',
+      serviceCategory: '',
+      businessAddress: {
+        street: '',
         city: '',
         state: '',
-        postalCode: '',
-        fullAddress: '',
+        postcode: '',
+        country: 'Australia',
       },
-      interests: user.interests ?? [],
-    });
-  }, [user, form]);
+      abn: '',
+      website: '',
+      facebookUrl: '',
+      twitterUrl: '',
+    },
+  });
 
-  // 提交表单（模拟 API 调用）
+  // Load user profile and company data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!isAuthenticated) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+
+        // Load user profile
+        const profileData = await ProfileService.getProfile();
+        console.log('Profile data received:', profileData);
+        setUser(profileData);
+
+        // Update form with loaded data
+        form.reset({
+          firstName: profileData.firstName ?? '',
+          lastName: profileData.lastName ?? '',
+          phoneNumber: profileData.phoneNumber ?? '',
+          userName: profileData.userName ?? '',
+        });
+
+        // Load company data if user is owner/admin and has a company
+        if (authUser?.role?.slug === UserRole.Owner && currentCompany?.id) {
+          try {
+            const companyData = await CompanyService.getCompanyInfo(
+              currentCompany.id
+            );
+            setCompany(companyData);
+
+            // Update company form with loaded data
+            companyForm.reset({
+              name: companyData.name ?? '',
+              email: companyData.email ?? '',
+              description: companyData.description ?? '',
+              serviceCategory: companyData.serviceCategory ?? '',
+              businessAddress: {
+                street: companyData.businessAddress?.street ?? '',
+                city: companyData.businessAddress?.city ?? '',
+                state: companyData.businessAddress?.state ?? '',
+                postcode: companyData.businessAddress?.postcode ?? '',
+                country: companyData.businessAddress?.country ?? 'Australia',
+              },
+              abn: companyData.abn ?? '',
+              website: companyData.website ?? '',
+              facebookUrl: companyData.facebookUrl ?? '',
+              twitterUrl: companyData.twitterUrl ?? '',
+            });
+          } catch (companyError) {
+            console.error('Error loading company data:', companyError);
+            toast({
+              title: 'Warning',
+              description: 'Failed to load company information.',
+              variant: 'destructive',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load profile data.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [isAuthenticated, form, companyForm, toast, authUser, currentCompany]);
+
+  // Submit profile form (real API call)
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      // 模拟 API 延迟
-      // eslint-disable-next-line no-promise-executor-return
-      await new Promise(resolve => setTimeout(resolve, 500));
+      setIsLoading(true);
 
-      // 更新本地状态
-      setUser({
-        ...user,
-        ...data,
+      // Update profile using the API service
+      const updatedProfile = await ProfileService.updateProfile({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phoneNumber: data.phoneNumber,
+        userName: data.userName,
       });
+
+      // Update local state
+      setUser(updatedProfile);
 
       toast({
         title: 'Profile updated',
@@ -132,15 +210,72 @@ export default function Profile() {
 
       setIsEditing(false);
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast({
         title: 'Error',
         description: 'Failed to update profile. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getUserInitials = () => `${user.firstName[0]}${user.lastName[0]}`;
+  // Submit company form (real API call)
+  const onCompanySubmit = async (data: CompanyFormData) => {
+    if (!currentCompany?.id) {
+      toast({
+        title: 'Error',
+        description: 'No company selected.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      setIsCompanyLoading(true);
+
+      // Update company using the API service
+      const updatedCompany = await CompanyService.updateCompanyInfo(
+        currentCompany.id,
+        {
+          name: data.name,
+          email: data.email,
+          description: data.description,
+          serviceCategory: data.serviceCategory,
+          businessAddress: data.businessAddress,
+          abn: data.abn,
+          website: data.website,
+          facebookUrl: data.facebookUrl,
+          twitterUrl: data.twitterUrl,
+        }
+      );
+
+      // Update local state
+      setCompany(updatedCompany);
+
+      toast({
+        title: 'Company updated',
+        description: 'Your company information has been successfully updated.',
+      });
+
+      setIsEditingCompany(false);
+    } catch (error) {
+      console.error('Error updating company:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update company information. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsCompanyLoading(false);
+    }
+  };
+
+  const getUserInitials = () => {
+    if (!user?.firstName ?? !user?.lastName) return 'U';
+    return `${user.firstName[0]}${user.lastName[0]}`;
+  };
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -155,22 +290,33 @@ export default function Profile() {
     }
   };
 
-  // 添加兴趣
-  const addInterest = (category: WellnessCategory) => {
-    const currentInterests = form.watch('interests') ?? [];
-    if (!currentInterests.includes(category)) {
-      form.setValue('interests', [...currentInterests, category]);
-    }
-  };
-
-  // 删除兴趣
-  const removeInterest = (index: number) => {
-    const currentInterests = form.watch('interests') ?? [];
-    form.setValue(
-      'interests',
-      currentInterests.filter((_, i) => i !== index)
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center'>
+          <div className='animate-spin rounded-full h-32 w-32 border-b-2 border-shadow-lavender mx-auto' />
+          <p className='mt-4 text-gray-600'>Loading profile...</p>
+        </div>
+      </div>
     );
-  };
+  }
+
+  // Show not authenticated state
+  if (!isAuthenticated ?? !user) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-4'>
+            Please log in
+          </h1>
+          <p className='text-gray-600'>
+            You need to be logged in to view your profile.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -198,8 +344,8 @@ export default function Profile() {
                 <CardTitle className='text-xl'>
                   {user.firstName} {user.lastName}
                 </CardTitle>
-                <Badge className={`${getRoleBadgeColor(user.role)} mt-2`}>
-                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                <Badge className={`${getRoleBadgeColor('customer')} mt-2`}>
+                  Customer
                 </Badge>
               </CardHeader>
               <CardContent>
@@ -210,62 +356,30 @@ export default function Profile() {
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Phone className='w-4 h-4 mr-2' />
-                    {user.phone}
+                    {user.phoneNumber ?? 'No phone number'}
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Calendar className='w-4 h-4 mr-2' />
-                    Joined {new Date(user.joinedDate).toLocaleDateString()}
+                    Joined {new Date(user.createdAt).toLocaleDateString()}
                   </div>
-                  {user.role === 'business' && (
-                    <div className='flex items-center text-sm text-gray-600'>
-                      <Building className='w-4 h-4 mr-2' />
-                      {user.businessesCount} Business
-                      {user.businessesCount !== 1 ? 'es' : ''}
-                    </div>
-                  )}
                 </div>
 
                 <Separator className='my-4' />
 
-                {user.role === 'business' ? (
-                  <div className='space-y-3'>
-                    <div className='text-center'>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        $
-                        {businesses
-                          .reduce((sum, b) => sum + b.totalRevenue, 0)
-                          .toLocaleString()}
-                      </div>
-                      <div className='text-xs text-gray-600'>Total Revenue</div>
+                <div className='grid grid-cols-2 gap-4 text-center'>
+                  <div>
+                    <div className='text-2xl font-bold text-shadow-lavender'>
+                      0
                     </div>
-                    <div className='text-center'>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        {businesses.reduce(
-                          (sum, b) => sum + b.totalBookings,
-                          0
-                        )}
-                      </div>
-                      <div className='text-xs text-gray-600'>
-                        Total Bookings
-                      </div>
-                    </div>
+                    <div className='text-xs text-gray-600'>Bookings</div>
                   </div>
-                ) : (
-                  <div className='grid grid-cols-2 gap-4 text-center'>
-                    <div>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        {user.bookingsCount}
-                      </div>
-                      <div className='text-xs text-gray-600'>Bookings</div>
+                  <div>
+                    <div className='text-2xl font-bold text-shadow-lavender'>
+                      0
                     </div>
-                    <div>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        {user.favoritesCount}
-                      </div>
-                      <div className='text-xs text-gray-600'>Favorites</div>
-                    </div>
+                    <div className='text-xs text-gray-600'>Favorites</div>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -273,10 +387,14 @@ export default function Profile() {
           {/* Main Content Area with Tabs */}
           <div className='lg:col-span-2'>
             <Tabs defaultValue='personal' className='space-y-4'>
-              <TabsList className='grid w-full grid-cols-3'>
+              <TabsList
+                className={`grid w-full ${authUser?.role?.slug === UserRole.Owner ? 'grid-cols-3' : 'grid-cols-2'}`}
+              >
                 <TabsTrigger value='personal'>Personal</TabsTrigger>
                 <TabsTrigger value='account'>Account</TabsTrigger>
-                <TabsTrigger value='business'>Business</TabsTrigger>
+                {authUser?.role?.slug === UserRole.Owner && (
+                  <TabsTrigger value='business'>Business</TabsTrigger>
+                )}
               </TabsList>
 
               {/* Personal Information Tab */}
@@ -357,151 +475,67 @@ export default function Profile() {
                         </div>
                       </div>
 
-                      {/* Email */}
+                      {/* Email - Read Only */}
                       <div className='space-y-2'>
                         <Label htmlFor='email'>Email Address</Label>
-                        {isEditing ? (
+                        <div className='relative'>
                           <Input
                             id='email'
                             type='email'
-                            {...form.register('email')}
+                            value={user.email}
+                            disabled
+                            className='bg-gray-50 text-gray-600 cursor-not-allowed'
                           />
-                        ) : (
-                          <p className='text-sm text-gray-900 py-2'>
-                            {user.email}
-                          </p>
-                        )}
-                        {form.formState.errors.email && (
-                          <p className='text-sm text-red-600'>
-                            {form.formState.errors.email.message}
-                          </p>
-                        )}
+                          <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
+                            <span className='text-xs text-gray-500'>
+                              Read Only
+                            </span>
+                          </div>
+                        </div>
+                        <p className='text-xs text-gray-500'>
+                          Email address cannot be changed for security reasons
+                        </p>
                       </div>
 
                       {/* Phone */}
                       <div className='space-y-2'>
-                        <Label htmlFor='phone'>Mobile Phone</Label>
+                        <Label htmlFor='phoneNumber'>Mobile Phone</Label>
                         {isEditing ? (
                           <Input
-                            id='phone'
+                            id='phoneNumber'
                             type='tel'
-                            {...form.register('phone')}
+                            {...form.register('phoneNumber')}
                           />
                         ) : (
                           <p className='text-sm text-gray-900 py-2'>
-                            {user.phone}
+                            {user.phoneNumber ?? 'No phone number'}
                           </p>
                         )}
-                        {form.formState.errors.phone && (
+                        {form.formState.errors.phoneNumber && (
                           <p className='text-sm text-red-600'>
-                            {form.formState.errors.phone.message}
+                            {form.formState.errors.phoneNumber.message}
                           </p>
                         )}
                       </div>
 
-                      {/* Address - Simplified */}
+                      {/* Username */}
                       <div className='space-y-2'>
-                        <Label className='flex items-center'>
-                          <MapPin className='w-4 h-4 mr-2 text-shadow-lavender' />
-                          Address
-                        </Label>
+                        <Label htmlFor='userName'>Username</Label>
                         {isEditing ? (
-                          <div className='grid grid-cols-2 gap-4'>
-                            <Input
-                              placeholder='Street Number'
-                              {...form.register('address.streetNumber')}
-                            />
-                            <Input
-                              placeholder='Street Name'
-                              {...form.register('address.streetName')}
-                            />
-                            <Input
-                              placeholder='Suburb'
-                              {...form.register('address.suburb')}
-                            />
-                            <Input
-                              placeholder='City'
-                              {...form.register('address.city')}
-                            />
-                            <Input
-                              placeholder='State'
-                              {...form.register('address.state')}
-                            />
-                            <Input
-                              placeholder='Postal Code'
-                              {...form.register('address.postalCode')}
-                            />
-                          </div>
+                          <Input
+                            id='userName'
+                            {...form.register('userName')}
+                            placeholder='Enter your username'
+                          />
                         ) : (
                           <p className='text-sm text-gray-900 py-2'>
-                            {user.address?.fullAddress ?? 'No address provided'}
+                            {user.userName ?? 'No username'}
                           </p>
                         )}
-                      </div>
-
-                      {/* Wellness Interests */}
-                      <div className='space-y-2'>
-                        <Label className='flex items-center'>
-                          <Heart className='w-4 h-4 mr-2 text-shadow-lavender' />
-                          Wellness Interests
-                        </Label>
-                        {isEditing ? (
-                          <div className='space-y-3'>
-                            <Select onValueChange={addInterest}>
-                              <SelectTrigger>
-                                <SelectValue placeholder='Add a wellness interest' />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {WELLNESS_CATEGORIES.map(category => (
-                                  <SelectItem key={category} value={category}>
-                                    {category}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <div className='flex flex-wrap gap-2'>
-                              {form
-                                .watch('interests')
-                                ?.map((interest, index) => (
-                                  <Badge
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={index}
-                                    variant='secondary'
-                                    className='bg-shadow-lavender/10 text-shadow-lavender border-shadow-lavender/20 pr-1'
-                                  >
-                                    {interest}
-                                    <button
-                                      type='button'
-                                      onClick={() => removeInterest(index)}
-                                      className='ml-2 text-shadow-lavender hover:text-shadow-lavender/80'
-                                    >
-                                      ×
-                                    </button>
-                                  </Badge>
-                                ))}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className='py-2'>
-                            {user.interests && user.interests.length > 0 ? (
-                              <div className='flex flex-wrap gap-2'>
-                                {user.interests.map((interest, index) => (
-                                  <Badge
-                                    // eslint-disable-next-line react/no-array-index-key
-                                    key={index}
-                                    variant='secondary'
-                                    className='bg-shadow-lavender/10 text-shadow-lavender border-shadow-lavender/20'
-                                  >
-                                    {interest}
-                                  </Badge>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className='text-sm text-gray-500'>
-                                No wellness interests selected
-                              </p>
-                            )}
-                          </div>
+                        {form.formState.errors.userName && (
+                          <p className='text-sm text-red-600'>
+                            {form.formState.errors.userName.message}
+                          </p>
                         )}
                       </div>
 
@@ -510,8 +544,9 @@ export default function Profile() {
                         <Button
                           type='submit'
                           className='bg-shadow-lavender hover:bg-shadow-lavender/90'
+                          disabled={isLoading}
                         >
-                          Save Changes
+                          {isLoading ? 'Saving...' : 'Save Changes'}
                         </Button>
                       )}
                     </form>
@@ -574,94 +609,311 @@ export default function Profile() {
                 </Card>
               </TabsContent>
 
-              {/* Business Tab */}
-              <TabsContent value='business'>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className='flex items-center'>
-                      <Building className='w-5 h-5 mr-2' />
-                      Business Information
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {businesses.length > 0 ? (
-                      <div className='space-y-4'>
-                        {businesses.map(business => (
-                          <div
-                            key={business.id}
-                            className='border rounded-lg p-4 hover:bg-gray-50 transition-colors'
-                          >
-                            <div className='flex items-center justify-between mb-2'>
-                              <h3 className='font-semibold text-gray-900'>
-                                {business.name}
-                              </h3>
-                              <Badge
-                                variant={
-                                  business.isActive ? 'default' : 'secondary'
-                                }
-                                className={
-                                  business.isActive
-                                    ? 'bg-green-100 text-green-700'
-                                    : ''
-                                }
-                              >
-                                {business.isActive ? 'Active' : 'Inactive'}
-                              </Badge>
-                            </div>
-                            <p className='text-sm text-gray-600 mb-3'>
-                              {business.description}
-                            </p>
-                            <div className='flex items-center gap-2 mb-2'>
-                              <MapPin className='w-4 h-4 text-gray-500' />
-                              <p className='text-sm text-gray-700'>
-                                {business.address}
-                              </p>
-                            </div>
-                            <div className='flex gap-6 mt-3 pt-3 border-t'>
-                              <div className='flex items-center gap-2'>
-                                <DollarSign className='w-4 h-4 text-green-600' />
-                                <div>
-                                  <div className='text-sm font-semibold'>
-                                    ${business.totalRevenue.toLocaleString()}
-                                  </div>
-                                  <div className='text-xs text-gray-600'>
-                                    Revenue
-                                  </div>
-                                </div>
-                              </div>
-                              <div className='flex items-center gap-2'>
-                                <TrendingUp className='w-4 h-4 text-blue-600' />
-                                <div>
-                                  <div className='text-sm font-semibold'>
-                                    {business.totalBookings}
-                                  </div>
-                                  <div className='text-xs text-gray-600'>
-                                    Bookings
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className='text-center py-8'>
-                        <Building className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                        <h3 className='font-semibold text-gray-600 mb-2'>
-                          No businesses registered
-                        </h3>
-                        <p className='text-gray-500 text-sm mb-4'>
-                          Register your business to start offering deals on the
-                          platform.
-                        </p>
-                        <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                          Register Business
+              {/* Business Tab - Only for Owners */}
+              {authUser?.role?.slug === UserRole.Owner && (
+                <TabsContent value='business'>
+                  <Card>
+                    <CardHeader>
+                      <div className='flex items-center justify-between'>
+                        <CardTitle className='flex items-center'>
+                          <Building className='w-5 h-5 mr-2' />
+                          Business Information
+                        </CardTitle>
+                        <Button
+                          variant='outline'
+                          size='sm'
+                          onClick={() => {
+                            if (isEditingCompany) {
+                              companyForm.reset();
+                            }
+                            setIsEditingCompany(!isEditingCompany);
+                          }}
+                        >
+                          {isEditingCompany ? (
+                            <>
+                              <Save className='w-4 h-4 mr-2' />
+                              Cancel
+                            </>
+                          ) : (
+                            <>
+                              <Edit className='w-4 h-4 mr-2' />
+                              Edit
+                            </>
+                          )}
                         </Button>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                    </CardHeader>
+                    <CardContent>
+                      {company ? (
+                        <form
+                          onSubmit={companyForm.handleSubmit(onCompanySubmit)}
+                          className='space-y-6'
+                        >
+                          {/* Company Name */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='companyName'>Company Name</Label>
+                            {isEditingCompany ? (
+                              <Input
+                                id='companyName'
+                                {...companyForm.register('name')}
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.name}
+                              </p>
+                            )}
+                            {companyForm.formState.errors.name && (
+                              <p className='text-sm text-red-600'>
+                                {companyForm.formState.errors.name.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Company Email */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='companyEmail'>Company Email</Label>
+                            {isEditingCompany ? (
+                              <Input
+                                id='companyEmail'
+                                type='email'
+                                {...companyForm.register('email')}
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.email}
+                              </p>
+                            )}
+                            {companyForm.formState.errors.email && (
+                              <p className='text-sm text-red-600'>
+                                {companyForm.formState.errors.email.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Service Category */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='serviceCategory'>
+                              Service Category
+                            </Label>
+                            {isEditingCompany ? (
+                              <Input
+                                id='serviceCategory'
+                                {...companyForm.register('serviceCategory')}
+                                placeholder='e.g., Wellness, Beauty, Fitness'
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.serviceCategory}
+                              </p>
+                            )}
+                            {companyForm.formState.errors.serviceCategory && (
+                              <p className='text-sm text-red-600'>
+                                {
+                                  companyForm.formState.errors.serviceCategory
+                                    .message
+                                }
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Description */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='description'>Description</Label>
+                            {isEditingCompany ? (
+                              <textarea
+                                id='description'
+                                {...companyForm.register('description')}
+                                className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shadow-lavender'
+                                rows={3}
+                                placeholder='Describe your business...'
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.description ??
+                                  'No description provided'}
+                              </p>
+                            )}
+                            {companyForm.formState.errors.description && (
+                              <p className='text-sm text-red-600'>
+                                {
+                                  companyForm.formState.errors.description
+                                    .message
+                                }
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Business Address */}
+                          <div className='space-y-4'>
+                            <Label className='flex items-center'>
+                              <MapPin className='w-4 h-4 mr-2 text-shadow-lavender' />
+                              Business Address
+                            </Label>
+                            {isEditingCompany ? (
+                              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                <div className='md:col-span-2'>
+                                  <Input
+                                    placeholder='Street Address'
+                                    {...companyForm.register(
+                                      'businessAddress.street'
+                                    )}
+                                  />
+                                </div>
+                                <Input
+                                  placeholder='City'
+                                  {...companyForm.register(
+                                    'businessAddress.city'
+                                  )}
+                                />
+                                <Input
+                                  placeholder='State'
+                                  {...companyForm.register(
+                                    'businessAddress.state'
+                                  )}
+                                />
+                                <Input
+                                  placeholder='Postcode'
+                                  {...companyForm.register(
+                                    'businessAddress.postcode'
+                                  )}
+                                />
+                                <Input
+                                  placeholder='Country'
+                                  {...companyForm.register(
+                                    'businessAddress.country'
+                                  )}
+                                />
+                              </div>
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.businessAddress
+                                  ? `${company.businessAddress.street}, ${company.businessAddress.city}, ${company.businessAddress.state} ${company.businessAddress.postcode}, ${company.businessAddress.country}`
+                                  : 'No address provided'}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* ABN */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='abn'>
+                              ABN (Australian Business Number)
+                            </Label>
+                            {isEditingCompany ? (
+                              <Input
+                                id='abn'
+                                {...companyForm.register('abn')}
+                                placeholder='11-digit ABN'
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.abn ?? 'No ABN provided'}
+                              </p>
+                            )}
+                            {companyForm.formState.errors.abn && (
+                              <p className='text-sm text-red-600'>
+                                {companyForm.formState.errors.abn.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Website */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='website'>Website</Label>
+                            {isEditingCompany ? (
+                              <Input
+                                id='website'
+                                {...companyForm.register('website')}
+                                placeholder='https://example.com'
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {company.website ?? 'No website provided'}
+                              </p>
+                            )}
+                            {companyForm.formState.errors.website && (
+                              <p className='text-sm text-red-600'>
+                                {companyForm.formState.errors.website.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Social Media Links */}
+                          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                            <div className='space-y-2'>
+                              <Label htmlFor='facebookUrl'>Facebook URL</Label>
+                              {isEditingCompany ? (
+                                <Input
+                                  id='facebookUrl'
+                                  {...companyForm.register('facebookUrl')}
+                                  placeholder='https://facebook.com/yourpage'
+                                />
+                              ) : (
+                                <p className='text-sm text-gray-900 py-2'>
+                                  {company.facebookUrl ?? 'No Facebook page'}
+                                </p>
+                              )}
+                              {companyForm.formState.errors.facebookUrl && (
+                                <p className='text-sm text-red-600'>
+                                  {
+                                    companyForm.formState.errors.facebookUrl
+                                      .message
+                                  }
+                                </p>
+                              )}
+                            </div>
+
+                            <div className='space-y-2'>
+                              <Label htmlFor='twitterUrl'>Twitter URL</Label>
+                              {isEditingCompany ? (
+                                <Input
+                                  id='twitterUrl'
+                                  {...companyForm.register('twitterUrl')}
+                                  placeholder='https://twitter.com/yourhandle'
+                                />
+                              ) : (
+                                <p className='text-sm text-gray-900 py-2'>
+                                  {company.twitterUrl ?? 'No Twitter handle'}
+                                </p>
+                              )}
+                              {companyForm.formState.errors.twitterUrl && (
+                                <p className='text-sm text-red-600'>
+                                  {
+                                    companyForm.formState.errors.twitterUrl
+                                      .message
+                                  }
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Save Button */}
+                          {isEditingCompany && (
+                            <Button
+                              type='submit'
+                              className='bg-shadow-lavender hover:bg-shadow-lavender/90'
+                              disabled={isCompanyLoading}
+                            >
+                              {isCompanyLoading
+                                ? 'Saving...'
+                                : 'Save Company Information'}
+                            </Button>
+                          )}
+                        </form>
+                      ) : (
+                        <div className='text-center py-8'>
+                          <Building className='w-12 h-12 text-gray-400 mx-auto mb-4' />
+                          <h3 className='font-semibold text-gray-600 mb-2'>
+                            No company information available
+                          </h3>
+                          <p className='text-gray-500 text-sm'>
+                            Company information could not be loaded.
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
             </Tabs>
           </div>
         </div>
