@@ -1,21 +1,22 @@
 import { Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
+
 import { Button } from '~/components/ui/button';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
@@ -31,10 +32,10 @@ interface DealDialogProps {
   onDealCreated?: () => void;
 }
 
-export default function DealDialog({ 
-  companyId, 
+export default function DealDialog({
+  companyId,
   trigger,
-  onDealCreated 
+  onDealCreated,
 }: DealDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -52,7 +53,9 @@ export default function DealDialog({
     operatingSite: '',
     availability: {
       startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0],
     },
     status: 'active' as const,
     tags: [] as string[],
@@ -86,7 +89,7 @@ export default function DealDialog({
         ServiceService.getServices(companyId),
         OperateSiteService.getOperateSites(companyId),
       ]);
-      
+
       setServices(Array.isArray(servicesData) ? servicesData : []);
       setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
     } catch (error) {
@@ -111,7 +114,7 @@ export default function DealDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setIsSubmitting(true);
     try {
       await DealService.createDeal(companyId, formData);
@@ -119,7 +122,7 @@ export default function DealDialog({
         title: 'Success',
         description: 'Deal created successfully!',
       });
-      
+
       // Reset form
       setFormData({
         title: '',
@@ -130,13 +133,15 @@ export default function DealDialog({
         operatingSite: '',
         availability: {
           startDate: new Date().toISOString().split('T')[0],
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0],
         },
         status: 'active',
         tags: [],
         service: '',
       });
-      
+
       setIsOpen(false);
       onDealCreated?.();
     } catch (error) {
@@ -151,9 +156,10 @@ export default function DealDialog({
   };
 
   // Check if user can create deals
-  const canCreateDeal = user?.role?.slug === BusinessUserRole.Owner || 
-                       user?.role?.slug === BusinessUserRole.Manager || 
-                       user?.role?.slug === BusinessUserRole.Employee;
+  const canCreateDeal =
+    user?.role?.slug === BusinessUserRole.Owner ||
+    user?.role?.slug === BusinessUserRole.Manager ||
+    user?.role?.slug === BusinessUserRole.Employee;
 
   if (!canCreateDeal) {
     return null;
@@ -161,18 +167,18 @@ export default function DealDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
           <DialogTitle>Create New Deal</DialogTitle>
         </DialogHeader>
-        
+
         {isLoading ? (
           <div className='flex items-center justify-center py-8'>
             <Loader2 className='h-8 w-8 animate-spin text-shadow-lavender' />
-            <span className='ml-3 text-lg text-gray-600'>Loading services and operating sites...</span>
+            <span className='ml-3 text-lg text-gray-600'>
+              Loading services and operating sites...
+            </span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className='space-y-6'>
@@ -184,7 +190,9 @@ export default function DealDialog({
                 <Input
                   id='title'
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={e =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   placeholder='e.g., Spring Cleaning Special'
                   required
                 />
@@ -195,14 +203,16 @@ export default function DealDialog({
                 <Label htmlFor='service'>Service *</Label>
                 <Select
                   value={formData.service}
-                  onValueChange={(value) => setFormData({ ...formData, service: value })}
+                  onValueChange={value =>
+                    setFormData({ ...formData, service: value })
+                  }
                   required
                 >
                   <SelectTrigger>
                     <SelectValue placeholder='Select a service' />
                   </SelectTrigger>
                   <SelectContent>
-                    {services.map((service) => (
+                    {services.map(service => (
                       <SelectItem key={service.id} value={service.id}>
                         {service.name} - ${service.basePrice}
                       </SelectItem>
@@ -216,14 +226,16 @@ export default function DealDialog({
                 <Label htmlFor='operatingSite'>Operating Site *</Label>
                 <Select
                   value={formData.operatingSite}
-                  onValueChange={(value) => setFormData({ ...formData, operatingSite: value })}
+                  onValueChange={value =>
+                    setFormData({ ...formData, operatingSite: value })
+                  }
                   required
                 >
                   <SelectTrigger>
                     <SelectValue placeholder='Select operating site' />
                   </SelectTrigger>
                   <SelectContent>
-                    {operatingSites.map((site) => (
+                    {operatingSites.map(site => (
                       <SelectItem key={site.id} value={site.id}>
                         {site.name}
                       </SelectItem>
@@ -237,14 +249,16 @@ export default function DealDialog({
                 <Label htmlFor='category'>Category *</Label>
                 <Select
                   value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  onValueChange={value =>
+                    setFormData({ ...formData, category: value })
+                  }
                   required
                 >
                   <SelectTrigger>
                     <SelectValue placeholder='Select category' />
                   </SelectTrigger>
                   <SelectContent>
-                    {dealCategories.map((category) => (
+                    {dealCategories.map(category => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -261,7 +275,12 @@ export default function DealDialog({
                   type='number'
                   step='0.01'
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      price: parseFloat(e.target.value) || 0,
+                    })
+                  }
                   min='0'
                   required
                 />
@@ -274,7 +293,12 @@ export default function DealDialog({
                   id='duration'
                   type='number'
                   value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value, 10) || 0 })}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      duration: parseInt(e.target.value, 10) || 0,
+                    })
+                  }
                   min='1'
                   max='1440'
                   required
@@ -288,10 +312,15 @@ export default function DealDialog({
                   id='startDate'
                   type='date'
                   value={formData.availability.startDate}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    availability: { ...formData.availability, startDate: e.target.value }
-                  })}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      availability: {
+                        ...formData.availability,
+                        startDate: e.target.value,
+                      },
+                    })
+                  }
                   required
                 />
               </div>
@@ -303,10 +332,15 @@ export default function DealDialog({
                   id='endDate'
                   type='date'
                   value={formData.availability.endDate}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    availability: { ...formData.availability, endDate: e.target.value }
-                  })}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      availability: {
+                        ...formData.availability,
+                        endDate: e.target.value,
+                      },
+                    })
+                  }
                   required
                 />
               </div>
@@ -318,7 +352,9 @@ export default function DealDialog({
               <Textarea
                 id='description'
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={e =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 placeholder='Describe your deal...'
                 rows={4}
                 required
@@ -331,10 +367,15 @@ export default function DealDialog({
               <Input
                 id='tags'
                 value={formData.tags.join(', ')}
-                onChange={(e) => setFormData({
-                  ...formData,
-                  tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag)
-                })}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    tags: e.target.value
+                      .split(',')
+                      .map(tag => tag.trim())
+                      .filter(tag => tag),
+                  })
+                }
                 placeholder='e.g., spring, cleaning, special'
               />
             </div>

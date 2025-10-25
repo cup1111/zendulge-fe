@@ -1,15 +1,15 @@
 import {
-    Calendar,
-    ChevronLeft,
-    ChevronRight,
-    Clock,
-    DollarSign,
-    Edit3,
-    MapPin,
-    Plus,
-    Search,
-    Tag,
-    Trash2,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  Edit3,
+  MapPin,
+  Plus,
+  Search,
+  Tag,
+  Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -18,19 +18,19 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
