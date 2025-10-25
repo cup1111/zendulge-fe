@@ -220,12 +220,6 @@ export default function BusinessManagement() {
                 Manage your team, services, and business locations
               </p>
             </div>
-            <div className='mt-4 md:mt-0 flex gap-3'>
-              <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                <Plus className='w-4 h-4 mr-2' />
-                Add Location
-              </Button>
-            </div>
           </div>
         </div>
       </section>
