@@ -273,7 +273,7 @@ export default function Profile() {
   };
 
   const getUserInitials = () => {
-    if (!user?.firstName ?? !user?.lastName) return 'U';
+    if (!user?.firstName || !user?.lastName) return 'U';
     return `${user.firstName[0]}${user.lastName[0]}`;
   };
 
@@ -342,7 +342,7 @@ export default function Profile() {
                   </AvatarFallback>
                 </Avatar>
                 <CardTitle className='text-xl'>
-                  {user.firstName} {user.lastName}
+                  {user?.firstName ?? ''} {user?.lastName ?? ''}
                 </CardTitle>
                 <Badge className={`${getRoleBadgeColor('customer')} mt-2`}>
                   Customer
@@ -352,15 +352,18 @@ export default function Profile() {
                 <div className='space-y-3'>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Mail className='w-4 h-4 mr-2' />
-                    {user.email}
+                    {user?.email ?? 'No email'}
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Phone className='w-4 h-4 mr-2' />
-                    {user.phoneNumber ?? 'No phone number'}
+                    {user?.phoneNumber ?? 'No phone number'}
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Calendar className='w-4 h-4 mr-2' />
-                    Joined {new Date(user.createdAt).toLocaleDateString()}
+                    Joined{' '}
+                    {user?.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString()
+                      : 'Unknown'}
                   </div>
                 </div>
 
@@ -391,7 +394,7 @@ export default function Profile() {
                 className={`grid w-full ${authUser?.role?.slug === UserRole.Owner ? 'grid-cols-3' : 'grid-cols-2'}`}
               >
                 <TabsTrigger value='personal'>Personal</TabsTrigger>
-                <TabsTrigger value='account'>Account</TabsTrigger>
+                <TabsTrigger value='account'>Account(WIP)</TabsTrigger>
                 {authUser?.role?.slug === UserRole.Owner && (
                   <TabsTrigger value='business'>Business</TabsTrigger>
                 )}
@@ -446,7 +449,7 @@ export default function Profile() {
                             />
                           ) : (
                             <p className='text-sm text-gray-900 py-2'>
-                              {user.firstName}
+                              {user?.firstName ?? 'No first name'}
                             </p>
                           )}
                           {form.formState.errors.firstName && (
@@ -464,7 +467,7 @@ export default function Profile() {
                             />
                           ) : (
                             <p className='text-sm text-gray-900 py-2'>
-                              {user.lastName}
+                              {user?.lastName ?? 'No last name'}
                             </p>
                           )}
                           {form.formState.errors.lastName && (
@@ -482,7 +485,7 @@ export default function Profile() {
                           <Input
                             id='email'
                             type='email'
-                            value={user.email}
+                            value={user?.email ?? ''}
                             disabled
                             className='bg-gray-50 text-gray-600 cursor-not-allowed'
                           />
@@ -508,7 +511,7 @@ export default function Profile() {
                           />
                         ) : (
                           <p className='text-sm text-gray-900 py-2'>
-                            {user.phoneNumber ?? 'No phone number'}
+                            {user?.phoneNumber ?? 'No phone number'}
                           </p>
                         )}
                         {form.formState.errors.phoneNumber && (
@@ -529,7 +532,7 @@ export default function Profile() {
                           />
                         ) : (
                           <p className='text-sm text-gray-900 py-2'>
-                            {user.userName ?? 'No username'}
+                            {user?.userName ?? 'No username'}
                           </p>
                         )}
                         {form.formState.errors.userName && (
