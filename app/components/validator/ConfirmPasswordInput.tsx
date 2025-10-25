@@ -56,7 +56,7 @@ export default function ConfirmPasswordValidator({
           {isConfirmPasswordSame && (
             <div className='text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>
               <CheckCircle className='w-3 h-3 inline mr-1' />
-              Passwords are same
+              Passwords are the same
             </div>
           )}
 
