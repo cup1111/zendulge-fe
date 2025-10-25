@@ -260,7 +260,7 @@ export default function BusinessManagement() {
               <div className='flex items-center justify-between mb-6'>
                 <div>
                   <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
-                    Operating Sites
+                    Operating Sites (WIP)
                   </h2>
                   <p className='text-gray-600'>
                     Manage all business locations and their details

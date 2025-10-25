@@ -78,7 +78,7 @@ export default function Header() {
               className='ml-6 bg-shadow-lavender hover:bg-shadow-lavender/90 text-white font-bold font-montserrat'
               onClick={() => navigate('/create-deal')}
             >
-              Create Deal
+              Create Deal (WIP)
             </Button>
 
             {/* Browse Deals - After Create Deal */}
@@ -88,7 +88,7 @@ export default function Header() {
                 location.pathname === '/customer' ? 'opacity-80' : ''
               }`}
             >
-              Browse Deals
+              Browse Deals (WIP)
             </Link>
 
             {/* Business Dropdown Menu - After Browse Deals */}
@@ -115,7 +115,7 @@ export default function Header() {
                           : ''
                       }`}
                     >
-                      Dashboard
+                      Dashboard (WIP)
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
@@ -176,7 +176,7 @@ export default function Header() {
                 location.pathname === '/help' ? 'opacity-80' : ''
               }`}
             >
-              Help
+              Help (WIP)
             </Link>
 
             {!isAuthenticated ? (
