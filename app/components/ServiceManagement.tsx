@@ -67,7 +67,6 @@ export default function ServiceManagement({
   // Helper functions for role-based access control
   const isOwner = user?.role?.slug === BusinessUserRole.Owner;
   const isManager = user?.role?.slug === BusinessUserRole.Manager;
-  const isEmployee = user?.role?.slug === BusinessUserRole.Employee;
 
   const canCreateService = () => isOwner || isManager; // Employees cannot create services
   const canEditService = () => isOwner || isManager; // Employees cannot edit services
