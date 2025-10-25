@@ -39,6 +39,9 @@ import type {
 } from '~/services/serviceService';
 import { ServiceService } from '~/services/serviceService';
 
+import { BusinessUserRole } from '../constants/enums';
+import { useAuth } from '../contexts/AuthContext';
+
 interface ServiceManagementProps {
   companyId: string;
 }
@@ -47,6 +50,7 @@ export default function ServiceManagement({
   companyId,
 }: ServiceManagementProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -59,6 +63,15 @@ export default function ServiceManagement({
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+
+  // Helper functions for role-based access control
+  const isOwner = user?.role?.slug === BusinessUserRole.Owner;
+  const isManager = user?.role?.slug === BusinessUserRole.Manager;
+  const isEmployee = user?.role?.slug === BusinessUserRole.Employee;
+
+  const canCreateService = () => isOwner || isManager; // Employees cannot create services
+  const canEditService = () => isOwner || isManager; // Employees cannot edit services
+  const canDeleteService = () => isOwner || isManager; // Employees cannot delete services
   const [formData, setFormData] = useState<ServiceCreateRequest>({
     name: '',
     category: '',
@@ -285,114 +298,119 @@ export default function ServiceManagement({
             />
           </div>
 
-          <Dialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer whitespace-nowrap'>
-                <Plus className='w-4 h-4 mr-2' />
-                Add Service
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='max-w-md'>
-              <DialogHeader>
-                <DialogTitle>Create New Service</DialogTitle>
-              </DialogHeader>
-              <div className='space-y-4'>
-                <div>
-                  <Label htmlFor='name'>Service Name</Label>
-                  <Input
-                    id='name'
-                    value={formData.name}
-                    onChange={e =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder='e.g., Basic Cleaning Service'
-                  />
+          {canCreateService() && (
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer whitespace-nowrap'>
+                  <Plus className='w-4 h-4 mr-2' />
+                  Add Service
+                </Button>
+              </DialogTrigger>
+              <DialogContent className='max-w-md'>
+                <DialogHeader>
+                  <DialogTitle>Create New Service</DialogTitle>
+                </DialogHeader>
+                <div className='space-y-4'>
+                  <div>
+                    <Label htmlFor='name'>Service Name</Label>
+                    <Input
+                      id='name'
+                      value={formData.name}
+                      onChange={e =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      placeholder='e.g., Basic Cleaning Service'
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='category'>Category</Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={value =>
+                        setFormData({ ...formData, category: value })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select category' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {serviceCategories.map(category => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor='duration'>Duration (minutes)</Label>
+                    <Input
+                      id='duration'
+                      type='number'
+                      value={formData.duration}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          duration: parseInt(e.target.value, 10) ?? 0,
+                        })
+                      }
+                      min='1'
+                      max='1440'
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='basePrice'>Base Price (AUD)</Label>
+                    <Input
+                      id='basePrice'
+                      type='number'
+                      step='0.01'
+                      value={formData.basePrice}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          basePrice: parseFloat(e.target.value) ?? 0,
+                        })
+                      }
+                      min='0'
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='description'>Description</Label>
+                    <Textarea
+                      id='description'
+                      value={formData.description}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder='Service description...'
+                      rows={3}
+                    />
+                  </div>
+                  <div className='flex justify-end space-x-2'>
+                    <Button
+                      variant='outline'
+                      onClick={() => setIsCreateDialogOpen(false)}
+                      className='cursor-pointer'
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateService}
+                      className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
+                    >
+                      Create Service
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor='category'>Category</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={value =>
-                      setFormData({ ...formData, category: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder='Select category' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {serviceCategories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor='duration'>Duration (minutes)</Label>
-                  <Input
-                    id='duration'
-                    type='number'
-                    value={formData.duration}
-                    onChange={e =>
-                      setFormData({
-                        ...formData,
-                        duration: parseInt(e.target.value, 10) ?? 0,
-                      })
-                    }
-                    min='1'
-                    max='1440'
-                  />
-                </div>
-                <div>
-                  <Label htmlFor='basePrice'>Base Price (AUD)</Label>
-                  <Input
-                    id='basePrice'
-                    type='number'
-                    step='0.01'
-                    value={formData.basePrice}
-                    onChange={e =>
-                      setFormData({
-                        ...formData,
-                        basePrice: parseFloat(e.target.value) ?? 0,
-                      })
-                    }
-                    min='0'
-                  />
-                </div>
-                <div>
-                  <Label htmlFor='description'>Description</Label>
-                  <Textarea
-                    id='description'
-                    value={formData.description}
-                    onChange={e =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    placeholder='Service description...'
-                    rows={3}
-                  />
-                </div>
-                <div className='flex justify-end space-x-2'>
-                  <Button
-                    variant='outline'
-                    onClick={() => setIsCreateDialogOpen(false)}
-                    className='cursor-pointer'
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateService}
-                    className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
-                  >
-                    Create Service
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Services Grid */}
@@ -563,22 +581,26 @@ export default function ServiceManagement({
                 {service.name}
               </CardTitle>
               <div className='flex space-x-1 flex-shrink-0'>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => openEditDialog(service)}
-                  className='cursor-pointer p-1 h-8 w-8'
-                >
-                  <Edit3 className='w-4 h-4' />
-                </Button>
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => openDeleteDialog(service)}
-                  className='text-red-600 hover:text-red-700 cursor-pointer p-1 h-8 w-8'
-                >
-                  <Trash2 className='w-4 h-4' />
-                </Button>
+                {canEditService() && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => openEditDialog(service)}
+                    className='cursor-pointer p-1 h-8 w-8'
+                  >
+                    <Edit3 className='w-4 h-4' />
+                  </Button>
+                )}
+                {canDeleteService() && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={() => openDeleteDialog(service)}
+                    className='text-red-600 hover:text-red-700 cursor-pointer p-1 h-8 w-8'
+                  >
+                    <Trash2 className='w-4 h-4' />
+                  </Button>
+                )}
               </div>
             </div>
             <Badge variant='secondary' className='w-fit'>
@@ -625,13 +647,15 @@ export default function ServiceManagement({
               ? 'Try adjusting your search terms or create a new service.'
               : 'Create your first service to start managing your business offerings.'}
           </p>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
-          >
-            <Plus className='w-4 h-4 mr-2' />
-            {searchTerm ? 'Add New Service' : 'Add Your First Service'}
-          </Button>
+          {canCreateService() && (
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
+            >
+              <Plus className='w-4 h-4 mr-2' />
+              {searchTerm ? 'Add New Service' : 'Add Your First Service'}
+            </Button>
+          )}
         </div>
       )}
 

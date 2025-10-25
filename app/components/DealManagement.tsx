@@ -33,6 +33,8 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
+import { BusinessUserRole } from '~/constants/enums';
+import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
 import type { Deal, DealCreateRequest } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
@@ -45,6 +47,7 @@ interface DealManagementProps {
 
 export default function DealManagement({ companyId }: DealManagementProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [operatingSites, setOperatingSites] = useState<any[]>([]);
@@ -77,13 +80,35 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     service: '',
   });
 
+  // Helper functions for role-based access control
+  const isOwner = user?.role?.slug === BusinessUserRole.Owner;
+  const isManager = user?.role?.slug === BusinessUserRole.Manager;
+  const isEmployee = user?.role?.slug === BusinessUserRole.Employee;
+
+  const canEditDeal = (deal: Deal) => {
+    if (isOwner) return true;
+    if (isManager) return true; // Managers can edit all deals in their operating sites
+    if (isEmployee) {
+      // Employees can only edit deals they created
+      return deal.createdBy?.id === user?.id;
+    }
+    return false;
+  };
+
+  const canDeleteDeal = (deal: Deal) => {
+    if (isOwner) return true;
+    if (isManager) return true; // Managers can delete all deals in their operating sites
+    if (isEmployee) {
+      // Employees can only delete deals they created
+      return deal.createdBy?.id === user?.id;
+    }
+    return false;
+  };
+
+  const canCreateDeal = () => isOwner || isManager || isEmployee;
+
   // Deal categories
   const dealCategories = [
-    'Cleaning',
-    'Maintenance',
-    'Beauty & Wellness',
-    'Food & Dining',
-    'Fitness',
     'Education',
     'Technology',
     'Home Services',
@@ -357,235 +382,240 @@ export default function DealManagement({ companyId }: DealManagementProps) {
             />
           </div>
 
-          <Dialog
-            open={isCreateDialogOpen}
-            onOpenChange={setIsCreateDialogOpen}
-          >
-            <DialogTrigger asChild>
-              <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer whitespace-nowrap'>
-                <Plus className='w-4 h-4 mr-2' />
-                Add Deal
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='max-w-md'>
-              <DialogHeader>
-                <DialogTitle>Create New Deal</DialogTitle>
-              </DialogHeader>
-              <div className='space-y-4'>
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <Label htmlFor='title'>Deal Title</Label>
-                    <Input
-                      id='title'
-                      value={formData.title}
-                      onChange={e =>
-                        setFormData({ ...formData, title: e.target.value })
-                      }
-                      placeholder='e.g., Spring Cleaning Special'
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor='category'>Category</Label>
-                    <Select
-                      value={formData.category}
-                      onValueChange={value =>
-                        setFormData({ ...formData, category: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select category' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dealCategories.map(category => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <Label htmlFor='service'>Service</Label>
-                    <Select
-                      value={formData.service}
-                      onValueChange={value => {
-                        const selectedService = services.find(
-                          s => s.id === value
-                        );
-                        setFormData({
-                          ...formData,
-                          service: value,
-                          duration:
-                            selectedService?.duration ?? formData.duration,
-                        });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select service' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.isArray(services) &&
-                          services.map(service => (
-                            <SelectItem key={service.id} value={service.id}>
-                              {service.name ?? 'Unknown Service'} -{' '}
-                              {formatPrice(service.basePrice || 0)}
+          {canCreateDeal() && (
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
+              <DialogTrigger asChild>
+                <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer whitespace-nowrap'>
+                  <Plus className='w-4 h-4 mr-2' />
+                  Add Deal
+                </Button>
+              </DialogTrigger>
+              <DialogContent className='max-w-md'>
+                <DialogHeader>
+                  <DialogTitle>Create New Deal</DialogTitle>
+                </DialogHeader>
+                <div className='space-y-4'>
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div>
+                      <Label htmlFor='title'>Deal Title</Label>
+                      <Input
+                        id='title'
+                        value={formData.title}
+                        onChange={e =>
+                          setFormData({ ...formData, title: e.target.value })
+                        }
+                        placeholder='e.g., Spring Cleaning Special'
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='category'>Category</Label>
+                      <Select
+                        value={formData.category}
+                        onValueChange={value =>
+                          setFormData({ ...formData, category: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select category' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {dealCategories.map(category => (
+                            <SelectItem key={category} value={category}>
+                              {category}
                             </SelectItem>
                           ))}
-                      </SelectContent>
-                    </Select>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
+
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div>
+                      <Label htmlFor='service'>Service</Label>
+                      <Select
+                        value={formData.service}
+                        onValueChange={value => {
+                          const selectedService = services.find(
+                            s => s.id === value
+                          );
+                          setFormData({
+                            ...formData,
+                            service: value,
+                            duration:
+                              selectedService?.duration ?? formData.duration,
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select service' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.isArray(services) &&
+                            services.map(service => (
+                              <SelectItem key={service.id} value={service.id}>
+                                {service.name ?? 'Unknown Service'} -{' '}
+                                {formatPrice(service.basePrice || 0)}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor='operatingSite'>Operating Site</Label>
+                      <Select
+                        value={formData.operatingSite}
+                        onValueChange={value =>
+                          setFormData({ ...formData, operatingSite: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='Select operating site' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Array.isArray(operatingSites) &&
+                            operatingSites.map(site => (
+                              <SelectItem key={site.id} value={site.id}>
+                                {site.name ?? 'Unknown Site'}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div>
-                    <Label htmlFor='operatingSite'>Operating Site</Label>
-                    <Select
-                      value={formData.operatingSite}
-                      onValueChange={value =>
-                        setFormData({ ...formData, operatingSite: value })
+                    {' '}
+                    {/* Single column for price */}
+                    <div>
+                      <Label htmlFor='price'>Deal Price (AUD)</Label>
+                      <Input
+                        id='price'
+                        type='number'
+                        step='0.01'
+                        value={formData.price}
+                        onChange={e =>
+                          setFormData({
+                            ...formData,
+                            price: parseFloat(e.target.value) || 0,
+                          })
+                        }
+                        min='0'
+                      />
+                    </div>
+                  </div>
+
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div>
+                      <Label htmlFor='duration'>Duration (minutes)</Label>
+                      <Input
+                        id='duration'
+                        type='number'
+                        value={formData.duration}
+                        onChange={e =>
+                          setFormData({
+                            ...formData,
+                            duration: parseInt(e.target.value, 10) || 0,
+                          })
+                        }
+                        min='1'
+                        max='1440'
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='maxBookings'>Max Bookings</Label>
+                      <Input
+                        id='maxBookings'
+                        type='number'
+                        value={formData.availability.maxBookings ?? ''}
+                        onChange={e =>
+                          setFormData({
+                            ...formData,
+                            availability: {
+                              ...formData.availability,
+                              maxBookings:
+                                parseInt(e.target.value, 10) || undefined,
+                            },
+                          })
+                        }
+                        min='1'
+                      />
+                    </div>
+                  </div>
+
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div>
+                      <Label htmlFor='startDate'>Start Date</Label>
+                      <Input
+                        id='startDate'
+                        type='date'
+                        value={formData.availability.startDate}
+                        onChange={e =>
+                          setFormData({
+                            ...formData,
+                            availability: {
+                              ...formData.availability,
+                              startDate: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor='endDate'>End Date</Label>
+                      <Input
+                        id='endDate'
+                        type='date'
+                        value={formData.availability.endDate}
+                        onChange={e =>
+                          setFormData({
+                            ...formData,
+                            availability: {
+                              ...formData.availability,
+                              endDate: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor='description'>Description</Label>
+                    <Textarea
+                      id='description'
+                      value={formData.description}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
                       }
+                      placeholder='Deal description...'
+                      rows={3}
+                    />
+                  </div>
+                  <div className='flex justify-end space-x-2'>
+                    <Button
+                      variant='outline'
+                      onClick={() => setIsCreateDialogOpen(false)}
+                      className='cursor-pointer'
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select operating site' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.isArray(operatingSites) &&
-                          operatingSites.map(site => (
-                            <SelectItem key={site.id} value={site.id}>
-                              {site.name ?? 'Unknown Site'}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateDeal}
+                      className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
+                    >
+                      Create Deal
+                    </Button>
                   </div>
                 </div>
-
-                <div>
-                  {' '}
-                  {/* Single column for price */}
-                  <div>
-                    <Label htmlFor='price'>Deal Price (AUD)</Label>
-                    <Input
-                      id='price'
-                      type='number'
-                      step='0.01'
-                      value={formData.price}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          price: parseFloat(e.target.value) || 0,
-                        })
-                      }
-                      min='0'
-                    />
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <Label htmlFor='duration'>Duration (minutes)</Label>
-                    <Input
-                      id='duration'
-                      type='number'
-                      value={formData.duration}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          duration: parseInt(e.target.value, 10) || 0,
-                        })
-                      }
-                      min='1'
-                      max='1440'
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor='maxBookings'>Max Bookings</Label>
-                    <Input
-                      id='maxBookings'
-                      type='number'
-                      value={formData.availability.maxBookings ?? ''}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          availability: {
-                            ...formData.availability,
-                            maxBookings:
-                              parseInt(e.target.value, 10) || undefined,
-                          },
-                        })
-                      }
-                      min='1'
-                    />
-                  </div>
-                </div>
-
-                <div className='grid grid-cols-2 gap-4'>
-                  <div>
-                    <Label htmlFor='startDate'>Start Date</Label>
-                    <Input
-                      id='startDate'
-                      type='date'
-                      value={formData.availability.startDate}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          availability: {
-                            ...formData.availability,
-                            startDate: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor='endDate'>End Date</Label>
-                    <Input
-                      id='endDate'
-                      type='date'
-                      value={formData.availability.endDate}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          availability: {
-                            ...formData.availability,
-                            endDate: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor='description'>Description</Label>
-                  <Textarea
-                    id='description'
-                    value={formData.description}
-                    onChange={e =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    placeholder='Deal description...'
-                    rows={3}
-                  />
-                </div>
-                <div className='flex justify-end space-x-2'>
-                  <Button
-                    variant='outline'
-                    onClick={() => setIsCreateDialogOpen(false)}
-                    className='cursor-pointer'
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleCreateDeal}
-                    className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
-                  >
-                    Create Deal
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
@@ -609,22 +639,26 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                   {deal.title ?? 'Untitled Deal'}
                 </CardTitle>
                 <div className='flex space-x-1 flex-shrink-0'>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => openEditDialog(deal)}
-                    className='cursor-pointer p-1 h-8 w-8'
-                  >
-                    <Edit3 className='w-4 h-4' />
-                  </Button>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() => openDeleteDialog(deal)}
-                    className='text-red-600 hover:text-red-700 cursor-pointer p-1 h-8 w-8'
-                  >
-                    <Trash2 className='w-4 h-4' />
-                  </Button>
+                  {canEditDeal(deal) && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => openEditDialog(deal)}
+                      className='cursor-pointer p-1 h-8 w-8'
+                    >
+                      <Edit3 className='w-4 h-4' />
+                    </Button>
+                  )}
+                  {canDeleteDeal(deal) && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => openDeleteDialog(deal)}
+                      className='text-red-600 hover:text-red-700 cursor-pointer p-1 h-8 w-8'
+                    >
+                      <Trash2 className='w-4 h-4' />
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className='flex items-center justify-between'>
@@ -665,6 +699,14 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                   {formatDate(deal.availability?.endDate ?? '')}
                 </span>
               </div>
+              {deal.createdBy && (
+                <div className='flex items-center text-sm text-gray-500'>
+                  <span className='text-xs'>
+                    Created by: {deal.createdBy.firstName}{' '}
+                    {deal.createdBy.lastName}
+                  </span>
+                </div>
+              )}
               {deal.description && (
                 <div className='pt-2 border-t border-gray-100'>
                   <p className='text-sm text-gray-600 line-clamp-3 leading-relaxed'>
@@ -692,13 +734,15 @@ export default function DealManagement({ companyId }: DealManagementProps) {
               ? 'Try adjusting your search terms or create a new deal.'
               : 'Create your first deal to start promoting your business.'}
           </p>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-            className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
-          >
-            <Plus className='w-4 h-4 mr-2' />
-            {searchTerm ? 'Add New Deal' : 'Add Your First Deal'}
-          </Button>
+          {canCreateDeal() && (
+            <Button
+              onClick={() => setIsCreateDialogOpen(true)}
+              className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
+            >
+              <Plus className='w-4 h-4 mr-2' />
+              {searchTerm ? 'Add New Deal' : 'Add Your First Deal'}
+            </Button>
+          )}
         </div>
       )}
 

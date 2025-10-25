@@ -19,7 +19,7 @@ import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
-import { OperatingSiteStatus, UserRole } from '~/constants/enums';
+import { BusinessUserRole, OperatingSiteStatus } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 
 interface OperatingSite {
@@ -230,20 +230,25 @@ export default function BusinessManagement() {
         </div>
       </section>
 
-      {/* Users Management Section */}
-      <section className='py-8'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          {currentCompany?.id && user?.id && (
-            <UserManagement
-              companyId={currentCompany.id}
-              excludeUserId={user.id}
-            />
-          )}
-        </div>
-      </section>
+      {/* Users Management Section (only for owners and managers) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager) && (
+        <section className='py-8'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && user?.id && (
+              <UserManagement
+                companyId={currentCompany.id}
+                excludeUserId={user.id}
+              />
+            )}
+          </div>
+        </section>
+      )}
 
-      {/* Service Management Section (only for owner) */}
-      {user?.role?.slug === UserRole.Owner && (
+      {/* Service Management Section (for owners, managers, and employees) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager ||
+        user?.role?.slug === BusinessUserRole.Employee) && (
         <section className='py-8 border-t border-gray-200 bg-gray-50'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
             {currentCompany?.id && (
@@ -253,8 +258,10 @@ export default function BusinessManagement() {
         </section>
       )}
 
-      {/* Deal Management Section (only for owner) */}
-      {user?.role?.slug === UserRole.Owner && (
+      {/* Deal Management Section (for owners, managers, and employees) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager ||
+        user?.role?.slug === BusinessUserRole.Employee) && (
         <section className='py-8 border-t border-gray-200 bg-white'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
             {currentCompany?.id && (
@@ -264,8 +271,9 @@ export default function BusinessManagement() {
         </section>
       )}
 
-      {/* Operating Sites Section (only for owner) */}
-      {user?.role?.slug === UserRole.Owner && (
+      {/* Operating Sites Section (for owners and managers) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager) && (
         <section className='py-8 border-t border-gray-200 bg-white'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
             <div className='mb-8'>

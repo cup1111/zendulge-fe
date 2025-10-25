@@ -10,7 +10,7 @@ import React, {
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 
-import type { UserRole } from '../constants/enums';
+import type { BusinessUserRole } from '../constants/enums';
 
 interface Company {
   id: string;
@@ -24,7 +24,7 @@ interface User {
   lastName?: string;
   userName?: string;
   avatarIcon?: string;
-  role?: { slug: UserRole; name: string; id: string };
+  role?: { slug: BusinessUserRole; name: string; id: string };
   companies: Company[];
 }
 

@@ -31,6 +31,12 @@ export interface Deal {
     basePrice: number;
     duration: number;
   };
+  createdBy: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

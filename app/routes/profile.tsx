@@ -22,7 +22,7 @@ import { Label } from '~/components/ui/label';
 import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { UserRole } from '~/constants/enums';
+import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import CompanyService, { type CompanyInfo } from '~/services/companyService';
 import ProfileService, { type UserProfile } from '~/services/profileService';
@@ -137,7 +137,10 @@ export default function Profile() {
         });
 
         // Load company data if user is owner/admin and has a company
-        if (authUser?.role?.slug === UserRole.Owner && currentCompany?.id) {
+        if (
+          authUser?.role?.slug === BusinessUserRole.Owner &&
+          currentCompany?.id
+        ) {
           try {
             const companyData = await CompanyService.getCompanyInfo(
               currentCompany.id
@@ -373,11 +376,11 @@ export default function Profile() {
           <div className='lg:col-span-2'>
             <Tabs defaultValue='personal' className='space-y-4'>
               <TabsList
-                className={`grid w-full ${authUser?.role?.slug === UserRole.Owner ? 'grid-cols-3' : 'grid-cols-2'}`}
+                className={`grid w-full ${authUser?.role?.slug === BusinessUserRole.Owner ? 'grid-cols-3' : 'grid-cols-2'}`}
               >
                 <TabsTrigger value='personal'>Personal</TabsTrigger>
                 <TabsTrigger value='account'>Account(WIP)</TabsTrigger>
-                {authUser?.role?.slug === UserRole.Owner && (
+                {authUser?.role?.slug === BusinessUserRole.Owner && (
                   <TabsTrigger value='business'>Business</TabsTrigger>
                 )}
               </TabsList>
@@ -595,7 +598,7 @@ export default function Profile() {
               </TabsContent>
 
               {/* Business Tab - Only for Owners */}
-              {authUser?.role?.slug === UserRole.Owner && (
+              {authUser?.role?.slug === BusinessUserRole.Owner && (
                 <TabsContent value='business'>
                   <Card>
                     <CardHeader>
