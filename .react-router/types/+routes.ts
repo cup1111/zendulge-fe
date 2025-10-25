@@ -20,6 +20,9 @@ type Pages = {
   "/business": {
     params: {};
   };
+  "/business-dashboard": {
+    params: {};
+  };
   "/business-management": {
     params: {};
   };
@@ -50,7 +53,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/help" | "/business" | "/business-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/*";
+    page: "/" | "/help" | "/business" | "/business-dashboard" | "/business-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/*";
   };
   "./routes/_index.tsx": {
     id: "routes/_index";
@@ -63,6 +66,10 @@ type RouteFiles = {
   "./routes/business-info.tsx": {
     id: "routes/business-info";
     page: "/business";
+  };
+  "./routes/business-dashboard.tsx": {
+    id: "routes/business-dashboard";
+    page: "/business-dashboard";
   };
   "./routes/business-management.tsx": {
     id: "routes/business-management";
@@ -99,6 +106,7 @@ type RouteModules = {
   "routes/_index": typeof import("./app/./routes/_index.tsx");
   "routes/help": typeof import("./app/./routes/help.tsx");
   "routes/business-info": typeof import("./app/./routes/business-info.tsx");
+  "routes/business-dashboard": typeof import("./app/./routes/business-dashboard.tsx");
   "routes/business-management": typeof import("./app/./routes/business-management.tsx");
   "routes/deal-details.$id": typeof import("./app/./routes/deal-details.$id.tsx");
   "routes/login": typeof import("./app/./routes/login.tsx");
