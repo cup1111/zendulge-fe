@@ -23,6 +23,7 @@ import {
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
+import ServiceManagement from '~/components/ServiceManagement';
 import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
@@ -627,6 +628,17 @@ export default function BusinessManagement() {
           )}
         </div>
       </section>
+
+      {/* Service Management Section (only for owner) */}
+      {user?.role?.slug === UserRole.Owner && (
+        <section className='py-8 border-t border-gray-200 bg-gray-50'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && (
+              <ServiceManagement companyId={currentCompany.id} />
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Operating Sites Section (only for owner) */}
       {user?.role?.slug === UserRole.Owner && (
