@@ -1,6 +1,7 @@
 import { Building2, ChevronDown } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router';
 
+import DealDialog from '~/components/DealDialog';
 import { Button } from '~/components/ui/button';
 import {
   DropdownMenu,
@@ -74,12 +75,16 @@ export default function Header() {
             </Link>
 
             {/* Create Deal Button - Next to Logo */}
-            <Button
-              className='ml-6 bg-shadow-lavender hover:bg-shadow-lavender/90 text-white font-bold font-montserrat'
-              onClick={() => navigate('/create-deal')}
-            >
-              Create Deal (WIP)
-            </Button>
+            {currentCompany?.id && (
+              <DealDialog
+                companyId={currentCompany.id}
+                trigger={
+                  <Button className='ml-6 bg-shadow-lavender hover:bg-shadow-lavender/90 text-white font-bold font-montserrat cursor-pointer'>
+                    Create Deal
+                  </Button>
+                }
+              />
+            )}
 
             {/* Browse Deals - After Create Deal */}
             <Link
