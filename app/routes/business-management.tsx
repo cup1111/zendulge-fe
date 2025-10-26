@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import CustomerManagement from '~/components/CustomerManagement';
 import DealManagement from '~/components/DealManagement';
 import ServiceManagement from '~/components/ServiceManagement';
 import { Button } from '~/components/ui/button';
@@ -234,6 +235,18 @@ export default function BusinessManagement() {
                 companyId={currentCompany.id}
                 excludeUserId={user.id}
               />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Customers Management Section (only for owners and managers) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager) && (
+        <section className='py-8 border-t border-gray-200 bg-gray-50'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && (
+              <CustomerManagement companyId={currentCompany.id} />
             )}
           </div>
         </section>
