@@ -1,25 +1,54 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { registerCustomer } from '~/api/register';
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
+
+import ConfirmPasswordValidator from '../components/validator/ConfirmPasswordInput';
+import EmailValidator from '../components/validator/EmailInput';
+import PasswordValidator from '../components/validator/PasswordInput';
 
 export default function CustomerRegistration() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
   });
+  // New state to track validity for email and password and confirm password
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const onPasswordValidityChange = (isValid: boolean) => {
+    setIsPasswordValid(isValid);
+  };
+
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  const onEmailValidityChange = (isValid: boolean) => {
+    setIsEmailValid(isValid);
+  };
+
+  const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
+  const onConfirmPasswordValidityChange = (isValid: boolean) => {
+    setIsConfirmPasswordValid(isValid);
+  };
+
+  const navigatory = useNavigate();
+
   const handleSubmit = async () => {
-    await registerCustomer(formData);
+    const submitForm = { email: formData.email, password: formData.password };
+    const response = await registerCustomer(submitForm);
+    if (response.success) {
+      navigatory('/verify-email', {
+        state: { email: submitForm.email },
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
@@ -58,26 +87,32 @@ export default function CustomerRegistration() {
               <CardTitle className='text-3xl'>Sign Up</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <Input
-                className='h-12 text-base'
-                type='email'
-                placeholder='Email'
+              <EmailValidator
+                onEmailValidityChange={onEmailValidityChange}
                 value={formData.email}
-                onChange={e => handleInputChange('email', e.target.value)}
+                onChange={(email: string) => handleInputChange('email', email)}
               />
-              <Input
-                className='h-12 text-base'
-                type='password'
-                placeholder='Password'
+              <PasswordValidator
+                onPasswordValidityChange={onPasswordValidityChange}
                 value={formData.password}
-                onChange={e => handleInputChange('password', e.target.value)}
+                onChange={(password: string) =>
+                  handleInputChange('password', password)
+                }
               />
-              <Input
-                className='h-12 text-base'
-                type='Password'
-                placeholder='Confirm Password'
+              <ConfirmPasswordValidator
+                onConfirmPasswordValidityChange={
+                  onConfirmPasswordValidityChange
+                }
+                password={formData.password}
+                value={formData.confirmPassword}
+                onChange={(confirmPassword: string) =>
+                  handleInputChange('confirmPassword', confirmPassword)
+                }
               />
               <Button
+                disabled={
+                  !(isEmailValid && isPasswordValid && isConfirmPasswordValid)
+                }
                 variant='default'
                 className='w-full h-12 text-base mt-6'
                 onClick={handleSubmit}

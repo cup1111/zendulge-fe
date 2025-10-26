@@ -148,7 +148,7 @@ export default function Header() {
                   <Link to='/login'>Sign In</Link>
                 </Button>
                 <Button variant='default'>
-                  <Link to='/signup'>Sign Up</Link>
+                  <Link to='/customer-registration'>Sign Up</Link>
                 </Button>
               </>
             ) : (

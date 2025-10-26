@@ -5,7 +5,9 @@ export const registerCustomer = async (data: any) => {
     'https://zendulge-be-production.up.railway.app/api/v1/register',
     {
       email: data.email,
-      password: data.password, // TODO frontend 加上password和confirmPassword
+      password: data.password,
+      firstName: 'asdf',
+      lastName: 'asdf',
     }
   );
   return response.data;
@@ -41,6 +43,8 @@ export const registerBusiness = async (data: any) => {
       facebook: data.facebook,
       twitter: data.twitter,
       logo: data.logo,
+      loginEmail: data.loginEmail,
+      password: data.password,
     }
   );
   return response.data;
