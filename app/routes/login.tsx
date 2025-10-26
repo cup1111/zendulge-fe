@@ -1,3 +1,4 @@
+import { XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 
@@ -5,8 +6,10 @@ import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
 import { useAuth } from '~/contexts/AuthContext';
+
+import EmailValidator from '../components/validator/EmailInput';
+import PasswordValidator from '../components/validator/PasswordInput';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,7 +23,9 @@ export default function Login() {
   };
   const handleLogin = () => {
     authContext.login(formData.email, formData.password);
-    navigate('/');
+    if (authContext.isAuthenticated) {
+      navigate('/');
+    }
   };
   return (
     <div className='min-h-screen'>
@@ -59,18 +64,22 @@ export default function Login() {
               <CardTitle className='text-3xl'>Login</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <Input
-                className='h-12 text-base'
-                type='email'
-                placeholder='Email'
-                onChange={e => handleInputChange('email', e.target.value)}
+              <EmailValidator
+                value={formData.email}
+                onChange={(email: string) => handleInputChange('email', email)}
               />
-              <Input
-                className='h-12 text-base'
-                type='password'
-                placeholder='Password'
-                onChange={e => handleInputChange('password', e.target.value)}
+              <PasswordValidator
+                value={formData.password}
+                onChange={(password: string) =>
+                  handleInputChange('password', password)
+                }
               />
+              {!authContext.isAuthenticated && authContext.errorMessage && (
+                <div className='text-xs text-red-600'>
+                  <XCircle className='w-3 h-3 inline mr-1' />
+                  {authContext.errorMessage}
+                </div>
+              )}
               <Button
                 variant='default'
                 className='w-full h-12 text-base mt-6'

@@ -1,4 +1,4 @@
-import { CheckCircle, Lock, XCircle } from 'lucide-react';
+import { Lock, XCircle } from 'lucide-react';
 import { useEffect } from 'react';
 
 import { Input } from '~/components/ui/input';
@@ -32,7 +32,6 @@ export default function PasswordValidator({
 
   function passwordFieldClass() {
     const borderClass = 'border-gray-300';
-    if (isPasswordValid) return 'border-green-500 focus:border-green-500';
     if (shouldShowError) return 'border-red-500 focus:border-red-500';
     return borderClass;
   }
@@ -59,13 +58,6 @@ export default function PasswordValidator({
 
       {showValidationDetails && (
         <div className='space-y-2'>
-          {isPasswordValid && (
-            <div className='text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>
-              <CheckCircle className='w-3 h-3 inline mr-1' />
-              Valid Password
-            </div>
-          )}
-
           {shouldShowError && (
             <div className='text-xs text-red-600'>
               <XCircle className='w-3 h-3 inline mr-1' />

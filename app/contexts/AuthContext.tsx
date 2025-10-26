@@ -37,6 +37,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   setCurrentCompany: (company: Company) => void;
   logout: () => void;
+  errorMessage: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -97,6 +98,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const clearError = () => setErrorMessage(null);
 
   const logout = () => {
     setUserState(null);
@@ -113,6 +116,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         API_CONFIG.endpoints.auth.login,
         { email, password }
       );
+      if (!response?.data) return;
 
       const { data } = response;
       const { accessToken } = data.data;
@@ -134,10 +138,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const firstCompany = userData.companies[0];
         setCurrentCompanyState(firstCompany);
         localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
+        clearError();
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (error: any) {
+      // console.error('Login error:', error.response.data);
+      if (error.response.data.includes('Account not activated')) {
+        setErrorMessage(
+          'Account not activated. Please check your email for activation instructions.'
+        );
+      } else {
+        setErrorMessage('Invalid email or password. Please try again.');
+      }
     }
   }, []);
 
@@ -188,7 +199,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         );
         // Token is valid, set user data
         setUserState({ ...userData, role: response.data.role });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error initializing auth:', error);
         logout();
       } finally {
@@ -208,10 +219,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       login,
       setCurrentCompany,
       logout,
+      errorMessage,
     }),
-    [user, currentCompany, isLoading]
+    [user, currentCompany, isLoading, errorMessage]
   );
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
@@ -229,6 +240,7 @@ export function useAuth() {
       login: async () => {},
       setCurrentCompany: () => {},
       logout: () => {},
+      errorMessage: null,
     };
   }
   return context;

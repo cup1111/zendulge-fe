@@ -8,7 +8,7 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 
 import ConfirmPasswordValidator from '../components/validator/ConfirmPasswordInput';
-import SimpleEmailValidator from '../components/validator/EmailInput';
+import EmailValidator from '../components/validator/EmailInput';
 import PasswordValidator from '../components/validator/PasswordInput';
 
 export default function CustomerRegistration() {
@@ -87,7 +87,7 @@ export default function CustomerRegistration() {
               <CardTitle className='text-3xl'>Sign Up</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <SimpleEmailValidator
+              <EmailValidator
                 onEmailValidityChange={onEmailValidityChange}
                 value={formData.email}
                 onChange={(email: string) => handleInputChange('email', email)}

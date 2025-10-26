@@ -699,6 +699,9 @@ export default function BusinessRegistration() {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    if (field === 'businessName') {
+      handleBusinessNameError(value);
+    }
   };
 
   const handleSubmit = async () => {
@@ -716,6 +719,7 @@ export default function BusinessRegistration() {
       onSubmit={handleSubmit}
       onNext={nextStep}
       onPrev={prevStep}
+      error={error}
     />
   );
 }
