@@ -11,6 +11,7 @@ interface PasswordValidatorProps {
   label?: string;
   showValidationDetails?: boolean;
   onPasswordValidityChange?: (isValid: boolean) => void;
+  onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function PasswordValidator({
@@ -20,6 +21,7 @@ export default function PasswordValidator({
   label = 'Password',
   showValidationDetails = true,
   onPasswordValidityChange: onValidityChange,
+  onEnter,
 }: PasswordValidatorProps) {
   const passwordReg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   const isPasswordValid = passwordReg.test(value);
@@ -52,6 +54,7 @@ export default function PasswordValidator({
           }
           placeholder={placeholder}
           className={passwordFieldClass()}
+          onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />
       </div>

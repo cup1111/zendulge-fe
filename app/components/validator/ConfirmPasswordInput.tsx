@@ -10,6 +10,7 @@ interface SimplePasswordValidatorProps {
   placeholder?: string;
   showValidationDetails?: boolean;
   onConfirmPasswordValidityChange?: (isValid: boolean) => void;
+  onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function ConfirmPasswordValidator({
@@ -19,6 +20,7 @@ export default function ConfirmPasswordValidator({
   placeholder = 'Confirm Passoword',
   showValidationDetails = true,
   onConfirmPasswordValidityChange: confirmPasswordValidityChange,
+  onEnter,
 }: SimplePasswordValidatorProps) {
   const comfirmPasswordNotEmpty = value.length > 0;
   const isConfirmPasswordSame = comfirmPasswordNotEmpty && value === password;
@@ -46,6 +48,7 @@ export default function ConfirmPasswordValidator({
           }
           placeholder={placeholder}
           className={passwordFieldClass()}
+          onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />
       </div>

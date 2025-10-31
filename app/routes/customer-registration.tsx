@@ -91,6 +91,11 @@ export default function CustomerRegistration() {
                 onEmailValidityChange={onEmailValidityChange}
                 value={formData.email}
                 onChange={(email: string) => handleInputChange('email', email)}
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
               />
               <PasswordValidator
                 onPasswordValidityChange={onPasswordValidityChange}
@@ -98,6 +103,11 @@ export default function CustomerRegistration() {
                 onChange={(password: string) =>
                   handleInputChange('password', password)
                 }
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
               />
               <ConfirmPasswordValidator
                 onConfirmPasswordValidityChange={
@@ -108,6 +118,11 @@ export default function CustomerRegistration() {
                 onChange={(confirmPassword: string) =>
                   handleInputChange('confirmPassword', confirmPassword)
                 }
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
               />
               <Button
                 disabled={

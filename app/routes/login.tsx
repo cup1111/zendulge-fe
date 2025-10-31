@@ -67,12 +67,22 @@ export default function Login() {
               <EmailValidator
                 value={formData.email}
                 onChange={(email: string) => handleInputChange('email', email)}
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleLogin();
+                  }
+                }}
               />
               <PasswordValidator
                 value={formData.password}
                 onChange={(password: string) =>
                   handleInputChange('password', password)
                 }
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleLogin();
+                  }
+                }}
               />
               {!authContext.isAuthenticated && authContext.errorMessage && (
                 <div className='text-xs text-red-600'>

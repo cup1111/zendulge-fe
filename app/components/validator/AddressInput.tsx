@@ -9,29 +9,74 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 
-interface AddressData {
-  country: string;
-  streetNumber: string;
-  streetName: string;
-  suburb: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  fullAddress: string;
+interface AddressField {
+  isRequired: boolean;
+  value: string;
+  defaultValue: string;
+  validate?: (value: string) => string | null;
 }
 
-interface SimpleStructuredAddressInputProps {
+interface AddressData {
+  country: AddressField;
+  streetNumber: AddressField;
+  streetName: AddressField;
+  suburb: AddressField;
+  city: AddressField;
+  state: AddressField;
+  postalCode: AddressField;
+  fullAddress: AddressField;
+}
+
+interface StructuredAddressInputProps {
   value: AddressData;
   onChange: (address: AddressData) => void;
+  error: any;
+  errorSetter: (error: any) => void;
 }
 
-export default function SimpleStructuredAddressInput({
+export default function StructuredAddressInput({
   value,
   onChange,
-}: SimpleStructuredAddressInputProps) {
+  error,
+  errorSetter,
+}: StructuredAddressInputProps) {
   const handleFieldChange = (field: keyof AddressData, newValue: string) => {
-    onChange({ ...value, [field]: newValue });
+    // const updatedField = { ...value[field], value: newValue };
+    // onChange({ ...value, [field]: updatedField });
+
+    const updatedAddressObject = {
+      ...value,
+      [field]: { ...value[field], value: newValue },
+    };
+    onChange(updatedAddressObject);
+
+    if (updatedAddressObject[field].isRequired && !newValue) {
+      errorSetter({
+        ...error,
+        address: {
+          ...error.address,
+          [field]: 'This field is required.',
+        },
+      });
+    } else {
+      errorSetter({
+        ...error,
+        address: {
+          ...error.address,
+          [field]: '',
+        },
+      });
+    }
+    if (updatedAddressObject[field].validate) {
+      errorSetter({
+        ...error,
+        [field]: updatedAddressObject[field].validate(newValue),
+      });
+    }
   };
+  const showError = (message: string) => (
+    <p className='text-xs text-red-600'>{message}</p>
+  );
 
   return (
     <Card className='w-full'>
@@ -46,21 +91,23 @@ export default function SimpleStructuredAddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Number *</Label>
               <Input
-                value={value.streetNumber || ''}
+                value={value.streetNumber.value}
                 onChange={e =>
                   handleFieldChange('streetNumber', e.target.value)
                 }
                 placeholder='123'
               />
+              {showError(error.address?.streetNumber)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Name *</Label>
               <Input
-                value={value.streetName || ''}
+                value={value.streetName.value ?? ''}
                 onChange={e => handleFieldChange('streetName', e.target.value)}
                 placeholder='Collins Street'
               />
+              {showError(error.address?.streetName)}
             </div>
           </div>
 
@@ -68,19 +115,21 @@ export default function SimpleStructuredAddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Suburb</Label>
               <Input
-                value={value.suburb || ''}
+                value={value.suburb.value ?? ''}
                 onChange={e => handleFieldChange('suburb', e.target.value)}
                 placeholder='Suburb'
               />
+              {showError(error.address?.suburb)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>City *</Label>
               <Input
-                value={value.city || ''}
+                value={value.city.value || ''}
                 onChange={e => handleFieldChange('city', e.target.value)}
                 placeholder='Melbourne'
               />
+              {showError(error.address?.city)}
             </div>
           </div>
 
@@ -88,7 +137,7 @@ export default function SimpleStructuredAddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>State *</Label>
               <Select
-                value={value.state || ''}
+                value={value.state.value ?? ''}
                 onValueChange={val => handleFieldChange('state', val)}
               >
                 <SelectTrigger>
@@ -105,15 +154,17 @@ export default function SimpleStructuredAddressInput({
                   <SelectItem value='NT'>NT</SelectItem>
                 </SelectContent>
               </Select>
+              {showError(error.address?.state)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Postal Code *</Label>
               <Input
-                value={value.postalCode || ''}
+                value={value.postalCode.value ?? ''}
                 onChange={e => handleFieldChange('postalCode', e.target.value)}
                 placeholder='3000'
               />
+              {showError(error.address?.postalCode)}
             </div>
 
             <div className='space-y-2'>

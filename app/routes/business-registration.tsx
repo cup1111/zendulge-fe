@@ -4,8 +4,8 @@ import { MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 import { registerBusiness } from '~/api/register';
-import SimpleEmailValidator from '~/components/validator/EmailInput';
-import SimpleStructuredAddressInput from '~/components/validator/SimpleAddressInput';
+import StructuredAddressInput from '~/components/validator/AddressInput';
+import EmailValidator from '~/components/validator/EmailInput';
 import PhoneValidator from '~/components/validator/SimplePhoneInput';
 
 const WELLNESS_CATEGORIES = [
@@ -26,7 +26,10 @@ const WELLNESS_CATEGORIES = [
 function BusinessRegistrationFlow({
   step,
   formData,
+  error,
+  setError,
   onInputChange,
+  onAddressChange,
   onSubmit,
   onNext,
   onPrev,
@@ -92,6 +95,9 @@ function BusinessRegistrationFlow({
 
   const currentSection = sections[step - 1];
   const maxSteps = sections.length;
+  const showError = (message: string) => (
+    <p className='text-xs text-red-600'>{message}</p>
+  );
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -143,13 +149,14 @@ function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessRegistrationFlow'
                     placeholder='e.g., Zen Wellness Spa'
-                    value={formData.businessName}
+                    value={formData.businessName.value}
                     onChange={e =>
                       onInputChange('businessName', e.target.value)
                     }
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
+                {showError(error.businessName)}
               </div>
               <div>
                 <label
@@ -159,12 +166,13 @@ function BusinessRegistrationFlow({
                   Business Description
                   <textarea
                     placeholder='Describe your wellness business, services, and unique approach...'
-                    value={formData.description}
+                    value={formData.description.value}
                     onChange={e => onInputChange('description', e.target.value)}
                     className='w-full border rounded-lg p-3 h-24 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     id='businessDescription'
                   />
                 </label>
+                {showError(error.description)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Tell potential customers about your business and what makes it
                   special
@@ -197,11 +205,12 @@ function BusinessRegistrationFlow({
                       id='fristNameInput'
                       type='text'
                       placeholder='Enter your first name'
-                      value={formData.firstName}
+                      value={formData.firstName.value}
                       onChange={e => onInputChange('firstName', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.firstName)}
                 </div>
                 <div>
                   <label
@@ -213,11 +222,12 @@ function BusinessRegistrationFlow({
                       id='lastNameInput'
                       type='text'
                       placeholder='Enter your last name'
-                      value={formData.lastName}
+                      value={formData.lastName.value}
                       onChange={e => onInputChange('lastName', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.lastName)}
                 </div>
               </div>
               <div>
@@ -230,11 +240,12 @@ function BusinessRegistrationFlow({
                     id='jobTitleInput'
                     type='text'
                     placeholder='e.g., Owner, Manager, Director'
-                    value={formData.jobTitle}
+                    value={formData.jobTitle.value}
                     onChange={e => onInputChange('jobTitle', e.target.value)}
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
+                {showError(error.jobTitle)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Your role within the business
                 </p>
@@ -271,9 +282,9 @@ function BusinessRegistrationFlow({
                           id={`category-${service}`}
                           type='checkbox'
                           className='rounded text-shadow-lavender focus:ring-shadow-lavender'
-                          checked={formData.categories?.includes(service)}
+                          checked={formData.categories?.value.includes(service)}
                           onChange={e => {
-                            const categories = formData.categories || [];
+                            const categories = formData.categories.value || [];
                             if (e.target.checked) {
                               onInputChange('categories', [
                                 ...categories,
@@ -294,8 +305,9 @@ function BusinessRegistrationFlow({
                     ))}
                   </div>
                 </label>
+                {showError(error.categories)}
               </div>
-              {formData.categories?.length > 1 && (
+              {formData.categories.value.length > 1 && (
                 <div>
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
@@ -304,20 +316,21 @@ function BusinessRegistrationFlow({
                     Primary Service Category *
                     <select
                       id='primaryCategory'
-                      value={formData.primaryCategory}
+                      value={formData.primaryCategory.value}
                       onChange={e =>
                         onInputChange('primaryCategory', e.target.value)
                       }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     >
                       <option value=''>Select your primary category</option>
-                      {formData.categories?.map((category: string) => (
+                      {formData.categories?.value.map((category: string) => (
                         <option key={category} value={category}>
                           {category}
                         </option>
                       ))}
                     </select>
                   </label>
+                  {showError(error.primaryCategory)}
                   <p className='text-sm text-gray-600 mt-1'>
                     Choose your main category for business listing and search
                   </p>
@@ -341,27 +354,11 @@ function BusinessRegistrationFlow({
                   <MapPin className='w-4 h-4 mr-2 text-shadow-lavender' />
                   Business Address
                 </label>
-                <SimpleStructuredAddressInput
-                  value={
-                    formData.address || {
-                      country: 'Australia',
-                      streetNumber: '',
-                      streetName: '',
-                      suburb: '',
-                      city: '',
-                      state: '',
-                      postalCode: '',
-                      fullAddress: '',
-                    }
-                  }
-                  onChange={address => onInputChange('address', address)}
-                  country={formData.address?.country || 'Australia'}
-                  onCountryChange={country => {
-                    onInputChange('address', {
-                      ...formData.address,
-                      country,
-                    });
-                  }}
+                <StructuredAddressInput
+                  value={formData.address}
+                  onChange={address => onAddressChange(address)}
+                  error={error}
+                  errorSetter={setError}
                 />
                 <p className='text-sm text-gray-600'>
                   This is where customers will visit for your wellness services
@@ -380,24 +377,26 @@ function BusinessRegistrationFlow({
               </div>
               <div>
                 <PhoneValidator
-                  value={formData.phone || ''}
+                  value={formData.phone.value || ''}
                   onChange={value => onInputChange('phone', value)}
                   label='Business Phone Number * (for customer contact)'
                   placeholder='Enter business phone (landline or mobile)'
                   showValidationDetails
                 />
+                {showError(error.phone)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Landline or mobile number for customer contact
                 </p>
               </div>
               <div>
-                <SimpleEmailValidator
-                  value={formData.email || ''}
+                <EmailValidator
+                  value={formData.email.value || ''}
                   onChange={value => onInputChange('email', value)}
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
                   showValidationDetails
                 />
+                {showError(error.email)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Primary email for customer communication
                 </p>
@@ -424,32 +423,35 @@ function BusinessRegistrationFlow({
                     id='contactPersonName'
                     type='text'
                     placeholder='John Smith'
-                    value={formData.contactPersonName}
+                    value={formData.contactPersonName.value}
                     onChange={e =>
                       onInputChange('contactPersonName', e.target.value)
                     }
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
+                {showError(error.contactPersonName)}
               </div>
               <div>
-                <SimpleEmailValidator
-                  value={formData.contactPersonEmail || ''}
+                <EmailValidator
+                  value={formData.contactPersonEmail.value || ''}
                   onChange={value => onInputChange('contactPersonEmail', value)}
                   label='Contact Person Email *'
                   placeholder='john@yourbusiness.com'
                   showValidationDetails
                 />
+                {showError(error.contactPersonEmail)}
               </div>
               <div>
                 <PhoneValidator
-                  value={formData.contactPersonPhone || ''}
+                  value={formData.contactPersonPhone.value || ''}
                   onChange={value => onInputChange('contactPersonPhone', value)}
                   label='Business Group Admin Mobile Phone *'
                   placeholder='Enter mobile phone for account management'
                   mobileOnly
                   showValidationDetails
                 />
+                {showError(error.contactPersonPhone)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Mobile number for account management purposes
                 </p>
@@ -477,11 +479,12 @@ function BusinessRegistrationFlow({
                       id='businessWeb'
                       type='url'
                       placeholder='https://yourbusiness.com'
-                      value={formData.website}
+                      value={formData.website.value}
                       onChange={e => onInputChange('website', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.website)}
                 </div>
                 <div>
                   <label
@@ -493,11 +496,12 @@ function BusinessRegistrationFlow({
                       id='fecebook'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
-                      value={formData.facebook}
+                      value={formData.facebook.value}
                       onChange={e => onInputChange('facebook', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.facebook)}
                 </div>
                 <div>
                   <label
@@ -509,11 +513,12 @@ function BusinessRegistrationFlow({
                       id='xProfile'
                       type='url'
                       placeholder='https://x.com/yourbusiness'
-                      value={formData.twitter}
+                      value={formData.twitter.value}
                       onChange={e => onInputChange('twitter', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.twitter)}
                 </div>
                 <div>
                   <label
@@ -525,11 +530,12 @@ function BusinessRegistrationFlow({
                       id='businessLogo'
                       type='url'
                       placeholder='https://yourbusiness.com/logo.png'
-                      value={formData.logo}
+                      value={formData.logo.value}
                       onChange={e => onInputChange('logo', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.logo)}
                 </div>
               </div>
             </div>
@@ -553,13 +559,14 @@ function BusinessRegistrationFlow({
                       id='email'
                       type='email'
                       placeholder='youremail@.com'
-                      value={formData.loginEmail}
+                      value={formData.loginEmail.value}
                       onChange={e =>
                         onInputChange('loginEmail', e.target.value)
                       }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.loginEmail)}
                 </div>
                 <div>
                   <label
@@ -571,11 +578,12 @@ function BusinessRegistrationFlow({
                       id='password'
                       type='password'
                       placeholder='your password'
-                      value={formData.password}
+                      value={formData.password.value}
                       onChange={e => onInputChange('password', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.password)}
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
                     htmlFor='confirmPassword'
@@ -585,17 +593,18 @@ function BusinessRegistrationFlow({
                       id='confirmPassword'
                       type='password'
                       placeholder='your password'
-                      value={formData.password}
+                      value={formData.password.value}
                       onChange={e => onInputChange('password', e.target.value)}
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
+                  {showError(error.password)}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Completion Screen - 完全一样的样式 */}
+          {/* Completion Screen */}
           {step === SectionNumber.completed && (
             <div className='space-y-6 text-center'>
               <h2 className='text-xl font-semibold'>
@@ -627,7 +636,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* 导航按钮 - 完全一样的样式 */}
+          {/* Navigation Button */}
           <div className='flex justify-between mt-8'>
             {step > 1 && step <= maxSteps && (
               <button
@@ -667,38 +676,166 @@ export default function BusinessRegistration() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Business fields
-    businessName: '',
-    description: '',
-    firstName: '',
-    lastName: '',
-    categories: [] as string[],
-    primaryCategory: '',
-    jobTitle: '',
-    address: {
-      country: '',
-      streetNumber: '',
-      streetName: '',
-      suburb: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      fullAddress: '',
+    businessName: {
+      isRequired: true,
+      value: '',
+      defaultValue: 'Business Name',
     },
-    phone: '',
-    email: '',
-    contactPersonName: '',
-    contactPersonEmail: '',
-    contactPersonPhone: '',
-    website: '',
-    facebook: '',
-    twitter: '',
-    logo: '',
-    loginEmail: '',
-    password: '',
+    description: {
+      validate: value => {
+        if (value.length > 500) {
+          return 'Description cannot exceed 500 characters';
+        }
+        return null;
+      },
+      value: '',
+      defaultValue: 'Description',
+    },
+    firstName: {
+      isRequired: true,
+      value: '',
+      defaultValue: 'First Name',
+    },
+    lastName: {
+      isRequired: true,
+      value: '',
+      defaultValue: 'Last Name',
+    },
+    categories: {
+      validate: value => {
+        if (value.length < 1) {
+          return 'At least one category must be selected';
+        }
+        return null;
+      },
+      value: [] as string[],
+      defaultValue: [],
+    },
+    primaryCategory: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    jobTitle: {
+      isRequired: true,
+      value: '',
+      defaultValue: 'Job Title',
+    },
+    address: {
+      country: {
+        isRequired: true,
+        value: 'Australia',
+        defaultValue: 'Australia',
+      },
+      streetNumber: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      streetName: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      suburb: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      city: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      state: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      postalCode: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      fullAddress: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+    },
+    phone: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    email: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    contactPersonName: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    contactPersonEmail: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    contactPersonPhone: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    website: {
+      isRequired: false,
+      value: '',
+      defaultValue: '',
+    },
+    facebook: {
+      isRequired: false,
+      value: '',
+      defaultValue: '',
+    },
+    twitter: {
+      isRequired: false,
+      value: '',
+      defaultValue: '',
+    },
+    logo: {
+      isRequired: false,
+      value: '',
+      defaultValue: '',
+    },
+    loginEmail: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
+    password: {
+      isRequired: true,
+      value: '',
+      defaultValue: '',
+    },
   });
+  const [error, setError] = useState({});
 
   const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const updatedField = { ...formData[field], ...{ value } };
+    setFormData({ ...formData, ...{ [field]: updatedField } });
+    if (formData[field].isRequired && !value) {
+      setError({ ...error, ...{ [field]: 'This field is required' } });
+    } else {
+      setError({ ...error, ...{ [field]: '' } });
+    }
+
+    if (formData[field].validate) {
+      setError({ ...error, [field]: formData[field].validate(value) });
+    }
+  };
+  const handleAddressChange = (value: any) => {
+    setFormData({ ...formData, address: value });
   };
 
   const handleSubmit = async () => {
@@ -712,7 +849,10 @@ export default function BusinessRegistration() {
     <BusinessRegistrationFlow
       step={step}
       formData={formData}
+      error={error}
+      setError={setError}
       onInputChange={handleInputChange}
+      onAddressChange={handleAddressChange}
       onSubmit={handleSubmit}
       onNext={nextStep}
       onPrev={prevStep}

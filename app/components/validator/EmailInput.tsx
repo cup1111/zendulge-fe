@@ -11,6 +11,7 @@ interface SimpleEmailValidatorProps {
   label?: string;
   showValidationDetails?: boolean;
   onEmailValidityChange?: (isValid: boolean) => void;
+  onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function SimpleEmailValidator({
@@ -20,6 +21,7 @@ export default function SimpleEmailValidator({
   label = 'Email Address',
   showValidationDetails = true,
   onEmailValidityChange,
+  onEnter,
 }: SimpleEmailValidatorProps) {
   const mailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = mailReg.test(value);
@@ -52,6 +54,7 @@ export default function SimpleEmailValidator({
           }
           placeholder={placeholder}
           className={emailFieldClass()}
+          onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />
       </div>
