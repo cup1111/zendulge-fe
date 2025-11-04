@@ -17,6 +17,16 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
@@ -76,13 +86,14 @@ type CompanyFormData = z.infer<typeof companySchema>;
 
 export default function Profile() {
   const { toast } = useToast();
-  const { user: authUser, isAuthenticated, currentCompany } = useAuth();
+  const { user: authUser, isAuthenticated, currentCompany, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [company, setCompany] = useState<CompanyInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCompanyLoading, setIsCompanyLoading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -274,6 +285,40 @@ export default function Profile() {
       });
     } finally {
       setIsCompanyLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await ProfileService.deleteAccount();
+
+      toast({
+        title: 'Account deleted',
+        description: 'Your account has been successfully deleted.',
+      });
+
+      // Close dialog
+      setIsDeleteDialogOpen(false);
+
+      // Logout and redirect to home
+      setTimeout(() => {
+        logout();
+        window.location.href = '/';
+      }, 1500);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to delete account. Please try again.';
+
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+
+      // Close dialog on error
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -593,15 +638,7 @@ export default function Profile() {
                           <Button
                             variant='destructive'
                             size='sm'
-                            onClick={() => {
-                              // TODO: Check if all businesses are deactivated
-                              // For now, show demo message
-                              toast({
-                                title: 'Account deletion',
-                                description:
-                                  'Please deactivate all your businesses first. This feature will be available once all businesses are deactivated.',
-                              });
-                            }}
+                            onClick={() => setIsDeleteDialogOpen(true)}
                           >
                             Delete Account
                           </Button>
@@ -630,13 +667,7 @@ export default function Profile() {
                           <Button
                             variant='destructive'
                             size='sm'
-                            onClick={() => {
-                              toast({
-                                title: 'Account deletion',
-                                description:
-                                  'This feature is not available in demo mode.',
-                              });
-                            }}
+                            onClick={() => setIsDeleteDialogOpen(true)}
                           >
                             Delete Account
                           </Button>
@@ -649,6 +680,32 @@ export default function Profile() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Delete Account Confirmation Dialog */}
+                <AlertDialog
+                  open={isDeleteDialogOpen}
+                  onOpenChange={setIsDeleteDialogOpen}
+                >
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {authUser?.role?.slug === BusinessUserRole.Owner
+                          ? 'Are you sure you want to delete your account? This will permanently deactivate your account and all associated businesses. This action cannot be undone.'
+                          : 'Are you sure you want to delete your account? This will remove all your business relationships and permanently deactivate your account. This action cannot be undone.'}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleDeleteAccount}
+                        className='bg-red-600 hover:bg-red-700 text-white'
+                      >
+                        Delete Account
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </TabsContent>
 
               {/* Notifications Tab */}

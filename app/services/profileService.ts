@@ -56,6 +56,13 @@ export class ProfileService {
     );
     return response.data.data.user;
   }
+
+  /**
+   * Delete current user account
+   */
+  static async deleteAccount(): Promise<void> {
+    await api.delete(API_CONFIG.endpoints.auth.profile);
+  }
 }
 
 export default ProfileService;
