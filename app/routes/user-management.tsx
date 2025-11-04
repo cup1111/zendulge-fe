@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
@@ -8,17 +8,9 @@ import { useAuth } from '~/contexts/AuthContext';
 
 export default function UserManagementPage() {
   const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
-  const [dataLoading, setDataLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Set loading to false once auth is loaded
-    if (!isLoading) {
-      setDataLoading(false);
-    }
-  }, [isLoading]);
-
-  if (isLoading || dataLoading) {
+  if (isLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
@@ -36,7 +28,9 @@ export default function UserManagementPage() {
         <div className='text-center'>
           <p className='text-red-600 mb-4'>Please log in to access this page</p>
           <Button
-            onClick={() => (window.location.href = '/login')}
+            onClick={() => {
+              window.location.href = '/login';
+            }}
             className='bg-shadow-lavender hover:bg-shadow-lavender/90'
           >
             Go to Login
