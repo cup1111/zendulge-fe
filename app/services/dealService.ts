@@ -9,11 +9,11 @@ export interface Deal {
   originalPrice?: number;
   discount?: number;
   duration: number;
-  operatingSite: {
+  operatingSite: Array<{
     id: string;
     name: string;
     address: string;
-  };
+  }>;
   availability: {
     startDate: string;
     endDate: string;
@@ -48,7 +48,7 @@ export interface DealCreateRequest {
   price: number;
   originalPrice?: number;
   duration: number;
-  operatingSite: string;
+  operatingSite: string[];
   availability: {
     startDate: string;
     endDate: string;
@@ -67,7 +67,7 @@ export interface DealUpdateRequest {
   price?: number;
   originalPrice?: number;
   duration?: number;
-  operatingSite?: string;
+  operatingSite?: string[];
   availability?: {
     startDate?: string;
     endDate?: string;

@@ -193,7 +193,9 @@ export default function BusinessDashboard() {
 
         // Ensure we have a current company selected
         if (!currentCompany?.id) {
-          throw new Error('No company selected or invalid company ID');
+          // Don't throw error, just wait for company to be available
+          setDataLoading(false);
+          return;
         }
 
         const companyIdString = currentCompany.id;
@@ -226,8 +228,7 @@ export default function BusinessDashboard() {
     }
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]); // Re-run when auth state changes
+  }, [isLoading, isAuthenticated, user, currentCompany?.id]); // Re-run when auth state or company changes
 
   if (isLoading || dataLoading) {
     return (

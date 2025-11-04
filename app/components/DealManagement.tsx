@@ -1,5 +1,6 @@
 import {
   Calendar,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -17,6 +18,7 @@ import DealDialog from '~/components/DealDialog';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import { Checkbox } from '~/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,11 @@ import {
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '~/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -67,7 +74,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     category: '',
     price: 0,
     duration: 60,
-    operatingSite: '',
+    operatingSite: [],
     availability: {
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -78,6 +85,8 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     tags: [],
     service: '',
   });
+  const [operatingSitePopoverOpen, setOperatingSitePopoverOpen] =
+    useState(false);
 
   // Helper functions for role-based access control
   const isOwner = user?.role?.slug === BusinessUserRole.Owner;
@@ -128,7 +137,9 @@ export default function DealManagement({ companyId }: DealManagementProps) {
         deal.title?.toLowerCase().includes(searchLower) ||
         deal.category?.toLowerCase().includes(searchLower) ||
         deal.description?.toLowerCase().includes(searchLower) ||
-        deal.operatingSite?.name?.toLowerCase().includes(searchLower) ||
+        deal.operatingSite.some(site =>
+          site.name?.toLowerCase().includes(searchLower)
+        ) ||
         deal.service?.name?.toLowerCase().includes(searchLower)
       );
     });
@@ -200,13 +211,18 @@ export default function DealManagement({ companyId }: DealManagementProps) {
 
   const openEditDialog = (deal: Deal) => {
     setEditingDeal(deal);
+    // Extract operating site IDs from the array
+    const operatingSiteIds: string[] = deal.operatingSite
+      .map(site => site.id)
+      .filter(id => id);
+
     setFormData({
       title: deal.title ?? '',
       description: deal.description ?? '',
       category: deal.category ?? '',
       price: deal.price ?? 0,
       duration: deal.duration ?? 60,
-      operatingSite: deal.operatingSite?.id ?? '',
+      operatingSite: operatingSiteIds,
       availability: {
         startDate:
           deal.availability?.startDate?.split('T')[0] ??
@@ -284,9 +300,10 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     }
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}m`
-      : `${hours}h`;
+    if (remainingMinutes > 0) {
+      return `${hours}h ${remainingMinutes}m`;
+    }
+    return `${hours}h`;
   };
 
   const formatDate = (dateString: string) =>
@@ -295,6 +312,21 @@ export default function DealManagement({ companyId }: DealManagementProps) {
       month: 'short',
       day: 'numeric',
     });
+
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'inactive':
+        return 'Inactive';
+      case 'expired':
+        return 'Expired';
+      case 'sold_out':
+        return 'Sold Out';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -308,6 +340,37 @@ export default function DealManagement({ companyId }: DealManagementProps) {
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusToggleTitle = (deal: Deal) => {
+    if (!canEditDeal(deal)) return '';
+    if (deal.status === 'active') return 'Click to deactivate';
+    return 'Click to activate';
+  };
+
+  const handleToggleStatus = async (deal: Deal) => {
+    if (!canEditDeal(deal)) return;
+
+    // Toggle: if active -> inactive, otherwise -> active
+    const newStatus = deal.status === 'active' ? 'inactive' : 'active';
+    const actionText = newStatus === 'active' ? 'activated' : 'deactivated';
+
+    try {
+      await DealService.updateDealStatus(companyId, deal.id, {
+        status: newStatus,
+      });
+      toast({
+        title: 'Success',
+        description: `Deal ${actionText} successfully`,
+      });
+      await loadDeals();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update deal status',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -409,9 +472,15 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                   {deal.category ?? 'Uncategorized'}
                 </Badge>
                 <Badge
-                  className={`w-fit ${getStatusColor(deal.status ?? 'unknown')}`}
+                  className={`w-fit ${canEditDeal(deal) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${getStatusColor(deal.status ?? 'unknown')}`}
+                  onClick={
+                    canEditDeal(deal)
+                      ? () => handleToggleStatus(deal)
+                      : undefined
+                  }
+                  title={getStatusToggleTitle(deal)}
                 >
-                  {deal.status ?? 'unknown'}
+                  {formatStatus(deal.status ?? 'unknown')}
                 </Badge>
               </div>
             </CardHeader>
@@ -431,7 +500,9 @@ export default function DealManagement({ companyId }: DealManagementProps) {
               <div className='flex items-center text-sm text-gray-600'>
                 <MapPin className='w-4 h-4 mr-2 flex-shrink-0' />
                 <span className='font-medium truncate'>
-                  {deal.operatingSite?.name ?? 'Unknown Site'}
+                  {deal.operatingSite.length > 0
+                    ? deal.operatingSite.map(site => site.name).join(', ')
+                    : 'No sites'}
                 </span>
               </div>
               <div className='flex items-center text-sm text-gray-600'>
@@ -565,25 +636,128 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                 </Select>
               </div>
               <div>
-                <Label htmlFor='edit-operatingSite'>Operating Site</Label>
-                <Select
-                  value={formData.operatingSite}
-                  onValueChange={value =>
-                    setFormData({ ...formData, operatingSite: value })
-                  }
+                <Label htmlFor='edit-operatingSite'>Operating Sites</Label>
+                <Popover
+                  open={operatingSitePopoverOpen}
+                  onOpenChange={setOperatingSitePopoverOpen}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select operating site' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.isArray(operatingSites) &&
-                      operatingSites.map(site => (
-                        <SelectItem key={site.id} value={site.id}>
-                          {site.name ?? 'Unknown Site'}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='w-full justify-between text-left font-normal'
+                      disabled={operatingSites.length === 0}
+                    >
+                      <span className='truncate'>
+                        {(() => {
+                          if (formData.operatingSite.length === 0) {
+                            return 'Select operating sites';
+                          }
+                          if (formData.operatingSite.length === 1) {
+                            const siteName =
+                              operatingSites.find(
+                                s => s.id === formData.operatingSite[0]
+                              )?.name || '1 site selected';
+                            return siteName;
+                          }
+                          return `${formData.operatingSite.length} sites selected`;
+                        })()}
+                      </span>
+                      <ChevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className='w-full p-0' align='start'>
+                    <div className='max-h-60 overflow-auto p-2'>
+                      {Array.isArray(operatingSites) &&
+                        operatingSites.map(site => (
+                          <div
+                            key={site.id}
+                            role='button'
+                            tabIndex={0}
+                            className='flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer'
+                            onClick={() => {
+                              const isSelected =
+                                formData.operatingSite.includes(site.id);
+                              if (isSelected) {
+                                setFormData({
+                                  ...formData,
+                                  operatingSite: formData.operatingSite.filter(
+                                    id => id !== site.id
+                                  ),
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  operatingSite: [
+                                    ...formData.operatingSite,
+                                    site.id,
+                                  ],
+                                });
+                              }
+                            }}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                const isSelected =
+                                  formData.operatingSite.includes(site.id);
+                                if (isSelected) {
+                                  setFormData({
+                                    ...formData,
+                                    operatingSite:
+                                      formData.operatingSite.filter(
+                                        id => id !== site.id
+                                      ),
+                                  });
+                                } else {
+                                  setFormData({
+                                    ...formData,
+                                    operatingSite: [
+                                      ...formData.operatingSite,
+                                      site.id,
+                                    ],
+                                  });
+                                }
+                              }
+                            }}
+                          >
+                            <Checkbox
+                              checked={formData.operatingSite.includes(site.id)}
+                              onCheckedChange={checked => {
+                                if (checked) {
+                                  setFormData({
+                                    ...formData,
+                                    operatingSite: [
+                                      ...formData.operatingSite,
+                                      site.id,
+                                    ],
+                                  });
+                                } else {
+                                  setFormData({
+                                    ...formData,
+                                    operatingSite:
+                                      formData.operatingSite.filter(
+                                        id => id !== site.id
+                                      ),
+                                  });
+                                }
+                              }}
+                            />
+                            <Label
+                              className='flex-1 cursor-pointer font-normal'
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {site.name ?? 'Unknown Site'}
+                            </Label>
+                          </div>
+                        ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {formData.operatingSite.length === 0 && (
+                  <p className='text-sm text-red-500 mt-1'>
+                    At least one operating site is required
+                  </p>
+                )}
               </div>
             </div>
 

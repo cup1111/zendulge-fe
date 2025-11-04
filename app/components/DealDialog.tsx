@@ -1,7 +1,8 @@
-import { Loader2, Plus } from 'lucide-react';
+import { ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '~/components/ui/button';
+import { Checkbox } from '~/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,11 @@ import {
 } from '~/components/ui/dialog';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '~/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -44,13 +50,15 @@ export default function DealDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [operatingSitePopoverOpen, setOperatingSitePopoverOpen] =
+    useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: '',
     price: 0,
     duration: 60,
-    operatingSite: '',
+    operatingSite: [] as string[],
     availability: {
       startDate: new Date().toISOString().split('T')[0],
       endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -130,7 +138,7 @@ export default function DealDialog({
         category: '',
         price: 0,
         duration: 60,
-        operatingSite: '',
+        operatingSite: [],
         availability: {
           startDate: new Date().toISOString().split('T')[0],
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -221,27 +229,103 @@ export default function DealDialog({
                 </Select>
               </div>
 
-              {/* Operating Site */}
+              {/* Operating Sites (Multi-select) */}
               <div>
-                <Label htmlFor='operatingSite'>Operating Site *</Label>
-                <Select
-                  value={formData.operatingSite}
-                  onValueChange={value =>
-                    setFormData({ ...formData, operatingSite: value })
-                  }
-                  required
+                <Label htmlFor='operatingSite'>Operating Sites *</Label>
+                <Popover
+                  open={operatingSitePopoverOpen}
+                  onOpenChange={setOperatingSitePopoverOpen}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select operating site' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {operatingSites.map(site => (
-                      <SelectItem key={site.id} value={site.id}>
-                        {site.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='w-full justify-between text-left font-normal'
+                      disabled={operatingSites.length === 0}
+                    >
+                      <span className='truncate'>
+                        {(() => {
+                          if (formData.operatingSite.length === 0) {
+                            return 'Select operating sites';
+                          }
+                          if (formData.operatingSite.length === 1) {
+                            const siteName =
+                              operatingSites.find(
+                                s => s.id === formData.operatingSite[0]
+                              )?.name || '1 site selected';
+                            return siteName;
+                          }
+                          return `${formData.operatingSite.length} sites selected`;
+                        })()}
+                      </span>
+                      <ChevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className='w-full p-0' align='start'>
+                    <div className='max-h-60 overflow-auto p-2'>
+                      {operatingSites.map(site => (
+                        <div
+                          key={site.id}
+                          className='flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer'
+                          onClick={() => {
+                            const isSelected = formData.operatingSite.includes(
+                              site.id
+                            );
+                            if (isSelected) {
+                              setFormData({
+                                ...formData,
+                                operatingSite: formData.operatingSite.filter(
+                                  id => id !== site.id
+                                ),
+                              });
+                            } else {
+                              setFormData({
+                                ...formData,
+                                operatingSite: [
+                                  ...formData.operatingSite,
+                                  site.id,
+                                ],
+                              });
+                            }
+                          }}
+                        >
+                          <Checkbox
+                            checked={formData.operatingSite.includes(site.id)}
+                            onCheckedChange={checked => {
+                              if (checked) {
+                                setFormData({
+                                  ...formData,
+                                  operatingSite: [
+                                    ...formData.operatingSite,
+                                    site.id,
+                                  ],
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  operatingSite: formData.operatingSite.filter(
+                                    id => id !== site.id
+                                  ),
+                                });
+                              }
+                            }}
+                          />
+                          <Label
+                            className='flex-1 cursor-pointer font-normal'
+                            onClick={e => e.stopPropagation()}
+                          >
+                            {site.name}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                {formData.operatingSite.length === 0 && (
+                  <p className='text-sm text-red-500 mt-1'>
+                    At least one operating site is required
+                  </p>
+                )}
               </div>
 
               {/* Category */}
