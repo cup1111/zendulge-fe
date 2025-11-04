@@ -17,7 +17,6 @@ import CustomerManagement from '~/components/CustomerManagement';
 import DealManagement from '~/components/DealManagement';
 import ServiceManagement from '~/components/ServiceManagement';
 import { Button } from '~/components/ui/button';
-import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 import { BusinessUserRole, OperatingSiteStatus } from '~/constants/enums';
@@ -204,7 +203,7 @@ export default function BusinessManagement() {
           <div className='max-w-7xl mx-auto'>
             <p className='text-blue-800 text-sm'>
               <strong>Backend Status:</strong> Operating Sites from real API ✅
-              | Service Management and User Management integrated ✅
+              | Service Management integrated ✅
             </p>
           </div>
         </div>
@@ -219,27 +218,12 @@ export default function BusinessManagement() {
                 Business Management
               </h1>
               <p className='text-gray-600'>
-                Manage your team, services, and business locations
+                Manage your services, deals, customers, and business locations
               </p>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Users Management Section (only for owners and managers) */}
-      {(user?.role?.slug === BusinessUserRole.Owner ||
-        user?.role?.slug === BusinessUserRole.Manager) && (
-        <section className='py-8'>
-          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-            {currentCompany?.id && user?.id && (
-              <UserManagement
-                companyId={currentCompany.id}
-                excludeUserId={user.id}
-              />
-            )}
-          </div>
-        </section>
-      )}
 
       {/* Customers Management Section (only for owners and managers) */}
       {(user?.role?.slug === BusinessUserRole.Owner ||

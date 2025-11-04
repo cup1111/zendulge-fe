@@ -102,7 +102,8 @@ export default function Header() {
                 <div
                   className={`ml-6 text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat cursor-pointer flex items-center ${
                     location.pathname === '/business-dashboard' ||
-                    location.pathname === '/business-management'
+                    location.pathname === '/business-management' ||
+                    location.pathname === '/user-management'
                       ? 'opacity-80'
                       : ''
                   }`}
@@ -132,7 +133,19 @@ export default function Header() {
                           : ''
                       }`}
                     >
-                      Management
+                      Business Management
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link
+                      to='/user-management'
+                      className={`w-full ${
+                        location.pathname === '/user-management'
+                          ? 'bg-gray-100'
+                          : ''
+                      }`}
+                    >
+                      User Management
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>

@@ -1,8 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  AlertTriangle,
+  Bell,
   Building,
   Calendar,
   Edit,
+  Info,
   Mail,
   MapPin,
   Phone,
@@ -376,10 +379,13 @@ export default function Profile() {
           <div className='lg:col-span-2'>
             <Tabs defaultValue='personal' className='space-y-4'>
               <TabsList
-                className={`grid w-full ${authUser?.role?.slug === BusinessUserRole.Owner ? 'grid-cols-3' : 'grid-cols-2'}`}
+                className={`grid w-full ${authUser?.role?.slug === BusinessUserRole.Owner ? 'grid-cols-4' : 'grid-cols-3'}`}
               >
                 <TabsTrigger value='personal'>Personal</TabsTrigger>
-                <TabsTrigger value='account'>Account(WIP)</TabsTrigger>
+                <TabsTrigger value='account'>Account</TabsTrigger>
+                <TabsTrigger value='notifications'>
+                  Notifications (WIP)
+                </TabsTrigger>
                 {authUser?.role?.slug === BusinessUserRole.Owner && (
                   <TabsTrigger value='business'>Business</TabsTrigger>
                 )}
@@ -552,6 +558,109 @@ export default function Profile() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className='space-y-6'>
+                    <div>
+                      {authUser?.role?.slug === BusinessUserRole.Owner ? (
+                        <>
+                          <div className='mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg'>
+                            <div className='flex items-start'>
+                              <AlertTriangle className='w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0' />
+                              <div className='flex-1'>
+                                <h4 className='font-semibold text-yellow-900 mb-2'>
+                                  Account Deletion Requirements
+                                </h4>
+                                <p className='text-sm text-yellow-800 mb-3'>
+                                  To delete your account, you must first
+                                  deactivate all your businesses. This ensures
+                                  proper business closure and data management.
+                                </p>
+                                <ul className='text-sm text-yellow-800 list-disc list-inside space-y-1'>
+                                  <li>
+                                    All businesses must be deactivated before
+                                    account deletion
+                                  </li>
+                                  <li>
+                                    Account deletion will perform a soft delete
+                                    (account can be recovered)
+                                  </li>
+                                  <li>
+                                    You can reactivate your businesses before
+                                    permanent deletion
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant='destructive'
+                            size='sm'
+                            onClick={() => {
+                              // TODO: Check if all businesses are deactivated
+                              // For now, show demo message
+                              toast({
+                                title: 'Account deletion',
+                                description:
+                                  'Please deactivate all your businesses first. This feature will be available once all businesses are deactivated.',
+                              });
+                            }}
+                          >
+                            Delete Account
+                          </Button>
+                          <p className='text-sm text-gray-600 mt-2'>
+                            This action cannot be undone.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <div className='mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg'>
+                            <div className='flex items-start'>
+                              <Info className='w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0' />
+                              <div className='flex-1'>
+                                <h4 className='font-semibold text-blue-900 mb-2'>
+                                  Account Deletion Information
+                                </h4>
+                                <p className='text-sm text-blue-800'>
+                                  Deleting your account will remove all your
+                                  business relationships. You will be removed
+                                  from all companies and operating sites you are
+                                  associated with.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant='destructive'
+                            size='sm'
+                            onClick={() => {
+                              toast({
+                                title: 'Account deletion',
+                                description:
+                                  'This feature is not available in demo mode.',
+                              });
+                            }}
+                          >
+                            Delete Account
+                          </Button>
+                          <p className='text-sm text-gray-600 mt-2'>
+                            This action cannot be undone. All your business
+                            relationships will be permanently removed.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Notifications Tab */}
+              <TabsContent value='notifications'>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='flex items-center'>
+                      <Bell className='w-5 h-5 mr-2' />
+                      Notification Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-6'>
                     <div className='flex items-center justify-between'>
                       <div className='space-y-0.5'>
                         <Label className='text-base'>Email Notifications</Label>
@@ -571,27 +680,6 @@ export default function Profile() {
                         </div>
                       </div>
                       <Switch />
-                    </div>
-
-                    <Separator />
-                    <div>
-                      <Button
-                        variant='destructive'
-                        size='sm'
-                        onClick={() => {
-                          toast({
-                            title: 'Account deletion',
-                            description:
-                              'This feature is not available in demo mode.',
-                          });
-                        }}
-                      >
-                        Delete Account
-                      </Button>
-                      <p className='text-sm text-gray-600 mt-2'>
-                        This action cannot be undone. All your data will be
-                        permanently deleted.
-                      </p>
                     </div>
                   </CardContent>
                 </Card>
