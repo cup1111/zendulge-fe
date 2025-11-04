@@ -40,6 +40,12 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '~/components/ui/tooltip';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
@@ -499,11 +505,42 @@ export default function DealManagement({ companyId }: DealManagementProps) {
               </div>
               <div className='flex items-center text-sm text-gray-600'>
                 <MapPin className='w-4 h-4 mr-2 flex-shrink-0' />
-                <span className='font-medium truncate'>
-                  {deal.operatingSite.length > 0
-                    ? deal.operatingSite.map(site => site.name).join(', ')
-                    : 'No sites'}
-                </span>
+                {deal.operatingSite.length > 0 ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className='font-medium truncate cursor-help'>
+                          {deal.operatingSite.map(site => site.name).join(', ')}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side='top'
+                        className='max-w-xs'
+                        sideOffset={5}
+                      >
+                        <div className='space-y-1'>
+                          <p className='font-semibold text-sm mb-2'>
+                            Operating Sites ({deal.operatingSite.length}):
+                          </p>
+                          <ul className='list-disc list-inside space-y-1'>
+                            {deal.operatingSite.map(site => (
+                              <li key={site.id} className='text-sm'>
+                                {site.name}
+                                {site.address && (
+                                  <span className='text-xs text-gray-400 block ml-4'>
+                                    {site.address}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <span className='font-medium truncate'>No sites</span>
+                )}
               </div>
               <div className='flex items-center text-sm text-gray-600'>
                 <Calendar className='w-4 h-4 mr-2 flex-shrink-0' />
