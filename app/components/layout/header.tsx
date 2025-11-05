@@ -4,9 +4,9 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import DealDialog from '~/components/DealDialog';
 import { Button } from '~/components/ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
 } from '~/components/ui/dropdown-menu';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
