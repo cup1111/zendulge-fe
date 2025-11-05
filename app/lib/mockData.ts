@@ -359,7 +359,7 @@ export interface Address {
   suburb: string;
   city: string;
   state: string;
-  postcodeng;
+  postcode: string;
   fullAddress: string;
 }
 
