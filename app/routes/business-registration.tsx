@@ -1,12 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
+
 import { MapPin } from 'lucide-react';
 import { useState } from 'react';
 
 import { registerBusiness } from '~/api/register';
 import StructuredAddressInput from '~/components/validator/AddressInput';
 import EmailValidator from '~/components/validator/EmailInput';
-import PhoneValidator from '~/components/validator/SimplePhoneInput';
+import PhoneValidator from '~/components/validator/PhoneInput';
 
 const WELLNESS_CATEGORIES = [
   'massage',
@@ -33,6 +34,8 @@ function BusinessRegistrationFlow({
   onSubmit,
   onNext,
   onPrev,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  hasChanged,
 }: any) {
   enum SectionNumber {
     basicInformation = 1,
@@ -95,6 +98,7 @@ function BusinessRegistrationFlow({
 
   const currentSection = sections[step - 1];
   const maxSteps = sections.length;
+  const canProceedToNextStep = true; // TODO: need to fix
   const showError = (message: string) => (
     <p className='text-xs text-red-600'>{message}</p>
   );
@@ -119,19 +123,20 @@ function BusinessRegistrationFlow({
             </h1>
             {/* 进度条 */}
             <div className='flex space-x-2 mb-6'>
-              {sections.map((_, i) => (
+              {sections.slice(0, -1).map((section, i) => (
                 <div
-                  key={_.key}
+                  key={section.key}
                   className={`h-2 flex-1 rounded ${i < step ? 'bg-shadow-lavender' : 'bg-gray-200'}`}
                 />
               ))}
             </div>
+
             <h2 className='text-xl font-semibold text-gray-800 mb-6'>
               {currentSection?.title}
             </h2>
           </div>
 
-          {/* Section 1: Basic Information - 完全一样的布局 */}
+          {/* Section 1: Basic Information -  */}
           {step === SectionNumber.basicInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -164,13 +169,26 @@ function BusinessRegistrationFlow({
                   htmlFor='businessDescription'
                 >
                   Business Description
-                  <textarea
-                    placeholder='Describe your wellness business, services, and unique approach...'
-                    value={formData.description.value}
-                    onChange={e => onInputChange('description', e.target.value)}
-                    className='w-full border rounded-lg p-3 h-24 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
-                    id='businessDescription'
-                  />
+                  <div className='relative'>
+                    <textarea
+                      id='businessDescription'
+                      placeholder='Describe your wellness business, services, and unique approach...'
+                      value={formData.description.value}
+                      onChange={e =>
+                        onInputChange('description', e.target.value)
+                      }
+                      className='w-full border rounded-lg p-3 h-24 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent pr-12'
+                    />
+                    <span
+                      className={`absolute bottom-2 right-3 text-xs ${
+                        formData.description.value.length > 500
+                          ? 'text-red-500'
+                          : 'text-gray-400'
+                      }`}
+                    >
+                      {formData.description.value.length}/500
+                    </span>
+                  </div>
                 </label>
                 {showError(error.description)}
                 <p className='text-sm text-gray-600 mt-1'>
@@ -181,7 +199,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* Section 2: Business Group Admin Information - 完全一样的布局 */}
+          {/* Section 2: Business Group Admin Information -  */}
           {step === SectionNumber.adminInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -253,7 +271,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* Section 3: Service Categories - 完全一样的布局 */}
+          {/* Section 3: Service Categories -  */}
           {step === SectionNumber.serviceCategories && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -339,7 +357,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* Section 4: Business Address - 完全一样的布局 */}
+          {/* Section 4: Business Address -  */}
           {step === SectionNumber.businessAddress && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -367,7 +385,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* Section 5: Contact Information - 完全一样的布局 */}
+          {/* Section 5: Contact Information -  */}
           {step === SectionNumber.contactInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -404,7 +422,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* Section 6: Contact Person - 完全一样的布局 */}
+          {/* Section 6: Contact Person -  */}
           {step === SectionNumber.contactPerson && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -459,7 +477,7 @@ function BusinessRegistrationFlow({
             </div>
           )}
 
-          {/* Section 7: Branding & Social Media - 完全一样的布局 */}
+          {/* Section 7: Branding & Social Media -  */}
           {step === SectionNumber.brandingSocialMedia && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -540,7 +558,7 @@ function BusinessRegistrationFlow({
               </div>
             </div>
           )}
-
+          {/* Section 8: Login Information -  */}
           {step === SectionNumber.loginInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
@@ -592,19 +610,21 @@ function BusinessRegistrationFlow({
                     <input
                       id='confirmPassword'
                       type='password'
-                      placeholder='your password'
-                      value={formData.password.value}
-                      onChange={e => onInputChange('password', e.target.value)}
+                      placeholder='confirm your password'
+                      value={formData.confirmPassword.value}
+                      onChange={e =>
+                        onInputChange('confirmPassword', e.target.value)
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {showError(error.password)}
+                  {showError(error.confirmPassword)}
                 </div>
               </div>
             </div>
           )}
 
-          {/* Completion Screen */}
+          {/* Section 9: Completion Screen */}
           {step === SectionNumber.completed && (
             <div className='space-y-6 text-center'>
               <h2 className='text-xl font-semibold'>
@@ -638,7 +658,7 @@ function BusinessRegistrationFlow({
 
           {/* Navigation Button */}
           <div className='flex justify-between mt-8'>
-            {step > 1 && step <= maxSteps && (
+            {step > 1 && step < maxSteps && (
               <button
                 type='button'
                 onClick={onPrev}
@@ -648,10 +668,11 @@ function BusinessRegistrationFlow({
               </button>
             )}
             <div className='flex-1' />
-            {step < maxSteps ? (
+            {step < maxSteps - 1 ? (
               <button
                 type='button'
                 onClick={onNext}
+                disabled={!canProceedToNextStep}
                 className='px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90'
               >
                 Next
@@ -757,11 +778,11 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      fullAddress: {
-        isRequired: true,
-        value: '',
-        defaultValue: '',
-      },
+      // fullAddress: {
+      //   isRequired: true,
+      //   value: '',
+      //   defaultValue: '',
+      // },
     },
     phone: {
       isRequired: true,
@@ -818,19 +839,41 @@ export default function BusinessRegistration() {
       value: '',
       defaultValue: '',
     },
+    confirmPassword: {
+      validate: (value, password) => {
+        if (value !== password) {
+          return 'Passwords do not match';
+        }
+        return null;
+      },
+      value: '',
+      defaultValue: '',
+    },
   });
   const [error, setError] = useState({});
+  const [hasChanged, setHasChanged] = useState(false);
 
   const handleInputChange = (field: string, value: any) => {
+    setHasChanged(true);
     const updatedField = { ...formData[field], ...{ value } };
     setFormData({ ...formData, ...{ [field]: updatedField } });
     if (formData[field].isRequired && !value) {
       setError({ ...error, ...{ [field]: 'This field is required' } });
     } else {
-      setError({ ...error, ...{ [field]: '' } });
+      setError(prev => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { [field]: _, ...rest } = prev as Record<string, string>;
+        return rest;
+      });
     }
-
-    if (formData[field].validate) {
+    if (field === 'confirmPassword') {
+      if (formData[field].validate) {
+        setError({
+          ...error,
+          [field]: formData[field].validate(value, formData.password.value),
+        });
+      }
+    } else if (formData[field].validate) {
       setError({ ...error, [field]: formData[field].validate(value) });
     }
   };
@@ -839,11 +882,80 @@ export default function BusinessRegistration() {
   };
 
   const handleSubmit = async () => {
-    await registerBusiness(formData);
+    const validateAll = (obj: any, path = '') => {
+      const errs: Record<string, string> = {};
+
+      Object.entries(obj).forEach(([key, field]) => {
+        if (key === 'confirmPassword') {
+          const validationMsg = field.validate(
+            field.value,
+            formData.password.value
+          );
+          if (validationMsg) {
+            errs[key] = validationMsg;
+            return;
+          }
+          errs[key] = '';
+          return;
+        }
+
+        const fullKey = path ? `${path}.${key}` : key;
+        if (field && typeof field === 'object' && 'value' in field) {
+          if (field.isRequired && !field.value) {
+            errs[fullKey] = 'This field is required';
+            return;
+          }
+
+          if (typeof field.validate === 'function') {
+            const validationMsg = field.validate(field.value);
+            if (validationMsg) {
+              errs[fullKey] = validationMsg;
+              return;
+            }
+          }
+          errs[fullKey] = '';
+        } else if (field && typeof field === 'object') {
+          Object.assign(errs, validateAll(field, fullKey));
+        }
+      });
+
+      return errs;
+    };
+
+    const newErrors = validateAll(formData);
+
+    setError(newErrors);
+
+    const hasError = Object.values(newErrors).some(msg => msg);
+    if (hasError) {
+      console.warn('❌ Validation failed');
+      return;
+    }
+
+    const extractValues = (obj: any): any =>
+      Object.fromEntries(
+        Object.entries(obj).map(([key, val]) => {
+          if (val && typeof val === 'object' && 'value' in val)
+            return [key, val.value];
+          if (val && typeof val === 'object') return [key, extractValues(val)];
+          return [key, val];
+        })
+      );
+
+    const data = extractValues(formData);
+    delete data.confirmPassword; // 提交前移除 confirmPassword
+    await registerBusiness(data);
+    onNext();
   };
 
-  const nextStep = () => setStep(prev => prev + 1);
-  const prevStep = () => setStep(prev => prev - 1);
+  const nextStep = () => {
+    setStep(prev => prev + 1);
+    setHasChanged(false);
+  };
+  const prevStep = () => {
+    setStep(prev => prev - 1);
+    setHasChanged(true);
+  };
 
   return (
     <BusinessRegistrationFlow
@@ -856,6 +968,7 @@ export default function BusinessRegistration() {
       onSubmit={handleSubmit}
       onNext={nextStep}
       onPrev={prevStep}
+      hasChanged={hasChanged}
     />
   );
 }
