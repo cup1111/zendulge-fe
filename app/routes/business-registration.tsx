@@ -154,14 +154,12 @@ function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessRegistrationFlow'
                     placeholder='e.g., Zen Wellness Spa'
-                    value={formData.businessName.value}
-                    onChange={e =>
-                      onInputChange('businessName', e.target.value)
-                    }
+                    value={formData.companyName.value}
+                    onChange={e => onInputChange('companyName', e.target.value)}
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
-                {showError(error.businessName)}
+                {showError(error.companyName)}
               </div>
               <div>
                 <label
@@ -329,14 +327,14 @@ function BusinessRegistrationFlow({
                 <div>
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='primaryCategory'
+                    htmlFor='serviceCategory'
                   >
                     Primary Service Category *
                     <select
-                      id='primaryCategory'
-                      value={formData.primaryCategory.value}
+                      id='serviceCategory'
+                      value={formData.serviceCategory.value}
                       onChange={e =>
-                        onInputChange('primaryCategory', e.target.value)
+                        onInputChange('serviceCategory', e.target.value)
                       }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     >
@@ -348,7 +346,7 @@ function BusinessRegistrationFlow({
                       ))}
                     </select>
                   </label>
-                  {showError(error.primaryCategory)}
+                  {showError(error.serviceCategory)}
                   <p className='text-sm text-gray-600 mt-1'>
                     Choose your main category for business listing and search
                   </p>
@@ -408,13 +406,13 @@ function BusinessRegistrationFlow({
               </div>
               <div>
                 <EmailValidator
-                  value={formData.email.value || ''}
-                  onChange={value => onInputChange('email', value)}
+                  value={formData.companyEmail.value || ''}
+                  onChange={value => onInputChange('companyEmail', value)}
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
                   showValidationDetails
                 />
-                {showError(error.email)}
+                {showError(error.companyEmail)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Primary email for customer communication
                 </p>
@@ -538,23 +536,7 @@ function BusinessRegistrationFlow({
                   </label>
                   {showError(error.twitter)}
                 </div>
-                <div>
-                  <label
-                    className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='businessLogo'
-                  >
-                    Business Logo URL
-                    <input
-                      id='businessLogo'
-                      type='url'
-                      placeholder='https://yourbusiness.com/logo.png'
-                      value={formData.logo.value}
-                      onChange={e => onInputChange('logo', e.target.value)}
-                      className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
-                    />
-                  </label>
-                  {showError(error.logo)}
-                </div>
+                {/* Logo removed per request */}
               </div>
             </div>
           )}
@@ -697,10 +679,10 @@ export default function BusinessRegistration() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Business fields
-    businessName: {
+    companyName: {
       isRequired: true,
       value: '',
-      defaultValue: 'Business Name',
+      defaultValue: 'Company Name',
     },
     description: {
       validate: value => {
@@ -732,7 +714,7 @@ export default function BusinessRegistration() {
       value: [] as string[],
       defaultValue: [],
     },
-    primaryCategory: {
+    serviceCategory: {
       isRequired: true,
       value: '',
       defaultValue: '',
@@ -789,7 +771,7 @@ export default function BusinessRegistration() {
       value: '',
       defaultValue: '',
     },
-    email: {
+    companyEmail: {
       isRequired: true,
       value: '',
       defaultValue: '',
@@ -820,11 +802,6 @@ export default function BusinessRegistration() {
       defaultValue: '',
     },
     twitter: {
-      isRequired: false,
-      value: '',
-      defaultValue: '',
-    },
-    logo: {
       isRequired: false,
       value: '',
       defaultValue: '',
