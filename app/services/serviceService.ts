@@ -8,6 +8,7 @@ export interface Service {
   basePrice: number;
   description?: string;
   company: string;
+  status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +19,7 @@ export interface ServiceCreateRequest {
   duration: number;
   basePrice: number;
   description?: string;
+  status?: 'active' | 'inactive';
 }
 
 export interface ServiceUpdateRequest {
@@ -26,6 +28,7 @@ export interface ServiceUpdateRequest {
   duration?: number;
   basePrice?: number;
   description?: string;
+  status?: 'active' | 'inactive';
 }
 
 export interface ServiceApiResponse {

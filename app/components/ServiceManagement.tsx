@@ -77,6 +77,7 @@ export default function ServiceManagement({
     duration: 60,
     basePrice: 0,
     description: '',
+    status: 'active',
   });
 
   // Filtered and paginated services
@@ -163,6 +164,7 @@ export default function ServiceManagement({
         duration: 60,
         basePrice: 0,
         description: '',
+        status: 'active',
       });
       loadServices();
     } catch (error) {
@@ -184,6 +186,7 @@ export default function ServiceManagement({
         duration: formData.duration,
         basePrice: formData.basePrice,
         description: formData.description,
+        status: formData.status,
       };
       await ServiceService.updateService(
         companyId,
@@ -240,6 +243,7 @@ export default function ServiceManagement({
       duration: service.duration,
       basePrice: service.basePrice,
       description: service.description ?? '',
+      status: service.status,
     });
     setIsEditDialogOpen(true);
   };
@@ -391,6 +395,26 @@ export default function ServiceManagement({
                       rows={3}
                     />
                   </div>
+                  <div>
+                    <Label htmlFor='status'>Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={value =>
+                        setFormData({
+                          ...formData,
+                          status: value as 'active' | 'inactive',
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select status' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='active'>Active</SelectItem>
+                        <SelectItem value='inactive'>Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div className='flex justify-end space-x-2'>
                     <Button
                       variant='outline'
@@ -497,6 +521,26 @@ export default function ServiceManagement({
                   rows={3}
                 />
               </div>
+              <div>
+                <Label htmlFor='edit-status'>Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={value =>
+                    setFormData({
+                      ...formData,
+                      status: value as 'active' | 'inactive',
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder='Select status' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='active'>Active</SelectItem>
+                    <SelectItem value='inactive'>Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className='flex justify-end space-x-2'>
                 <Button
                   variant='outline'
@@ -576,9 +620,20 @@ export default function ServiceManagement({
         >
           <CardHeader className='pb-3'>
             <div className='flex items-start justify-between mb-2'>
-              <CardTitle className='text-lg font-semibold text-gray-900 truncate pr-2'>
-                {service.name}
-              </CardTitle>
+              <div className='flex-1 min-w-0'>
+                <CardTitle className='text-lg font-semibold text-gray-900 truncate pr-2'>
+                  {service.name}
+                </CardTitle>
+                <Badge
+                  className={`mt-1 w-fit ${
+                    service.status === 'active'
+                      ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                      : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+                  }`}
+                >
+                  {service.status === 'active' ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
               <div className='flex space-x-1 flex-shrink-0'>
                 {canEditService() && (
                   <Button
