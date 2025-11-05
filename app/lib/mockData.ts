@@ -355,11 +355,11 @@ export type WellnessCategory = (typeof WELLNESS_CATEGORIES)[number];
 export interface Address {
   country: string;
   streetNumber: string;
-  streetName: string;
+  street: string;
   suburb: string;
   city: string;
   state: string;
-  postalCode: string;
+  postcodeng;
   fullAddress: string;
 }
 
@@ -435,11 +435,11 @@ export const mockUser: UserProfile = {
   address: {
     country: 'Australia',
     streetNumber: '456',
-    streetName: 'Business Avenue',
+    street: 'Business Avenue',
     suburb: 'CBD',
     city: 'Sydney',
     state: 'NSW',
-    postalCode: '2000',
+    postcode: '2000',
     fullAddress: '456 Business Avenue, CBD, Sydney NSW 2000',
   },
   joinedDate: '2024-01-15',

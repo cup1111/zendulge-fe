@@ -19,11 +19,11 @@ interface AddressField {
 interface AddressData {
   country: AddressField;
   streetNumber: AddressField;
-  streetName: AddressField;
+  street: AddressField;
   suburb: AddressField;
   city: AddressField;
   state: AddressField;
-  postalCode: AddressField;
+  postcode: AddressField;
   fullAddress: AddressField;
 }
 
@@ -53,16 +53,16 @@ export default function StructuredAddressInput({
     if (updatedAddressObject[field].isRequired && !newValue) {
       errorSetter({
         ...error,
-        address: {
-          ...error.address,
+        businessAddress: {
+          ...error.businessAddress,
           [field]: 'This field is required.',
         },
       });
     } else {
       errorSetter({
         ...error,
-        address: {
-          ...error.address,
+        businessAddress: {
+          ...error.businessAddress,
           [field]: '',
         },
       });
@@ -97,17 +97,17 @@ export default function StructuredAddressInput({
                 }
                 placeholder='123'
               />
-              {showError(error.address?.streetNumber)}
+              {showError(error.businessAddress?.streetNumber)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Name *</Label>
               <Input
-                value={value.streetName.value ?? ''}
-                onChange={e => handleFieldChange('streetName', e.target.value)}
+                value={value.street.value ?? ''}
+                onChange={e => handleFieldChange('street', e.target.value)}
                 placeholder='Collins Street'
               />
-              {showError(error.address?.streetName)}
+              {showError(error.businessAddress?.street)}
             </div>
           </div>
 
@@ -119,7 +119,7 @@ export default function StructuredAddressInput({
                 onChange={e => handleFieldChange('suburb', e.target.value)}
                 placeholder='Suburb'
               />
-              {showError(error.address?.suburb)}
+              {showError(error.businessAddress?.suburb)}
             </div>
 
             <div className='space-y-2'>
@@ -129,7 +129,7 @@ export default function StructuredAddressInput({
                 onChange={e => handleFieldChange('city', e.target.value)}
                 placeholder='Melbourne'
               />
-              {showError(error.address?.city)}
+              {showError(error.businessAddress?.city)}
             </div>
           </div>
 
@@ -154,17 +154,17 @@ export default function StructuredAddressInput({
                   <SelectItem value='NT'>NT</SelectItem>
                 </SelectContent>
               </Select>
-              {showError(error.address?.state)}
+              {showError(error.businessAddress?.state)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Postal Code *</Label>
               <Input
-                value={value.postalCode.value ?? ''}
-                onChange={e => handleFieldChange('postalCode', e.target.value)}
+                value={value.postcode.value ?? ''}
+                onChange={e => handleFieldChange('postcode', e.target.value)}
                 placeholder='3000'
               />
-              {showError(error.address?.postalCode)}
+              {showError(error.businessAddress?.postcode)}
             </div>
 
             <div className='space-y-2'>
