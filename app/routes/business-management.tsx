@@ -183,7 +183,13 @@ export default function BusinessManagement() {
     );
   }
 
-  if (operatingSites.length === 0) {
+  // Only block access if user is Owner/Manager and has no operating sites
+  // Employees should still be able to see deals and services even without site access
+  if (
+    operatingSites.length === 0 &&
+    (user?.role?.slug === BusinessUserRole.Owner ||
+      user?.role?.slug === BusinessUserRole.Manager)
+  ) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
         <div className='text-center p-6'>

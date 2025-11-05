@@ -4,10 +4,11 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import DealDialog from '~/components/DealDialog';
 import { Button } from '~/components/ui/button';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
 } from '~/components/ui/dropdown-menu';
+import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 
 export default function Header() {
@@ -136,18 +137,21 @@ export default function Header() {
                       Business Management
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link
-                      to='/user-management'
-                      className={`w-full ${
-                        location.pathname === '/user-management'
-                          ? 'bg-gray-100'
-                          : ''
-                      }`}
-                    >
-                      User Management
-                    </Link>
-                  </DropdownMenuItem>
+                  {(user?.role?.slug === BusinessUserRole.Owner ||
+                    user?.role?.slug === BusinessUserRole.Manager) && (
+                    <DropdownMenuItem>
+                      <Link
+                        to='/user-management'
+                        className={`w-full ${
+                          location.pathname === '/user-management'
+                            ? 'bg-gray-100'
+                            : ''
+                        }`}
+                      >
+                        User Management
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
