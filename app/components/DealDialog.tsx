@@ -1,5 +1,5 @@
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
@@ -34,14 +34,36 @@ import { ServiceService } from '~/services/serviceService';
 
 interface DealDialogProps {
   companyId: string;
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode;
   onDealCreated?: () => void;
+  initialData?: {
+    title?: string;
+    description?: string;
+    category?: string;
+    price?: number;
+    originalPrice?: number;
+    duration?: number;
+    operatingSite?: string[];
+    availability?: {
+      startDate?: string;
+      endDate?: string;
+      maxBookings?: number;
+    };
+    status?: 'active' | 'inactive' | 'expired' | 'sold_out';
+    tags?: string[];
+    service?: string;
+  };
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export default function DealDialog({
   companyId,
   trigger,
   onDealCreated,
+  initialData,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: DealDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -49,25 +71,50 @@ export default function DealDialog({
   const [operatingSites, setOperatingSites] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  // Use controlled open if provided, otherwise use internal state
+  const isOpen = controlledOpen ?? internalOpen;
+  const setIsOpen = controlledOnOpenChange ?? setInternalOpen;
   const [operatingSitePopoverOpen, setOperatingSitePopoverOpen] =
     useState(false);
+
+  // Helper function to get default availability
+  const getDefaultAvailability = () => ({
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0],
+  });
+
+  const getInitialAvailability = useCallback(() => {
+    if (initialData?.availability) {
+      return {
+        startDate:
+          initialData.availability.startDate ??
+          new Date().toISOString().split('T')[0],
+        endDate:
+          initialData.availability.endDate ??
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            .toISOString()
+            .split('T')[0],
+        maxBookings: initialData.availability.maxBookings,
+      };
+    }
+    return getDefaultAvailability();
+  }, [initialData?.availability]);
+
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
-    price: 0,
-    duration: 60,
-    operatingSite: [] as string[],
-    availability: {
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0],
-    },
-    status: 'active' as const,
-    tags: [] as string[],
-    service: '',
+    title: initialData?.title ?? '',
+    description: initialData?.description ?? '',
+    category: initialData?.category ?? '',
+    price: initialData?.price ?? 0,
+    duration: initialData?.duration ?? 60,
+    operatingSite: initialData?.operatingSite ?? [],
+    availability: getInitialAvailability(),
+    status: initialData?.status ?? ('active' as const),
+    tags: initialData?.tags ?? [],
+    service: initialData?.service ?? '',
   });
 
   // Deal categories
@@ -113,25 +160,30 @@ export default function DealDialog({
     }
   };
 
+  // Update formData when initialData changes (for duplicating deals)
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setFormData({
+        title: initialData.title ?? '',
+        description: initialData.description ?? '',
+        category: initialData.category ?? '',
+        price: initialData.price ?? 0,
+        duration: initialData.duration ?? 60,
+        operatingSite: initialData.operatingSite ?? [],
+        availability: getInitialAvailability(),
+        status: initialData.status ?? ('active' as const),
+        tags: initialData.tags ?? [],
+        service: initialData.service ?? '',
+      });
+    }
+  }, [initialData, isOpen, getInitialAvailability]);
+
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (open) {
       loadData();
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setIsSubmitting(true);
-    try {
-      await DealService.createDeal(companyId, formData);
-      toast({
-        title: 'Success',
-        description: 'Deal created successfully!',
-      });
-
-      // Reset form
+    } else if (!initialData) {
+      // Reset form when dialog closes (unless we have initialData)
       setFormData({
         title: '',
         description: '',
@@ -149,6 +201,61 @@ export default function DealDialog({
         tags: [],
         service: '',
       });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+    try {
+      // Ensure availability dates are strings
+      const availability: {
+        startDate: string;
+        endDate: string;
+        maxBookings?: number;
+      } = {
+        startDate: formData.availability.startDate,
+        endDate: formData.availability.endDate,
+      };
+
+      if (
+        'maxBookings' in formData.availability &&
+        formData.availability.maxBookings !== undefined
+      ) {
+        availability.maxBookings = formData.availability.maxBookings;
+      }
+
+      const dealData = {
+        ...formData,
+        availability,
+      };
+      await DealService.createDeal(companyId, dealData);
+      toast({
+        title: 'Success',
+        description: 'Deal created successfully!',
+      });
+
+      // Reset form (unless we have initialData, then keep it for potential re-duplication)
+      if (!initialData) {
+        setFormData({
+          title: '',
+          description: '',
+          category: '',
+          price: 0,
+          duration: 60,
+          operatingSite: [],
+          availability: {
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .split('T')[0],
+          },
+          status: 'active' as const,
+          tags: [],
+          service: '',
+        });
+      }
 
       setIsOpen(false);
       onDealCreated?.();
@@ -175,10 +282,12 @@ export default function DealDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>Create New Deal</DialogTitle>
+          <DialogTitle>
+            {initialData ? 'Duplicate Deal' : 'Create New Deal'}
+          </DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
@@ -266,6 +375,8 @@ export default function DealDialog({
                       {operatingSites.map(site => (
                         <div
                           key={site.id}
+                          role='button'
+                          tabIndex={0}
                           className='flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer'
                           onClick={() => {
                             const isSelected = formData.operatingSite.includes(
@@ -286,6 +397,29 @@ export default function DealDialog({
                                   site.id,
                                 ],
                               });
+                            }
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              const isSelected =
+                                formData.operatingSite.includes(site.id);
+                              if (isSelected) {
+                                setFormData({
+                                  ...formData,
+                                  operatingSite: formData.operatingSite.filter(
+                                    id => id !== site.id
+                                  ),
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  operatingSite: [
+                                    ...formData.operatingSite,
+                                    site.id,
+                                  ],
+                                });
+                              }
                             }
                           }}
                         >

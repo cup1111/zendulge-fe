@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Copy,
   DollarSign,
   Edit3,
   MapPin,
@@ -69,6 +70,8 @@ export default function DealManagement({ companyId }: DealManagementProps) {
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
+  const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
+  const [dealToDuplicate, setDealToDuplicate] = useState<Deal | null>(null);
 
   // Pagination and search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -120,6 +123,10 @@ export default function DealManagement({ companyId }: DealManagementProps) {
   };
 
   const canCreateDeal = () => isOwner || isManager || isEmployee;
+
+  const canDuplicateDeal = () =>
+    // Anyone who can create deals can duplicate them
+    canCreateDeal();
 
   // Deal categories
   const dealCategories = [
@@ -271,6 +278,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
   const openDeleteDialog = (deal: Deal) => {
     setDealToDelete(deal);
     setIsDeleteDialogOpen(true);
+  };
+
+  const openDuplicateDialog = (deal: Deal) => {
+    setDealToDuplicate(deal);
+    setIsDuplicateDialogOpen(true);
   };
 
   const handleDeleteDeal = async () => {
@@ -450,12 +462,24 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                   {deal.title ?? 'Untitled Deal'}
                 </CardTitle>
                 <div className='flex space-x-1 flex-shrink-0'>
+                  {canDuplicateDeal() && (
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      onClick={() => openDuplicateDialog(deal)}
+                      className='cursor-pointer p-1 h-8 w-8'
+                      title='Duplicate deal'
+                    >
+                      <Copy className='w-4 h-4' />
+                    </Button>
+                  )}
                   {canEditDeal(deal) && (
                     <Button
                       variant='ghost'
                       size='sm'
                       onClick={() => openEditDialog(deal)}
                       className='cursor-pointer p-1 h-8 w-8'
+                      title='Edit deal'
                     >
                       <Edit3 className='w-4 h-4' />
                     </Button>
@@ -466,6 +490,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                       size='sm'
                       onClick={() => openDeleteDialog(deal)}
                       className='text-red-600 hover:text-red-700 cursor-pointer p-1 h-8 w-8'
+                      title='Delete deal'
                     >
                       <Trash2 className='w-4 h-4' />
                     </Button>
@@ -960,6 +985,42 @@ export default function DealManagement({ companyId }: DealManagementProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Duplicate Deal Dialog */}
+      {dealToDuplicate && (
+        <DealDialog
+          companyId={companyId}
+          open={isDuplicateDialogOpen}
+          onOpenChange={open => {
+            setIsDuplicateDialogOpen(open);
+            if (!open) {
+              setDealToDuplicate(null);
+            }
+          }}
+          onDealCreated={() => {
+            loadDeals();
+            setIsDuplicateDialogOpen(false);
+            setDealToDuplicate(null);
+          }}
+          initialData={{
+            title: `Copy of ${dealToDuplicate.title}`,
+            description: dealToDuplicate.description,
+            category: dealToDuplicate.category,
+            price: dealToDuplicate.price,
+            originalPrice: dealToDuplicate.originalPrice,
+            duration: dealToDuplicate.duration,
+            operatingSite: dealToDuplicate.operatingSite.map(site => site.id),
+            availability: {
+              startDate: dealToDuplicate.availability.startDate,
+              endDate: dealToDuplicate.availability.endDate,
+              maxBookings: dealToDuplicate.availability.maxBookings,
+            },
+            status: 'active', // Always start duplicated deals as active
+            tags: dealToDuplicate.tags,
+            service: dealToDuplicate.service.id,
+          }}
+        />
+      )}
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
