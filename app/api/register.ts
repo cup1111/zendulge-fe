@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-export const registerCustomer = async (data: any) => {
+export const registerCustomer = async (data: {
+  email: string;
+  password: string;
+}) => {
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/register',
     {
@@ -13,7 +16,38 @@ export const registerCustomer = async (data: any) => {
   return response.data;
 };
 
-export const registerBusiness = async (data: any) => {
+type BusinessAddress = {
+  country: string;
+  streetNumber: string;
+  street: string;
+  suburb: string;
+  city: string;
+  state: string;
+  postcode: string;
+};
+
+export type BusinessRegisterPayload = {
+  companyName: string;
+  description: string;
+  firstName: string;
+  lastName: string;
+  categories: string[];
+  serviceCategory: string;
+  jobTitle: string;
+  businessAddress: BusinessAddress;
+  phone: string;
+  companyEmail: string;
+  contactPersonName: string;
+  contactPersonEmail: string;
+  contactPersonPhone: string;
+  website?: string;
+  facebook?: string;
+  twitter?: string;
+  email: string;
+  password: string;
+};
+
+export const registerBusiness = async (data: BusinessRegisterPayload) => {
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/business-register',
     {

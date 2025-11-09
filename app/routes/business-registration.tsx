@@ -7,9 +7,48 @@ import { registerBusiness } from '~/api/register';
 
 import BusinessRegistrationFlow from '../components/layout/BusinessRegistrationFlow';
 
+type Field<T> = {
+  isRequired?: boolean;
+  validate?: (value: T, ...args: any[]) => string | null;
+  value: T;
+  defaultValue: T;
+};
+
+type Address = {
+  country: Field<string>;
+  streetNumber: Field<string>;
+  street: Field<string>;
+  suburb: Field<string>;
+  city: Field<string>;
+  state: Field<string>;
+  postcode: Field<string>;
+};
+
+type FormData = {
+  companyName: Field<string>;
+  description: Field<string>;
+  firstName: Field<string>;
+  lastName: Field<string>;
+  categories: Field<string[]>;
+  serviceCategory: Field<string>;
+  jobTitle: Field<string>;
+  businessAddress: Address;
+  phone: Field<string>;
+  companyEmail: Field<string>;
+  contactPersonName: Field<string>;
+  contactPersonEmail: Field<string>;
+  contactPersonPhone: Field<string>;
+  website: Field<string>;
+  facebook: Field<string>;
+  twitter: Field<string>;
+  email: Field<string>;
+  password: Field<string>;
+  confirmPassword: Field<string>;
+};
+
 export default function BusinessRegistration() {
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [step, setStep] = useState<number>(1);
+  const [formData, setFormData] = useState<FormData>({
     // Business fields
     companyName: {
       isRequired: true,
@@ -92,11 +131,6 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      // fullAddress: {
-      //   isRequired: true,
-      //   value: '',
-      //   defaultValue: '',
-      // },
     },
     phone: {
       isRequired: true,
@@ -190,6 +224,14 @@ export default function BusinessRegistration() {
     setFormData({ ...formData, businessAddress: value });
   };
 
+  const nextStep = () => {
+    setStep(prev => prev + 1);
+    setHasChanged(false);
+  };
+  const prevStep = () => {
+    setStep(prev => prev - 1);
+    setHasChanged(true);
+  };
   const handleSubmit = async () => {
     const validateAll = (obj: any, path = '') => {
       const errs: Record<string, string> = {};
@@ -241,7 +283,14 @@ export default function BusinessRegistration() {
       return;
     }
 
-    const extractValues = (obj: any): any =>
+    type ExtractValues<T> = {
+      [K in keyof T]: T[K] extends { value: infer V }
+        ? V
+        : T[K] extends object
+          ? ExtractValues<T[K]>
+          : T[K];
+    };
+    function extractValues<T>(obj: T): ExtractValues<T> {
       Object.fromEntries(
         Object.entries(obj).map(([key, val]) => {
           if (val && typeof val === 'object' && 'value' in val)
@@ -250,20 +299,13 @@ export default function BusinessRegistration() {
           return [key, val];
         })
       );
-
+    }
     const data = extractValues(formData);
     delete data.confirmPassword; // 提交前移除 confirmPassword
-    await registerBusiness(data);
-    onNext();
-  };
-
-  const nextStep = () => {
-    setStep(prev => prev + 1);
-    setHasChanged(false);
-  };
-  const prevStep = () => {
-    setStep(prev => prev - 1);
-    setHasChanged(true);
+    response = await registerBusiness(data);
+    if (response.successful) {
+      nextStep();
+    }
   };
 
   return (
