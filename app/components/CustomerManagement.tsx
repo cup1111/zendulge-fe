@@ -1,18 +1,18 @@
 import {
-    AlertCircle,
-    Loader2,
-    Mail,
-    Phone,
-    Users as UsersIcon,
+  AlertCircle,
+  Loader2,
+  Mail,
+  Phone,
+  Users as UsersIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '~/components/ui/button';
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '~/components/ui/tooltip';
 import CompanyService from '~/services/companyService';
 
