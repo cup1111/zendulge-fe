@@ -11,19 +11,19 @@ import {
 
 import type { BusinessAddress, ErrorState } from '../../types/businessType';
 
-interface StructuredAddressInputProps {
+interface AddressInputProps {
   value: BusinessAddress;
   onChange: (address: BusinessAddress) => void;
   error: ErrorState;
   errorSetter: (error: ErrorState) => void;
 }
 
-export default function StructuredAddressInput({
+export default function AddressInput({
   value,
   onChange,
   error,
   errorSetter,
-}: StructuredAddressInputProps) {
+}: AddressInputProps) {
   const handleFieldChange = (
     field: keyof BusinessAddress,
     newValue: string

@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 
-interface SimplePhoneValidatorProps {
+interface PhoneInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -1950,13 +1950,13 @@ const countries = [
   },
 ];
 
-export default function PhoneValidator({
+export default function PhoneInput({
   value,
   onChange,
   placeholder = 'Enter phone number',
   label = 'Phone Number',
   showValidationDetails = true,
-}: SimplePhoneValidatorProps) {
+}: PhoneInputProps) {
   const [selectedCountry, setSelectedCountry] = React.useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

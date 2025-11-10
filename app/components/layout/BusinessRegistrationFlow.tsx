@@ -3,9 +3,9 @@
 
 import { MapPin } from 'lucide-react';
 
-import StructuredAddressInput from '~/components/validator/AddressInput';
-import EmailValidator from '~/components/validator/EmailInput';
-import PhoneValidator from '~/components/validator/PhoneInput';
+import AddressInput from '~/components/validator/AddressInput';
+import EmailInput from '~/components/validator/EmailInput';
+import PhoneInput from '~/components/validator/PhoneInput';
 
 const WELLNESS_CATEGORIES = [
   'Massage',
@@ -23,7 +23,7 @@ const WELLNESS_CATEGORIES = [
 ] as const;
 
 export default function BusinessRegistrationFlow({
-  step,
+  sectionStep,
   businessRegistrationFormData,
   error,
   setError,
@@ -94,7 +94,7 @@ export default function BusinessRegistrationFlow({
     },
   ];
 
-  const currentSection = sections[step - 1];
+  const currentSection = sections[sectionStep - 1];
   const maxSteps = sections.length;
   const canProceedToNextStep = true; // TODO: need to fix
   const showError = (message: string) => (
@@ -107,8 +107,8 @@ export default function BusinessRegistrationFlow({
       <div className='bg-blue-100 border-b border-blue-200 p-4'>
         <div className='max-w-4xl mx-auto'>
           <p className='text-blue-800 text-sm'>
-            Business Registration Process - {currentSection?.title} ({step} of{' '}
-            {maxSteps})
+            Business Registration Process - {currentSection?.title} (
+            {sectionStep} of {maxSteps})
           </p>
         </div>
       </div>
@@ -124,7 +124,7 @@ export default function BusinessRegistrationFlow({
               {sections.slice(0, -1).map((section, i) => (
                 <div
                   key={section.key}
-                  className={`h-2 flex-1 rounded ${i < step ? 'bg-shadow-lavender' : 'bg-gray-200'}`}
+                  className={`h-2 flex-1 rounded ${i < sectionStep ? 'bg-shadow-lavender' : 'bg-gray-200'}`}
                 />
               ))}
             </div>
@@ -135,7 +135,7 @@ export default function BusinessRegistrationFlow({
           </div>
 
           {/* Section 1: Basic Information -  */}
-          {step === SectionNumber.basicInformation && (
+          {sectionStep === SectionNumber.basicInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -198,7 +198,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 2: Business Group Admin Information -  */}
-          {step === SectionNumber.adminInformation && (
+          {sectionStep === SectionNumber.adminInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <h4 className='font-medium text-blue-900 mb-1'>
@@ -270,7 +270,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 3: Service Categories -  */}
-          {step === SectionNumber.serviceCategories && (
+          {sectionStep === SectionNumber.serviceCategories && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -362,7 +362,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 4: Business Address -  */}
-          {step === SectionNumber.businessAddress && (
+          {sectionStep === SectionNumber.businessAddress && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -376,7 +376,7 @@ export default function BusinessRegistrationFlow({
                   <MapPin className='w-4 h-4 mr-2 text-shadow-lavender' />
                   Business Address
                 </label>
-                <StructuredAddressInput
+                <AddressInput
                   value={businessRegistrationFormData.businessAddress}
                   onChange={address => onAddressChange(address)}
                   error={error}
@@ -390,7 +390,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 5: Contact Information -  */}
-          {step === SectionNumber.contactInformation && (
+          {sectionStep === SectionNumber.contactInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -398,7 +398,7 @@ export default function BusinessRegistrationFlow({
                 </p>
               </div>
               <div>
-                <PhoneValidator
+                <PhoneInput
                   value={businessRegistrationFormData.phone.value || ''}
                   onChange={value => onInputChange('phone', value)}
                   label='Business Phone Number * (for customer contact)'
@@ -411,7 +411,7 @@ export default function BusinessRegistrationFlow({
                 </p>
               </div>
               <div>
-                <EmailValidator
+                <EmailInput
                   value={businessRegistrationFormData.companyEmail.value || ''}
                   onChange={value => onInputChange('companyEmail', value)}
                   label='Business Email Address *'
@@ -427,7 +427,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 6: Contact Person -  */}
-          {step === SectionNumber.contactPerson && (
+          {sectionStep === SectionNumber.contactPerson && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -455,7 +455,7 @@ export default function BusinessRegistrationFlow({
                 {error.contactPersonName && showError(error.contactPersonName)}
               </div>
               <div>
-                <EmailValidator
+                <EmailInput
                   value={
                     businessRegistrationFormData.contactPersonEmail.value || ''
                   }
@@ -468,7 +468,7 @@ export default function BusinessRegistrationFlow({
                   showError(error.contactPersonEmail)}
               </div>
               <div>
-                <PhoneValidator
+                <PhoneInput
                   value={
                     businessRegistrationFormData.contactPersonPhone.value || ''
                   }
@@ -488,7 +488,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 7: Branding & Social Media -  */}
-          {step === SectionNumber.brandingSocialMedia && (
+          {sectionStep === SectionNumber.brandingSocialMedia && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -553,7 +553,7 @@ export default function BusinessRegistrationFlow({
             </div>
           )}
           {/* Section 8: Login Information -  */}
-          {step === SectionNumber.loginInformation && (
+          {sectionStep === SectionNumber.loginInformation && (
             <div className='space-y-6'>
               <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
                 <p className='text-blue-800 text-sm'>
@@ -617,7 +617,7 @@ export default function BusinessRegistrationFlow({
           )}
 
           {/* Section 9: Completion Screen */}
-          {step === SectionNumber.completed && (
+          {sectionStep === SectionNumber.completed && (
             <div className='space-y-6 text-center'>
               <h2 className='text-xl font-semibold'>
                 Business Registration Complete!
@@ -650,7 +650,7 @@ export default function BusinessRegistrationFlow({
 
           {/* Navigation Button */}
           <div className='flex justify-between mt-8'>
-            {step > 1 && step < maxSteps && (
+            {sectionStep > 1 && sectionStep < maxSteps && (
               <button
                 type='button'
                 onClick={onPrev}
@@ -660,7 +660,7 @@ export default function BusinessRegistrationFlow({
               </button>
             )}
             <div className='flex-1' />
-            {step < maxSteps - 1 ? (
+            {sectionStep < maxSteps - 1 ? (
               <button
                 type='button'
                 onClick={onNext}

@@ -14,7 +14,7 @@ import type {
 } from '../types/businessType';
 
 export default function BusinessRegistration() {
-  const [step, setStep] = useState<number>(1);
+  const [sectionStep, setsectionStep] = useState<number>(1);
   const [businessRegistrationFormData, setBusinessRegistrationFormData] =
     useState<BusinessRegistrationFormData>({
       // Business fields
@@ -208,15 +208,15 @@ export default function BusinessRegistration() {
   };
 
   const nextStep = () => {
-    setStep(prev => prev + 1);
+    setsectionStep(prev => prev + 1);
     setHasChanged(false);
   };
   const prevStep = () => {
-    setStep(prev => prev - 1);
+    setsectionStep(prev => prev - 1);
     setHasChanged(true);
   };
   const handleSubmit = async () => {
-    const validateAll = (obj: any, path = '') => {
+    const validateAll = (obj: businessRegistrationFormData, path = '') => {
       const errs: Record<string, string> = {};
 
       Object.entries(obj).forEach(([key, field]) => {
@@ -290,7 +290,7 @@ export default function BusinessRegistration() {
 
   return (
     <BusinessRegistrationFlow
-      step={step}
+      sectionStep={sectionStep}
       businessRegistrationFormData={businessRegistrationFormData}
       error={error}
       setError={setError}

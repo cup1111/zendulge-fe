@@ -8,8 +8,8 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { useAuth } from '~/contexts/AuthContext';
 
-import EmailValidator from '../components/validator/EmailInput';
-import PasswordValidator from '../components/validator/PasswordInput';
+import EmailInput from '../components/validator/EmailInput';
+import PasswordInput from '../components/validator/PasswordInput';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ export default function Login() {
     email: '',
     password: '',
   });
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   const handleLogin = () => {
@@ -64,7 +64,7 @@ export default function Login() {
               <CardTitle className='text-3xl'>Login</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <EmailValidator
+              <EmailInput
                 value={formData.email}
                 onChange={(email: string) => handleInputChange('email', email)}
                 onEnter={e => {
@@ -73,7 +73,7 @@ export default function Login() {
                   }
                 }}
               />
-              <PasswordValidator
+              <PasswordInput
                 value={formData.password}
                 onChange={(password: string) =>
                   handleInputChange('password', password)

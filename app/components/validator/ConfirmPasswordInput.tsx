@@ -13,7 +13,7 @@ interface SimplePasswordValidatorProps {
   onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-export default function ConfirmPasswordValidator({
+export default function ConfirmPasswordInput({
   password,
   value,
   onChange,

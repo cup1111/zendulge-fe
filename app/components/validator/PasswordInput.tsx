@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 
-interface PasswordValidatorProps {
+interface PasswordInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -14,7 +14,7 @@ interface PasswordValidatorProps {
   onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-export default function PasswordValidator({
+export default function PasswordInput({
   value,
   onChange,
   placeholder = 'Password',
@@ -22,7 +22,7 @@ export default function PasswordValidator({
   showValidationDetails = true,
   onPasswordValidityChange: onValidityChange,
   onEnter,
-}: PasswordValidatorProps) {
+}: PasswordInputProps) {
   const passwordReg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   const isPasswordValid = passwordReg.test(value);
   const passwordNotEmpty = value.length > 0;

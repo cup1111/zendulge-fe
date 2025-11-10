@@ -7,9 +7,9 @@ import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 
-import ConfirmPasswordValidator from '../components/validator/ConfirmPasswordInput';
-import EmailValidator from '../components/validator/EmailInput';
-import PasswordValidator from '../components/validator/PasswordInput';
+import ConfirmPasswordInput from '../components/validator/ConfirmPasswordInput';
+import EmailInput from '../components/validator/EmailInput';
+import PasswordInput from '../components/validator/PasswordInput';
 
 export default function CustomerRegistration() {
   const [formData, setFormData] = useState({
@@ -45,7 +45,7 @@ export default function CustomerRegistration() {
     }
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -87,7 +87,7 @@ export default function CustomerRegistration() {
               <CardTitle className='text-3xl'>Sign Up</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <EmailValidator
+              <EmailInput
                 onEmailValidityChange={onEmailValidityChange}
                 value={formData.email}
                 onChange={(email: string) => handleInputChange('email', email)}
@@ -97,7 +97,7 @@ export default function CustomerRegistration() {
                   }
                 }}
               />
-              <PasswordValidator
+              <PasswordInput
                 onPasswordValidityChange={onPasswordValidityChange}
                 value={formData.password}
                 onChange={(password: string) =>
@@ -109,7 +109,7 @@ export default function CustomerRegistration() {
                   }
                 }}
               />
-              <ConfirmPasswordValidator
+              <ConfirmPasswordInput
                 onConfirmPasswordValidityChange={
                   onConfirmPasswordValidityChange
                 }

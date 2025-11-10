@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 
-interface SimpleEmailValidatorProps {
+interface EmailInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -14,7 +14,7 @@ interface SimpleEmailValidatorProps {
   onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-export default function SimpleEmailValidator({
+export default function EmailInput({
   value,
   onChange,
   placeholder = 'Enter email address',
@@ -22,7 +22,7 @@ export default function SimpleEmailValidator({
   showValidationDetails = true,
   onEmailValidityChange,
   onEnter,
-}: SimpleEmailValidatorProps) {
+}: EmailInputProps) {
   const mailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = mailReg.test(value);
   const hasInput = value.length > 0;
