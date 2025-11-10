@@ -282,7 +282,7 @@ export default function BusinessRegistration() {
     }
     const data = extractValues(businessRegistrationFormData);
     delete data.confirmPassword; // 提交前移除 confirmPassword
-    response = await registerBusiness(data);
+    const response = await registerBusiness(data);
     if (response.successful) {
       nextStep();
     }

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Input } from '~/components/ui/input';
 
-interface SimplePasswordValidatorProps {
+interface ConfirmPasswordInputProps {
   password: string;
   value: string;
   onChange: (value: string) => void;
@@ -21,15 +21,15 @@ export default function ConfirmPasswordInput({
   showValidationDetails = true,
   onConfirmPasswordValidityChange: confirmPasswordValidityChange,
   onEnter,
-}: SimplePasswordValidatorProps) {
-  const comfirmPasswordNotEmpty = value.length > 0;
-  const isConfirmPasswordSame = comfirmPasswordNotEmpty && value === password;
-  const shouldShowError = comfirmPasswordNotEmpty && !isConfirmPasswordSame;
+}: ConfirmPasswordInputProps) {
+  const valueNotEmpty = value.length > 0;
+  const isConfirmPasswordSame = valueNotEmpty && value === password;
+  const shouldShowError = valueNotEmpty && !isConfirmPasswordSame;
 
   useEffect(() => {
     if (confirmPasswordValidityChange)
       confirmPasswordValidityChange(isConfirmPasswordSame);
-  }, [isConfirmPasswordSame]);
+  }, [isConfirmPasswordSame, confirmPasswordValidityChange]);
 
   function passwordFieldClass() {
     const borderClass = 'border-gray-300';

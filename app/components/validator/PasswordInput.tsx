@@ -30,6 +30,7 @@ export default function PasswordInput({
 
   useEffect(() => {
     if (onValidityChange) onValidityChange(isPasswordValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPasswordValid]);
 
   function passwordFieldClass() {
