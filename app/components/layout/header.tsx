@@ -23,23 +23,12 @@ export default function Header() {
     role: { name: 'Super Admin', slug: 'super_admin', id: '1' },
   };
 
-  // context useCOntext = useAuth()
-  // 1. I need to get the context
-  // 2. you need use a variable call useContext with useAuth function
-
-  // 需要意识到这个问题，这是我惯用的思维模式，最好在写之前想清楚，或者是想明白自己在想什么
-  // 先意识到，然后想办法改正
-
-  // I need to create a variable call authContext which uses the useAuth hook
-  // 1. create a var const/let keyword + variable name +
-  // 2.. If you see there is use keywork this is a hook
-  // 3. normal function that has no 'use' at front cannot use useState or other hooks inside
   const authContext = useAuth();
 
   const handleSignOut = () => {
     authContext.logout();
   };
-  // 把这个handleSignOut 函数放到sign out Button的onclick变量上
+
   const handleLinkToProfile = () => {
     navigate('/profile');
   };
