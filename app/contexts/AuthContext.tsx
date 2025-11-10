@@ -98,14 +98,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
   const [isLoading, setIsLoading] = useState(true);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUserState(null);
     setCurrentCompanyState(null);
     localStorage.removeItem('user');
     localStorage.removeItem('currentCompany');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('token');
-  };
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -128,6 +128,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // Set user state
       setUserState(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
 
       // Auto-select first company if available
       if (userData.companies && userData.companies.length > 0) {
@@ -159,44 +160,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
 
-        // Check if token is expired
         const userData = decodeJWTUser(token);
         if (!userData) {
-          // Token is invalid, logout
           logout();
-          window.location.href = '/';
           return;
         }
 
-        // Check token expiry
         const payload = JSON.parse(atob(token.split('.')[1]));
         const currentTime = Date.now() / 1000;
 
         if (payload.exp && payload.exp < currentTime) {
-          // Token is expired, logout and redirect
           logout();
-          window.location.href = '/';
           return;
         }
 
-        // Load saved company or auto-select first one
         const company = getCurrentCompany(userData);
         setCurrentCompanyState(company);
 
-        const response = await zendulgeAxios.get(
-          API_CONFIG.endpoints.auth.role(company?.id ?? '')
-        );
-        // Token is valid, set user data
-        setUserState({ ...userData, role: response.data.role });
+        let updatedUser: User = userData;
+
+        if (company?.id) {
+          try {
+            const response = await zendulgeAxios.get(
+              API_CONFIG.endpoints.auth.role(company.id)
+            );
+            updatedUser = { ...userData, role: response.data.role };
+          } catch (roleError) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to load user role:', roleError);
+          }
+        }
+
+        setUserState(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
       } catch (error) {
         console.error('Error initializing auth:', error);
-        logout();
       } finally {
         setIsLoading(false);
       }
     };
     initAuth();
-  }, []);
+  }, [logout]);
 
   const value: AuthContextType = React.useMemo(
     () => ({
@@ -209,7 +213,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setCurrentCompany,
       logout,
     }),
-    [user, currentCompany, isLoading]
+    [user, currentCompany, isLoading, login, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
