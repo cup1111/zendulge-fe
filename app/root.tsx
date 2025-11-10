@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import type { LinksFunction } from 'react-router';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
-import Footer from '~/components/layout/footer';
-import Header from '~/components/layout/header';
+import Header from '~/components/layout/eeader';
+import Footer from '~/components/layout/eeooter';
 import { Toaster } from '~/components/ui/toaster';
 import { AuthProvider } from '~/contexts/AuthContext';
 
