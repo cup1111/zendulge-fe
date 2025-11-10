@@ -361,16 +361,32 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     }
   };
 
+  const canToggleStatus = (status: string) =>
+    status === 'active' || status === 'inactive';
+
   const getStatusToggleTitle = (deal: Deal) => {
     if (!canEditDeal(deal)) return '';
-    if (deal.status === 'active') return 'Click to deactivate';
-    return 'Click to activate';
+    if (!canToggleStatus(deal.status ?? '')) {
+      return 'Only active or inactive deals can change status';
+    }
+    return deal.status === 'active'
+      ? 'Click to deactivate'
+      : 'Click to activate';
   };
 
   const handleToggleStatus = async (deal: Deal) => {
     if (!canEditDeal(deal)) return;
 
-    // Toggle: if active -> inactive, otherwise -> active
+    if (!canToggleStatus(deal.status ?? '')) {
+      toast({
+        title: 'Unavailable',
+        description:
+          'Status changes are only available for active or inactive deals.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const newStatus = deal.status === 'active' ? 'inactive' : 'active';
     const actionText = newStatus === 'active' ? 'activated' : 'deactivated';
 
@@ -503,9 +519,13 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                   {deal.category ?? 'Uncategorized'}
                 </Badge>
                 <Badge
-                  className={`w-fit ${canEditDeal(deal) ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''} ${getStatusColor(deal.status ?? 'unknown')}`}
+                  className={`w-fit ${
+                    canEditDeal(deal) && canToggleStatus(deal.status ?? '')
+                      ? 'cursor-pointer hover:opacity-80 transition-opacity'
+                      : 'cursor-not-allowed opacity-60'
+                  } ${getStatusColor(deal.status ?? 'unknown')}`}
                   onClick={
-                    canEditDeal(deal)
+                    canEditDeal(deal) && canToggleStatus(deal.status ?? '')
                       ? () => handleToggleStatus(deal)
                       : undefined
                   }
