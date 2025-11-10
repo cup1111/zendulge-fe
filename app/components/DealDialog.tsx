@@ -1,5 +1,5 @@
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Button } from '~/components/ui/button';
 import { Checkbox } from '~/components/ui/checkbox';
@@ -57,6 +57,40 @@ interface DealDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const formatDate = (date: Date) => {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized.toISOString().split('T')[0];
+};
+
+const addDays = (date: Date, days: number) => {
+  const updated = new Date(date);
+  updated.setDate(updated.getDate() + days);
+  return updated;
+};
+
+const parseDateInput = (value?: string | Date) => {
+  if (!value) {
+    return undefined;
+  }
+
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+
+  const valueString = value as string;
+  const normalizedString = valueString.includes('T')
+    ? valueString
+    : `${valueString}T00:00:00`;
+  const parsed = new Date(normalizedString);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return undefined;
+  }
+
+  return parsed;
+};
+
 export default function DealDialog({
   companyId,
   trigger,
@@ -79,30 +113,54 @@ export default function DealDialog({
   const [operatingSitePopoverOpen, setOperatingSitePopoverOpen] =
     useState(false);
 
-  // Helper function to get default availability
-  const getDefaultAvailability = () => ({
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0],
-  });
+  const normalizeAvailability = useCallback(
+    (startInput?: string, endInput?: string) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let start = parseDateInput(startInput) ?? new Date(today);
+      if (Number.isNaN(start.getTime())) {
+        start = new Date(today);
+      }
+      start.setHours(0, 0, 0, 0);
+      if (start.getTime() < today.getTime()) {
+        start = new Date(today);
+      }
+
+      let end = parseDateInput(endInput);
+      if (!end || Number.isNaN(end.getTime())) {
+        end = addDays(start, 1);
+      }
+      end.setHours(0, 0, 0, 0);
+      if (end.getTime() <= start.getTime()) {
+        end = addDays(start, 1);
+      }
+      if (end.getTime() < today.getTime()) {
+        end = addDays(start, 1);
+      }
+
+      return {
+        startDate: formatDate(start),
+        endDate: formatDate(end),
+      };
+    },
+    []
+  );
 
   const getInitialAvailability = useCallback(() => {
     if (initialData?.availability) {
+      const normalizedAvailability = normalizeAvailability(
+        initialData.availability.startDate,
+        initialData.availability.endDate
+      );
+
       return {
-        startDate:
-          initialData.availability.startDate ??
-          new Date().toISOString().split('T')[0],
-        endDate:
-          initialData.availability.endDate ??
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0],
+        ...normalizedAvailability,
         maxBookings: initialData.availability.maxBookings,
       };
     }
-    return getDefaultAvailability();
-  }, [initialData?.availability]);
+    return normalizeAvailability();
+  }, [initialData?.availability, normalizeAvailability]);
 
   const [formData, setFormData] = useState({
     title: initialData?.title ?? '',
@@ -116,6 +174,22 @@ export default function DealDialog({
     tags: initialData?.tags ?? [],
     service: initialData?.service ?? '',
   });
+
+  const todayString = useMemo(
+    () => normalizeAvailability().startDate,
+    [normalizeAvailability]
+  );
+
+  const minimumEndDate = useMemo(() => {
+    const parsedStart = parseDateInput(formData.availability.startDate);
+    const resolvedStart =
+      parsedStart && !Number.isNaN(parsedStart.getTime())
+        ? parsedStart
+        : (parseDateInput(todayString) ?? new Date());
+
+    const nextDay = addDays(resolvedStart, 1);
+    return formatDate(nextDay);
+  }, [formData.availability.startDate, todayString]);
 
   // Deal categories
   const dealCategories = [
@@ -191,13 +265,8 @@ export default function DealDialog({
         price: 0,
         duration: 60,
         operatingSite: [],
-        availability: {
-          startDate: new Date().toISOString().split('T')[0],
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0],
-        },
-        status: 'active',
+        availability: normalizeAvailability(),
+        status: 'active' as const,
         tags: [],
         service: '',
       });
@@ -206,6 +275,47 @@ export default function DealDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const showValidationError = (message: string) => {
+      toast({
+        title: 'Invalid availability dates',
+        description: message,
+        variant: 'destructive',
+      });
+    };
+
+    const startDate = parseDateInput(formData.availability.startDate);
+    const endDate = parseDateInput(formData.availability.endDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!startDate || Number.isNaN(startDate.getTime())) {
+      showValidationError('Start date must be a valid date.');
+      return;
+    }
+
+    if (!endDate || Number.isNaN(endDate.getTime())) {
+      showValidationError('End date must be a valid date.');
+      return;
+    }
+
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    if (startDate.getTime() < today.getTime()) {
+      showValidationError('Start date cannot be before today.');
+      return;
+    }
+
+    if (endDate.getTime() < today.getTime()) {
+      showValidationError('End date cannot be before today.');
+      return;
+    }
+
+    if (endDate.getTime() <= startDate.getTime()) {
+      showValidationError('End date must be after the start date.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -245,12 +355,7 @@ export default function DealDialog({
           price: 0,
           duration: 60,
           operatingSite: [],
-          availability: {
-            startDate: new Date().toISOString().split('T')[0],
-            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-              .toISOString()
-              .split('T')[0],
-          },
+          availability: normalizeAvailability(),
           status: 'active' as const,
           tags: [],
           service: '',
@@ -530,15 +635,20 @@ export default function DealDialog({
                   id='startDate'
                   type='date'
                   value={formData.availability.startDate}
-                  onChange={e =>
+                  onChange={e => {
+                    const updatedAvailability = normalizeAvailability(
+                      e.target.value,
+                      formData.availability.endDate
+                    );
                     setFormData({
                       ...formData,
                       availability: {
                         ...formData.availability,
-                        startDate: e.target.value,
+                        ...updatedAvailability,
                       },
-                    })
-                  }
+                    });
+                  }}
+                  min={todayString}
                   required
                 />
               </div>
@@ -550,15 +660,20 @@ export default function DealDialog({
                   id='endDate'
                   type='date'
                   value={formData.availability.endDate}
-                  onChange={e =>
+                  onChange={e => {
+                    const updatedAvailability = normalizeAvailability(
+                      formData.availability.startDate,
+                      e.target.value
+                    );
                     setFormData({
                       ...formData,
                       availability: {
                         ...formData.availability,
-                        endDate: e.target.value,
+                        ...updatedAvailability,
                       },
-                    })
-                  }
+                    });
+                  }}
+                  min={minimumEndDate}
                   required
                 />
               </div>
