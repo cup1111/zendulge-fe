@@ -14,7 +14,9 @@ import { countries } from '~/constants/countries';
 
 interface PhoneInputProps {
   value: string;
+  selectedCountry: string;
   onChange: (value: string) => void;
+  onCountryChange: (value: string) => void;
   placeholder?: string;
   label?: string;
   showValidationDetails?: boolean;
@@ -22,19 +24,19 @@ interface PhoneInputProps {
 
 export default function PhoneInput({
   value,
+  selectedCountry,
   onChange,
+  onCountryChange,
   placeholder = 'Enter phone number',
   label = 'Phone Number',
   showValidationDetails = true,
 }: PhoneInputProps) {
-  const [selectedCountry, setSelectedCountry] = React.useState('');
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
 
     if (newValue && !newValue.startsWith('+') && selectedCountry) {
       if (/^\d/.test(newValue)) {
-        const dialCode = selectedCountry.split('-')[0];
+        const dialCode = selectedCountry.split('-')[1];
         newValue = dialCode + newValue;
       }
     }
@@ -43,8 +45,8 @@ export default function PhoneInput({
   };
 
   const handleCountryChange = (val: string) => {
-    setSelectedCountry(val);
-    const dialCode = val.split('-')[0];
+    onCountryChange(val);
+    const dialCode = val.split('-')[1];
     if (value && !value.startsWith('+')) {
       onChange(dialCode + value);
     }
@@ -76,7 +78,7 @@ export default function PhoneInput({
             {countries.map(country => (
               <SelectItem
                 key={country.name}
-                value={`${country.dial_code}-${country.code}`}
+                value={`${country.name}-${country.dial_code}`}
               >
                 <span className='flex items-center space-x-2'>
                   <span>{country.emoji}</span>

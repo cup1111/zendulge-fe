@@ -36,6 +36,7 @@ export default function EmailInput({
 
   useEffect(() => {
     if (onEmailValidityChange) onEmailValidityChange(isEmailValid);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEmailValid]);
 
   return (

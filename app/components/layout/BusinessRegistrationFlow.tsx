@@ -400,7 +400,14 @@ export default function BusinessRegistrationFlow({
               <div>
                 <PhoneInput
                   value={businessRegistrationFormData.phone.value || ''}
+                  selectedCountry={
+                    businessRegistrationFormData.selectedCountry.value ||
+                    'Australia +61'
+                  }
                   onChange={value => onInputChange('phone', value)}
+                  onCountryChange={value =>
+                    onInputChange('selectedCountry', value)
+                  }
                   label='Business Phone Number * (for customer contact)'
                   placeholder='Enter business phone (landline or mobile)'
                   showValidationDetails
@@ -472,7 +479,14 @@ export default function BusinessRegistrationFlow({
                   value={
                     businessRegistrationFormData.contactPersonPhone.value || ''
                   }
+                  selectedCountry={
+                    businessRegistrationFormData.contactPersonSelectedCountry
+                      .value || 'Australia +61'
+                  }
                   onChange={value => onInputChange('contactPersonPhone', value)}
+                  onCountryChange={value =>
+                    onInputChange('contactPersonSelectedCountry', value)
+                  }
                   label='Business Group Admin Mobile Phone *'
                   placeholder='Enter mobile phone for account management'
                   mobileOnly
