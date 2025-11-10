@@ -98,7 +98,7 @@ export default function Header() {
             </Link>
 
             {/* Business Dropdown Menu - After Browse Deals */}
-            {isAuthenticated && (
+            {isAuthenticated && companies.length > 0 && (
               <DropdownMenu>
                 <div
                   className={`ml-6 text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat cursor-pointer flex items-center ${
