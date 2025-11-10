@@ -1,12 +1,19 @@
 import {
-  AlertCircle,
-  Loader2,
-  Mail,
-  Phone,
-  Users as UsersIcon,
+    AlertCircle,
+    Loader2,
+    Mail,
+    Phone,
+    Users as UsersIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
+import { Button } from '~/components/ui/button';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '~/components/ui/tooltip';
 import CompanyService from '~/services/companyService';
 
 interface Customer {
@@ -105,6 +112,9 @@ export default function CustomerManagement({
                   <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Status
                   </th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
@@ -151,6 +161,27 @@ export default function CustomerManagement({
                       >
                         {customer.active ? 'Active' : 'Inactive'}
                       </span>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <TooltipProvider delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type='button'
+                              variant='ghost'
+                              size='icon'
+                              className='text-shadow-lavender hover:bg-shadow-lavender/10'
+                              aria-label={`Email ${customer.firstName} ${customer.lastName}`}
+                              onClick={() => {
+                                window.location.href = `mailto:${customer.email}`;
+                              }}
+                            >
+                              <Mail className='w-4 h-4' />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Email Customer</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </td>
                   </tr>
                 ))}
