@@ -6,201 +6,175 @@ import { useState } from 'react';
 import { registerBusiness } from '~/api/register';
 
 import BusinessRegistrationFlow from '../components/layout/BusinessRegistrationFlow';
-
-type Field<T> = {
-  isRequired?: boolean;
-  validate?: (value: T, ...args: any[]) => string | null;
-  value: T;
-  defaultValue: T;
-};
-
-type Address = {
-  country: Field<string>;
-  streetNumber: Field<string>;
-  street: Field<string>;
-  suburb: Field<string>;
-  city: Field<string>;
-  state: Field<string>;
-  postcode: Field<string>;
-};
-
-type FormData = {
-  companyName: Field<string>;
-  description: Field<string>;
-  firstName: Field<string>;
-  lastName: Field<string>;
-  categories: Field<string[]>;
-  serviceCategory: Field<string>;
-  jobTitle: Field<string>;
-  businessAddress: Address;
-  phone: Field<string>;
-  companyEmail: Field<string>;
-  contactPersonName: Field<string>;
-  contactPersonEmail: Field<string>;
-  contactPersonPhone: Field<string>;
-  website: Field<string>;
-  facebook: Field<string>;
-  twitter: Field<string>;
-  email: Field<string>;
-  password: Field<string>;
-  confirmPassword: Field<string>;
-};
+import type {
+  BusinessAddress,
+  BusinessField,
+  BusinessRegistrationFormData,
+  ErrorState,
+} from '../types/businessType';
 
 export default function BusinessRegistration() {
   const [step, setStep] = useState<number>(1);
-  const [formData, setFormData] = useState<FormData>({
-    // Business fields
-    companyName: {
-      isRequired: true,
-      value: '',
-      defaultValue: 'Company Name',
-    },
-    description: {
-      validate: value => {
-        if (value.length > 500) {
-          return 'Description cannot exceed 500 characters';
-        }
-        return null;
-      },
-      value: '',
-      defaultValue: 'Description',
-    },
-    firstName: {
-      isRequired: true,
-      value: '',
-      defaultValue: 'First Name',
-    },
-    lastName: {
-      isRequired: true,
-      value: '',
-      defaultValue: 'Last Name',
-    },
-    categories: {
-      validate: value => {
-        if (value.length < 1) {
-          return 'At least one category must be selected';
-        }
-        return null;
-      },
-      value: [] as string[],
-      defaultValue: [],
-    },
-    serviceCategory: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    jobTitle: {
-      isRequired: true,
-      value: '',
-      defaultValue: 'Job Title',
-    },
-    businessAddress: {
-      country: {
+  const [businessRegistrationFormData, setBusinessRegistrationFormData] =
+    useState<BusinessRegistrationFormData>({
+      // Business fields
+      companyName: {
         isRequired: true,
-        value: 'Australia',
-        defaultValue: 'Australia',
+        value: '',
+        defaultValue: 'Company Name',
       },
-      streetNumber: {
+      description: {
+        validate: value => {
+          if (value.length > 500) {
+            return 'Description cannot exceed 500 characters';
+          }
+          return null;
+        },
+        value: '',
+        defaultValue: 'Description',
+      },
+      firstName: {
+        isRequired: true,
+        value: '',
+        defaultValue: 'First Name',
+      },
+      lastName: {
+        isRequired: true,
+        value: '',
+        defaultValue: 'Last Name',
+      },
+      categories: {
+        validate: value => {
+          if (value.length < 1) {
+            return 'At least one category must be selected';
+          }
+          return null;
+        },
+        value: [] as string[],
+        defaultValue: [],
+      },
+      serviceCategory: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-      street: {
+      jobTitle: {
+        isRequired: true,
+        value: '',
+        defaultValue: 'Job Title',
+      },
+      businessAddress: {
+        country: {
+          isRequired: true,
+          value: 'Australia',
+          defaultValue: 'Australia',
+        },
+        streetNumber: {
+          isRequired: true,
+          value: '',
+          defaultValue: '',
+        },
+        street: {
+          isRequired: true,
+          value: '',
+          defaultValue: '',
+        },
+        suburb: {
+          isRequired: true,
+          value: '',
+          defaultValue: '',
+        },
+        city: {
+          isRequired: true,
+          value: '',
+          defaultValue: '',
+        },
+        state: {
+          isRequired: true,
+          value: '',
+          defaultValue: '',
+        },
+        postcode: {
+          isRequired: true,
+          value: '',
+          defaultValue: '',
+        },
+      },
+      phone: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-      suburb: {
+      companyEmail: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-      city: {
+      contactPersonName: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-      state: {
+      contactPersonEmail: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-      postcode: {
+      contactPersonPhone: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-    },
-    phone: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    companyEmail: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    contactPersonName: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    contactPersonEmail: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    contactPersonPhone: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    website: {
-      isRequired: false,
-      value: '',
-      defaultValue: '',
-    },
-    facebook: {
-      isRequired: false,
-      value: '',
-      defaultValue: '',
-    },
-    twitter: {
-      isRequired: false,
-      value: '',
-      defaultValue: '',
-    },
-    email: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    password: {
-      isRequired: true,
-      value: '',
-      defaultValue: '',
-    },
-    confirmPassword: {
-      validate: (value, password) => {
-        if (value !== password) {
-          return 'Passwords do not match';
-        }
-        return null;
+      website: {
+        isRequired: false,
+        value: '',
+        defaultValue: '',
       },
-      value: '',
-      defaultValue: '',
-    },
-  });
-  const [error, setError] = useState({});
-  const [hasChanged, setHasChanged] = useState(false);
+      facebook: {
+        isRequired: false,
+        value: '',
+        defaultValue: '',
+      },
+      twitter: {
+        isRequired: false,
+        value: '',
+        defaultValue: '',
+      },
+      email: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      password: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      confirmPassword: {
+        validate: (value, password) => {
+          if (value !== password) {
+            return 'Passwords do not match';
+          }
+          return null;
+        },
+        value: '',
+        defaultValue: '',
+      },
+    });
+  const [error, setError] = useState<ErrorState>({});
+  const [hasChanged, setHasChanged] = useState<boolean>(false);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: BusinessField) => {
     setHasChanged(true);
-    const updatedField = { ...formData[field], ...{ value } };
-    setFormData({ ...formData, ...{ [field]: updatedField } });
-    if (formData[field].isRequired && !value) {
+    const updatedField = {
+      ...businessRegistrationFormData[field],
+      ...{ value },
+    };
+    setBusinessRegistrationFormData({
+      ...businessRegistrationFormData,
+      ...{ [field]: updatedField },
+    });
+    if (businessRegistrationFormData[field].isRequired && !value) {
       setError({ ...error, ...{ [field]: 'This field is required' } });
     } else {
       setError(prev => {
@@ -210,18 +184,27 @@ export default function BusinessRegistration() {
       });
     }
     if (field === 'confirmPassword') {
-      if (formData[field].validate) {
+      if (businessRegistrationFormData[field].validate) {
         setError({
           ...error,
-          [field]: formData[field].validate(value, formData.password.value),
+          [field]: businessRegistrationFormData[field].validate(
+            value,
+            businessRegistrationFormData.password.value
+          ),
         });
       }
-    } else if (formData[field].validate) {
-      setError({ ...error, [field]: formData[field].validate(value) });
+    } else if (businessRegistrationFormData[field].validate) {
+      setError({
+        ...error,
+        [field]: businessRegistrationFormData[field].validate(value),
+      });
     }
   };
-  const handleAddressChange = (value: any) => {
-    setFormData({ ...formData, businessAddress: value });
+  const handleAddressChange = (value: BusinessAddress) => {
+    setBusinessRegistrationFormData({
+      ...businessRegistrationFormData,
+      businessAddress: value,
+    });
   };
 
   const nextStep = () => {
@@ -238,10 +221,7 @@ export default function BusinessRegistration() {
 
       Object.entries(obj).forEach(([key, field]) => {
         if (key === 'confirmPassword') {
-          const validationMsg = field.validate(
-            field.value,
-            formData.password.value
-          );
+          const validationMsg = field.validate(field.value, obj.password.value);
           if (validationMsg) {
             errs[key] = validationMsg;
             return;
@@ -273,7 +253,7 @@ export default function BusinessRegistration() {
       return errs;
     };
 
-    const newErrors = validateAll(formData);
+    const newErrors = validateAll(businessRegistrationFormData);
 
     setError(newErrors);
 
@@ -291,7 +271,7 @@ export default function BusinessRegistration() {
           : T[K];
     };
     function extractValues<T>(obj: T): ExtractValues<T> {
-      Object.fromEntries(
+      return Object.fromEntries(
         Object.entries(obj).map(([key, val]) => {
           if (val && typeof val === 'object' && 'value' in val)
             return [key, val.value];
@@ -300,7 +280,7 @@ export default function BusinessRegistration() {
         })
       );
     }
-    const data = extractValues(formData);
+    const data = extractValues(businessRegistrationFormData);
     delete data.confirmPassword; // 提交前移除 confirmPassword
     response = await registerBusiness(data);
     if (response.successful) {
@@ -311,7 +291,7 @@ export default function BusinessRegistration() {
   return (
     <BusinessRegistrationFlow
       step={step}
-      formData={formData}
+      businessRegistrationFormData={businessRegistrationFormData}
       error={error}
       setError={setError}
       onInputChange={handleInputChange}

@@ -1,5 +1,7 @@
 import axios from 'axios';
 
+import type { BusinessRegisterPayload } from '../types/businessType';
+
 export const registerCustomer = async (data: {
   email: string;
   password: string;
@@ -14,37 +16,6 @@ export const registerCustomer = async (data: {
     }
   );
   return response.data;
-};
-
-type BusinessAddress = {
-  country: string;
-  streetNumber: string;
-  street: string;
-  suburb: string;
-  city: string;
-  state: string;
-  postcode: string;
-};
-
-export type BusinessRegisterPayload = {
-  companyName: string;
-  description: string;
-  firstName: string;
-  lastName: string;
-  categories: string[];
-  serviceCategory: string;
-  jobTitle: string;
-  businessAddress: BusinessAddress;
-  phone: string;
-  companyEmail: string;
-  contactPersonName: string;
-  contactPersonEmail: string;
-  contactPersonPhone: string;
-  website?: string;
-  facebook?: string;
-  twitter?: string;
-  email: string;
-  password: string;
 };
 
 export const registerBusiness = async (data: BusinessRegisterPayload) => {

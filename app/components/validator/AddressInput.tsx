@@ -9,29 +9,13 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 
-interface AddressField {
-  isRequired: boolean;
-  value: string;
-  defaultValue: string;
-  validate?: (value: string) => string | null;
-}
-
-interface AddressData {
-  country: AddressField;
-  streetNumber: AddressField;
-  street: AddressField;
-  suburb: AddressField;
-  city: AddressField;
-  state: AddressField;
-  postcode: AddressField;
-  fullAddress: AddressField;
-}
+import type { BusinessAddress, ErrorState } from '../../types/businessType';
 
 interface StructuredAddressInputProps {
-  value: AddressData;
-  onChange: (address: AddressData) => void;
-  error: any;
-  errorSetter: (error: any) => void;
+  value: BusinessAddress;
+  onChange: (address: BusinessAddress) => void;
+  error: ErrorState;
+  errorSetter: (error: ErrorState) => void;
 }
 
 export default function StructuredAddressInput({
@@ -40,7 +24,10 @@ export default function StructuredAddressInput({
   error,
   errorSetter,
 }: StructuredAddressInputProps) {
-  const handleFieldChange = (field: keyof AddressData, newValue: string) => {
+  const handleFieldChange = (
+    field: keyof BusinessAddress,
+    newValue: string
+  ) => {
     // const updatedField = { ...value[field], value: newValue };
     // onChange({ ...value, [field]: updatedField });
 
@@ -97,7 +84,8 @@ export default function StructuredAddressInput({
                 }
                 placeholder='123'
               />
-              {showError(error.businessAddress?.streetNumber)}
+              {error.businessAddress?.streetNumber &&
+                showError(error.businessAddress?.streetNumber)}
             </div>
 
             <div className='space-y-2'>
@@ -107,7 +95,8 @@ export default function StructuredAddressInput({
                 onChange={e => handleFieldChange('street', e.target.value)}
                 placeholder='Collins Street'
               />
-              {showError(error.businessAddress?.street)}
+              {error.businessAddress?.street &&
+                showError(error.businessAddress?.street)}
             </div>
           </div>
 
@@ -119,7 +108,8 @@ export default function StructuredAddressInput({
                 onChange={e => handleFieldChange('suburb', e.target.value)}
                 placeholder='Suburb'
               />
-              {showError(error.businessAddress?.suburb)}
+              {error.businessAddress?.suburb &&
+                showError(error.businessAddress?.suburb)}
             </div>
 
             <div className='space-y-2'>
@@ -129,7 +119,8 @@ export default function StructuredAddressInput({
                 onChange={e => handleFieldChange('city', e.target.value)}
                 placeholder='Melbourne'
               />
-              {showError(error.businessAddress?.city)}
+              {error.businessAddress?.city &&
+                showError(error.businessAddress?.city)}
             </div>
           </div>
 
@@ -154,7 +145,8 @@ export default function StructuredAddressInput({
                   <SelectItem value='NT'>NT</SelectItem>
                 </SelectContent>
               </Select>
-              {showError(error.businessAddress?.state)}
+              {error.businessAddress?.state &&
+                showError(error.businessAddress?.state)}
             </div>
 
             <div className='space-y-2'>
@@ -164,7 +156,8 @@ export default function StructuredAddressInput({
                 onChange={e => handleFieldChange('postcode', e.target.value)}
                 placeholder='3000'
               />
-              {showError(error.businessAddress?.postcode)}
+              {error.businessAddress?.postcode &&
+                showError(error.businessAddress?.postcode)}
             </div>
 
             <div className='space-y-2'>
