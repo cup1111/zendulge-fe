@@ -3,9 +3,9 @@
 
 import { MapPin } from 'lucide-react';
 
-import AddressInput from '~/components/validator/AddressInput';
-import EmailInput from '~/components/validator/EmailInput';
-import PhoneInput from '~/components/validator/PhoneInput';
+import AddressInput from '~/components/inputs/AddressInput';
+import EmailInput from '~/components/inputs/EmailInput';
+import PhoneInput from '~/components/inputs/PhoneInput';
 
 const WELLNESS_CATEGORIES = [
   'Massage',

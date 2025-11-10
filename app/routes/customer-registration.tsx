@@ -7,9 +7,9 @@ import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 
-import ConfirmPasswordInput from '../components/validator/ConfirmPasswordInput';
-import EmailInput from '../components/validator/EmailInput';
-import PasswordInput from '../components/validator/PasswordInput';
+import ConfirmPasswordInput from '../components/inputs/ConfirmPasswordInput';
+import EmailInput from '../components/inputs/EmailInput';
+import PasswordInput from '../components/inputs/PasswordInput';
 
 export default function CustomerRegistration() {
   const [formData, setFormData] = useState({

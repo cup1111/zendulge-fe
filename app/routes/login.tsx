@@ -8,8 +8,8 @@ import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { useAuth } from '~/contexts/AuthContext';
 
-import EmailInput from '../components/validator/EmailInput';
-import PasswordInput from '../components/validator/PasswordInput';
+import EmailInput from '../components/inputs/EmailInput';
+import PasswordInput from '../components/inputs/PasswordInput';
 
 export default function Login() {
   const navigate = useNavigate();
