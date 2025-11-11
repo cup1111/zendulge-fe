@@ -13,7 +13,7 @@ import PasswordInput from '../components/inputs/PasswordInput';
 
 export default function Login() {
   const navigate = useNavigate();
-  const authContext = useAuth();
+  const auth = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,9 +21,9 @@ export default function Login() {
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
-  const handleLogin = () => {
-    authContext.login(formData.email, formData.password);
-    if (authContext.isAuthenticated) {
+  const handleLogin = async () => {
+    await auth.login(formData.email, formData.password);
+    if (auth.isAuthenticated) {
       navigate('/');
     }
   };
@@ -84,10 +84,10 @@ export default function Login() {
                   }
                 }}
               />
-              {!authContext.isAuthenticated && authContext.errorMessage && (
+              {!auth.isAuthenticated && auth.errorMessage && (
                 <div className='text-xs text-red-600'>
                   <XCircle className='w-3 h-3 inline mr-1' />
-                  {authContext.errorMessage}
+                  {auth.errorMessage}
                 </div>
               )}
               <Button

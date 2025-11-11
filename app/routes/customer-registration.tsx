@@ -33,13 +33,13 @@ export default function CustomerRegistration() {
     setIsConfirmPasswordValid(isValid);
   };
 
-  const navigatory = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     const submitForm = { email: formData.email, password: formData.password };
     const response = await registerCustomer(submitForm);
     if (response.success) {
-      navigatory('/verify-email', {
+      navigate('/verify-email', {
         state: { email: submitForm.email },
       });
     }

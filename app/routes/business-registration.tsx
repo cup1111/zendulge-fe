@@ -8,13 +8,12 @@ import { registerBusiness } from '~/api/register';
 import BusinessRegistrationFlow from '../components/layout/BusinessRegistrationFlow';
 import type {
   BusinessAddress,
-  BusinessField,
   BusinessRegistrationFormData,
   ErrorState,
 } from '../types/businessType';
 
 export default function BusinessRegistration() {
-  const [sectionStep, setsectionStep] = useState<number>(1);
+  const [sectionStep, setSectionStep] = useState<number>(1);
   const [businessRegistrationFormData, setBusinessRegistrationFormData] =
     useState<BusinessRegistrationFormData>({
       // Business fields
@@ -174,7 +173,7 @@ export default function BusinessRegistration() {
   const [error, setError] = useState<ErrorState>({});
   const [hasChanged, setHasChanged] = useState<boolean>(false);
 
-  const handleInputChange = (field: string, value: BusinessField) => {
+  const handleInputChange = (field: string, value: string) => {
     setHasChanged(true);
     const updatedField = {
       ...businessRegistrationFormData[field],
@@ -218,20 +217,26 @@ export default function BusinessRegistration() {
   };
 
   const nextStep = () => {
-    setsectionStep(prev => prev + 1);
+    setSectionStep(prev => prev + 1);
     setHasChanged(false);
   };
   const prevStep = () => {
-    setsectionStep(prev => prev - 1);
+    setSectionStep(prev => prev - 1);
     setHasChanged(true);
   };
   const handleSubmit = async () => {
-    const validateAll = (obj: businessRegistrationFormData, path = '') => {
+    // Recursively validates all form fields including nested address fields
+    // Returns an object with error messages keyed by field path (empty string means no error)
+    const validateAll = (formData: BusinessRegistrationFormData, path = '') => {
       const errs: Record<string, string> = {};
 
-      Object.entries(obj).forEach(([key, field]) => {
+      Object.entries(formData).forEach(([key, field]) => {
+        // Special handling for confirmPassword - needs password field for comparison
         if (key === 'confirmPassword') {
-          const validationMsg = field.validate(field.value, obj.password.value);
+          const validationMsg = field.validate(
+            field.value,
+            formData.password.value
+          );
           if (validationMsg) {
             errs[key] = validationMsg;
             return;
@@ -240,13 +245,17 @@ export default function BusinessRegistration() {
           return;
         }
 
+        // Build full key path for nested fields (e.g., "businessAddress.street")
         const fullKey = path ? `${path}.${key}` : key;
+        // Check if field has a value property (BusinessField structure)
         if (field && typeof field === 'object' && 'value' in field) {
+          // Validate required fields
           if (field.isRequired && !field.value) {
             errs[fullKey] = 'This field is required';
             return;
           }
 
+          // Run custom validation function if provided
           if (typeof field.validate === 'function') {
             const validationMsg = field.validate(field.value);
             if (validationMsg) {
@@ -255,7 +264,9 @@ export default function BusinessRegistration() {
             }
           }
           errs[fullKey] = '';
-        } else if (field && typeof field === 'object') {
+        }
+        // Recursively validate nested objects (like businessAddress)
+        else if (field && typeof field === 'object') {
           Object.assign(errs, validateAll(field, fullKey));
         }
       });
@@ -273,6 +284,9 @@ export default function BusinessRegistration() {
       return;
     }
 
+    // Extracts the actual values from the nested BusinessField structure
+    // Transforms the form data structure into a flat payload for API submission
+    // Example: { companyName: { value: "My Company", ... } } becomes { companyName: "My Company" }
     type ExtractValues<T> = {
       [K in keyof T]: T[K] extends { value: infer V }
         ? V
@@ -280,17 +294,21 @@ export default function BusinessRegistration() {
           ? ExtractValues<T[K]>
           : T[K];
     };
-    function extractValues<T>(obj: T): ExtractValues<T> {
+    function extractFormValues<T>(formData: T): ExtractValues<T> {
       return Object.fromEntries(
-        Object.entries(obj).map(([key, val]) => {
+        Object.entries(formData).map(([key, val]) => {
+          // Extract value from BusinessField structure
           if (val && typeof val === 'object' && 'value' in val)
             return [key, val.value];
-          if (val && typeof val === 'object') return [key, extractValues(val)];
+          // Recursively process nested objects
+          if (val && typeof val === 'object')
+            return [key, extractFormValues(val)];
+          // Return primitive values as-is
           return [key, val];
         })
       );
     }
-    const data = extractValues(businessRegistrationFormData);
+    const data = extractFormValues(businessRegistrationFormData);
     delete data.confirmPassword; // 提交前移除 confirmPassword
     const response = await registerBusiness(data);
     if (response.successful) {

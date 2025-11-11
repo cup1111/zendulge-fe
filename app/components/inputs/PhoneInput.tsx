@@ -55,7 +55,8 @@ export default function PhoneInput({
   const isValid = value && value.length > 8;
   const hasError = value && value.length > 0 && value.length <= 8;
 
-  function telFieldClass() {
+  // Returns the CSS class name for the phone input field based on validation state
+  function getPhoneFieldClassName() {
     if (hasError) return 'flex-1 border-red-500 focus:border-red-500';
     return 'flex-1';
   }
@@ -95,7 +96,7 @@ export default function PhoneInput({
           value={value}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className={telFieldClass()}
+          className={getPhoneFieldClassName()}
         />
       </div>
 

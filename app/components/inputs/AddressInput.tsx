@@ -24,7 +24,9 @@ export default function AddressInput({
   error,
   errorSetter,
 }: AddressInputProps) {
-  const handleFieldChange = (
+  // Handles changes to address form fields
+  // Updates the address state and validation errors
+  const handleAddressFieldChange = (
     field: keyof BusinessAddress,
     newValue: string
   ) => {
@@ -61,7 +63,8 @@ export default function AddressInput({
       });
     }
   };
-  const showError = (message: string) => (
+  // Renders an error message component for address fields
+  const renderErrorMessage = (message: string) => (
     <p className='text-xs text-red-600'>{message}</p>
   );
 
@@ -80,23 +83,25 @@ export default function AddressInput({
               <Input
                 value={value.streetNumber.value}
                 onChange={e =>
-                  handleFieldChange('streetNumber', e.target.value)
+                  handleAddressFieldChange('streetNumber', e.target.value)
                 }
                 placeholder='123'
               />
               {error.businessAddress?.streetNumber &&
-                showError(error.businessAddress?.streetNumber)}
+                renderErrorMessage(error.businessAddress?.streetNumber)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Name *</Label>
               <Input
                 value={value.street.value ?? ''}
-                onChange={e => handleFieldChange('street', e.target.value)}
+                onChange={e =>
+                  handleAddressFieldChange('street', e.target.value)
+                }
                 placeholder='Collins Street'
               />
               {error.businessAddress?.street &&
-                showError(error.businessAddress?.street)}
+                renderErrorMessage(error.businessAddress?.street)}
             </div>
           </div>
 
@@ -105,22 +110,24 @@ export default function AddressInput({
               <Label className='text-sm font-medium'>Suburb</Label>
               <Input
                 value={value.suburb.value ?? ''}
-                onChange={e => handleFieldChange('suburb', e.target.value)}
+                onChange={e =>
+                  handleAddressFieldChange('suburb', e.target.value)
+                }
                 placeholder='Suburb'
               />
               {error.businessAddress?.suburb &&
-                showError(error.businessAddress?.suburb)}
+                renderErrorMessage(error.businessAddress?.suburb)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>City *</Label>
               <Input
                 value={value.city.value || ''}
-                onChange={e => handleFieldChange('city', e.target.value)}
+                onChange={e => handleAddressFieldChange('city', e.target.value)}
                 placeholder='Melbourne'
               />
               {error.businessAddress?.city &&
-                showError(error.businessAddress?.city)}
+                renderErrorMessage(error.businessAddress?.city)}
             </div>
           </div>
 
@@ -129,7 +136,7 @@ export default function AddressInput({
               <Label className='text-sm font-medium'>State *</Label>
               <Select
                 value={value.state.value ?? ''}
-                onValueChange={val => handleFieldChange('state', val)}
+                onValueChange={val => handleAddressFieldChange('state', val)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select State' />
@@ -146,18 +153,20 @@ export default function AddressInput({
                 </SelectContent>
               </Select>
               {error.businessAddress?.state &&
-                showError(error.businessAddress?.state)}
+                renderErrorMessage(error.businessAddress?.state)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Postal Code *</Label>
               <Input
                 value={value.postcode.value ?? ''}
-                onChange={e => handleFieldChange('postcode', e.target.value)}
+                onChange={e =>
+                  handleAddressFieldChange('postcode', e.target.value)
+                }
                 placeholder='3000'
               />
               {error.businessAddress?.postcode &&
-                showError(error.businessAddress?.postcode)}
+                renderErrorMessage(error.businessAddress?.postcode)}
             </div>
 
             <div className='space-y-2'>

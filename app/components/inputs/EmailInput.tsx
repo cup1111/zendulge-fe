@@ -23,12 +23,14 @@ export default function EmailInput({
   onEmailValidityChange,
   onEnter,
 }: EmailInputProps) {
-  const mailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isEmailValid = mailReg.test(value);
+  // Regular expression for validating email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isEmailValid = emailRegex.test(value);
   const hasInput = value.length > 0;
   const shouldShowError = hasInput && !isEmailValid;
 
-  function emailFieldClass() {
+  // Returns the CSS class name for the email input field based on validation state
+  function getEmailFieldClassName() {
     const borderClass = 'border-gray-300';
     if (shouldShowError) return 'border-red-500 focus:border-red-500';
     return borderClass;
@@ -54,7 +56,7 @@ export default function EmailInput({
             onChange(e.target.value)
           }
           placeholder={placeholder}
-          className={emailFieldClass()}
+          className={getEmailFieldClassName()}
           onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />

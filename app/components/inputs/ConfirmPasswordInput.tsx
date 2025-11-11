@@ -17,7 +17,7 @@ export default function ConfirmPasswordInput({
   password,
   value,
   onChange,
-  placeholder = 'Confirm Passoword',
+  placeholder = 'Confirm Password',
   showValidationDetails = true,
   onConfirmPasswordValidityChange: confirmPasswordValidityChange,
   onEnter,
@@ -31,7 +31,8 @@ export default function ConfirmPasswordInput({
       confirmPasswordValidityChange(isConfirmPasswordSame);
   }, [isConfirmPasswordSame, confirmPasswordValidityChange]);
 
-  function passwordFieldClass() {
+  // Returns the CSS class name for the confirm password input field based on validation state
+  function getConfirmPasswordFieldClassName() {
     const borderClass = 'border-gray-300';
     if (shouldShowError) return 'border-red-500 focus:border-red-500';
     return borderClass;
@@ -47,7 +48,7 @@ export default function ConfirmPasswordInput({
             onChange(e.target.value)
           }
           placeholder={placeholder}
-          className={passwordFieldClass()}
+          className={getConfirmPasswordFieldClassName()}
           onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />

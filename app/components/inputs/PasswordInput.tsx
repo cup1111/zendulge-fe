@@ -23,8 +23,10 @@ export default function PasswordInput({
   onPasswordValidityChange: onValidityChange,
   onEnter,
 }: PasswordInputProps) {
-  const passwordReg = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-  const isPasswordValid = passwordReg.test(value);
+  // Regular expression for validating password strength
+  // Requires: at least 8 characters, one lowercase, one uppercase, one digit, one special character
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  const isPasswordValid = passwordRegex.test(value);
   const passwordNotEmpty = value.length > 0;
   const shouldShowError = passwordNotEmpty && !isPasswordValid;
 
@@ -33,7 +35,8 @@ export default function PasswordInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPasswordValid]);
 
-  function passwordFieldClass() {
+  // Returns the CSS class name for the password input field based on validation state
+  function getPasswordFieldClassName() {
     const borderClass = 'border-gray-300';
     if (shouldShowError) return 'border-red-500 focus:border-red-500';
     return borderClass;
@@ -54,7 +57,7 @@ export default function PasswordInput({
             onChange(e.target.value)
           }
           placeholder={placeholder}
-          className={passwordFieldClass()}
+          className={getPasswordFieldClassName()}
           onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />

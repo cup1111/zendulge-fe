@@ -2,15 +2,15 @@ import axios from 'axios';
 
 import type { BusinessRegisterPayload } from '../types/businessType';
 
-export const registerCustomer = async (data: {
+export const registerCustomer = async (customerRegistrationData: {
   email: string;
   password: string;
 }) => {
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/register',
     {
-      email: data.email,
-      password: data.password,
+      email: customerRegistrationData.email,
+      password: customerRegistrationData.password,
       firstName: 'asdf',
       lastName: 'asdf',
     }
@@ -18,36 +18,38 @@ export const registerCustomer = async (data: {
   return response.data;
 };
 
-export const registerBusiness = async (data: BusinessRegisterPayload) => {
+export const registerBusiness = async (
+  businessRegistrationData: BusinessRegisterPayload
+) => {
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/business-register',
     {
-      companyName: data.companyName,
-      description: data.description,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      categories: data.categories,
-      serviceCategory: data.serviceCategory,
-      jobTitle: data.jobTitle,
+      companyName: businessRegistrationData.companyName,
+      description: businessRegistrationData.description,
+      firstName: businessRegistrationData.firstName,
+      lastName: businessRegistrationData.lastName,
+      categories: businessRegistrationData.categories,
+      serviceCategory: businessRegistrationData.serviceCategory,
+      jobTitle: businessRegistrationData.jobTitle,
       businessAddress: {
-        country: data.businessAddress.country,
-        streetNumber: data.businessAddress.streetNumber,
-        street: data.businessAddress.street,
-        suburb: data.businessAddress.suburb,
-        city: data.businessAddress.city,
-        state: data.businessAddress.state,
-        postcode: data.businessAddress.postcode,
+        country: businessRegistrationData.businessAddress.country,
+        streetNumber: businessRegistrationData.businessAddress.streetNumber,
+        street: businessRegistrationData.businessAddress.street,
+        suburb: businessRegistrationData.businessAddress.suburb,
+        city: businessRegistrationData.businessAddress.city,
+        state: businessRegistrationData.businessAddress.state,
+        postcode: businessRegistrationData.businessAddress.postcode,
       },
-      phone: data.phone,
-      companyEmail: data.companyEmail,
-      contactPersonName: data.contactPersonName,
-      contactPersonEmail: data.contactPersonEmail,
-      contactPersonPhone: data.contactPersonPhone,
-      website: data.website,
-      facebook: data.facebook,
-      twitter: data.twitter,
-      email: data.email,
-      password: data.password,
+      phone: businessRegistrationData.phone,
+      companyEmail: businessRegistrationData.companyEmail,
+      contactPersonName: businessRegistrationData.contactPersonName,
+      contactPersonEmail: businessRegistrationData.contactPersonEmail,
+      contactPersonPhone: businessRegistrationData.contactPersonPhone,
+      website: businessRegistrationData.website,
+      facebook: businessRegistrationData.facebook,
+      twitter: businessRegistrationData.twitter,
+      email: businessRegistrationData.email,
+      password: businessRegistrationData.password,
     }
   );
   return response.data;

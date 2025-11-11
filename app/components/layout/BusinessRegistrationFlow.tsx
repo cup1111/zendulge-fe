@@ -96,8 +96,11 @@ export default function BusinessRegistrationFlow({
 
   const currentSection = sections[sectionStep - 1];
   const maxSteps = sections.length;
-  const canProceedToNextStep = true; // TODO: need to fix
-  const showError = (message: string) => (
+  // Determines if the user can proceed to the next step
+  // Currently always true - TODO: Implement actual validation logic based on current step and form data
+  const canProceedToNextStep = true;
+  // Renders an error message component
+  const renderErrorMessage = (message: string) => (
     <p className='text-xs text-red-600'>{message}</p>
   );
 
@@ -157,7 +160,7 @@ export default function BusinessRegistrationFlow({
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
-                {error.companyName && showError(error.companyName)}
+                {error.companyName && renderErrorMessage(error.companyName)}
               </div>
               <div>
                 <label
@@ -188,7 +191,7 @@ export default function BusinessRegistrationFlow({
                     </span>
                   </div>
                 </label>
-                {error.description && showError(error.description)}
+                {error.description && renderErrorMessage(error.description)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Tell potential customers about your business and what makes it
                   special
@@ -226,7 +229,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.firstName && showError(error.firstName)}
+                  {error.firstName && renderErrorMessage(error.firstName)}
                 </div>
                 <div>
                   <label
@@ -243,7 +246,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.lastName && showError(error.lastName)}
+                  {error.lastName && renderErrorMessage(error.lastName)}
                 </div>
               </div>
               <div>
@@ -261,7 +264,7 @@ export default function BusinessRegistrationFlow({
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
-                {error.jobTitle && showError(error.jobTitle)}
+                {error.jobTitle && renderErrorMessage(error.jobTitle)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Your role within the business
                 </p>
@@ -325,7 +328,7 @@ export default function BusinessRegistrationFlow({
                     ))}
                   </div>
                 </label>
-                {error.categories && showError(error.categories)}
+                {error.categories && renderErrorMessage(error.categories)}
               </div>
               {businessRegistrationFormData.categories.value.length > 1 && (
                 <div>
@@ -352,7 +355,8 @@ export default function BusinessRegistrationFlow({
                       )}
                     </select>
                   </label>
-                  {error.serviceCategory && showError(error.serviceCategory)}
+                  {error.serviceCategory &&
+                    renderErrorMessage(error.serviceCategory)}
                   <p className='text-sm text-gray-600 mt-1'>
                     Choose your main category for business listing and search
                   </p>
@@ -412,7 +416,7 @@ export default function BusinessRegistrationFlow({
                   placeholder='Enter business phone (landline or mobile)'
                   showValidationDetails
                 />
-                {error.phone && showError(error.phone)}
+                {error.phone && renderErrorMessage(error.phone)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Landline or mobile number for customer contact
                 </p>
@@ -425,7 +429,7 @@ export default function BusinessRegistrationFlow({
                   placeholder='hello@yourbusiness.com'
                   showValidationDetails
                 />
-                {error.companyEmail && showError(error.companyEmail)}
+                {error.companyEmail && renderErrorMessage(error.companyEmail)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Primary email for customer communication
                 </p>
@@ -459,7 +463,8 @@ export default function BusinessRegistrationFlow({
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
-                {error.contactPersonName && showError(error.contactPersonName)}
+                {error.contactPersonName &&
+                  renderErrorMessage(error.contactPersonName)}
               </div>
               <div>
                 <EmailInput
@@ -472,7 +477,7 @@ export default function BusinessRegistrationFlow({
                   showValidationDetails
                 />
                 {error.contactPersonEmail &&
-                  showError(error.contactPersonEmail)}
+                  renderErrorMessage(error.contactPersonEmail)}
               </div>
               <div>
                 <PhoneInput
@@ -493,7 +498,7 @@ export default function BusinessRegistrationFlow({
                   showValidationDetails
                 />
                 {error.contactPersonPhone &&
-                  showError(error.contactPersonPhone)}
+                  renderErrorMessage(error.contactPersonPhone)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Mobile number for account management purposes
                 </p>
@@ -526,7 +531,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.website && showError(error.website)}
+                  {error.website && renderErrorMessage(error.website)}
                 </div>
                 <div>
                   <label
@@ -543,7 +548,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.facebook && showError(error.facebook)}
+                  {error.facebook && renderErrorMessage(error.facebook)}
                 </div>
                 <div>
                   <label
@@ -560,7 +565,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.twitter && showError(error.twitter)}
+                  {error.twitter && renderErrorMessage(error.twitter)}
                 </div>
                 {/* Logo removed per request */}
               </div>
@@ -590,7 +595,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.email && showError(error.email)}
+                  {error.email && renderErrorMessage(error.email)}
                 </div>
                 <div>
                   <label
@@ -607,7 +612,7 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.password && showError(error.password)}
+                  {error.password && renderErrorMessage(error.password)}
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
                     htmlFor='confirmPassword'
@@ -624,7 +629,8 @@ export default function BusinessRegistrationFlow({
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
-                  {error.confirmPassword && showError(error.confirmPassword)}
+                  {error.confirmPassword &&
+                    renderErrorMessage(error.confirmPassword)}
                 </div>
               </div>
             </div>
