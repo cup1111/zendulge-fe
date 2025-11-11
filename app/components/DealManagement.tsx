@@ -84,12 +84,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     price: 0,
     duration: 60,
     operatingSite: [],
-    availability: {
-      startDate: new Date().toISOString().split('T')[0],
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split('T')[0],
-    },
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0],
+    maxBookings: undefined,
     status: 'active',
     tags: [],
     service: '',
@@ -222,6 +221,18 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     loadDeals();
   }, [companyId, loadDeals]);
 
+  function toDateInputValue(value?: string) {
+    return value ? value.split('T')[0] : new Date().toISOString().split('T')[0];
+  }
+
+  function toEndDateInputValue(value?: string) {
+    return value
+      ? value.split('T')[0]
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0];
+  }
+
   const openEditDialog = (deal: Deal) => {
     setEditingDeal(deal);
     // Extract operating site IDs from the array
@@ -236,17 +247,9 @@ export default function DealManagement({ companyId }: DealManagementProps) {
       price: deal.price ?? 0,
       duration: deal.duration ?? 60,
       operatingSite: operatingSiteIds,
-      availability: {
-        startDate:
-          deal.availability?.startDate?.split('T')[0] ??
-          new Date().toISOString().split('T')[0],
-        endDate:
-          deal.availability?.endDate?.split('T')[0] ??
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split('T')[0],
-        maxBookings: deal.availability?.maxBookings,
-      },
+      startDate: toDateInputValue(deal.startDate),
+      endDate: toEndDateInputValue(deal.endDate),
+      maxBookings: deal.maxBookings,
       status: deal.status ?? 'active',
       tags: deal.tags ?? [],
       service: deal.service?.id ?? '',
@@ -590,8 +593,8 @@ export default function DealManagement({ companyId }: DealManagementProps) {
               <div className='flex items-center text-sm text-gray-600'>
                 <Calendar className='w-4 h-4 mr-2 flex-shrink-0' />
                 <span className='font-medium'>
-                  {formatDate(deal.availability?.startDate ?? '')} -{' '}
-                  {formatDate(deal.availability?.endDate ?? '')}
+                  {formatDate(deal.startDate ?? '')} -{' '}
+                  {formatDate(deal.endDate ?? '')}
                 </span>
               </div>
               {deal.createdBy && (
@@ -888,14 +891,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                 <Input
                   id='edit-maxBookings'
                   type='number'
-                  value={formData.availability.maxBookings ?? ''}
+                  value={formData.maxBookings ?? ''}
                   onChange={e =>
                     setFormData({
                       ...formData,
-                      availability: {
-                        ...formData.availability,
-                        maxBookings: parseInt(e.target.value, 10) || undefined,
-                      },
+                      maxBookings: parseInt(e.target.value, 10) || undefined,
                     })
                   }
                   min='1'
@@ -911,14 +911,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                 <Input
                   id='edit-startDate'
                   type='date'
-                  value={formData.availability.startDate}
+                  value={formData.startDate}
                   onChange={e =>
                     setFormData({
                       ...formData,
-                      availability: {
-                        ...formData.availability,
-                        startDate: e.target.value,
-                      },
+                      startDate: e.target.value,
                     })
                   }
                 />
@@ -928,14 +925,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                 <Input
                   id='edit-endDate'
                   type='date'
-                  value={formData.availability.endDate}
+                  value={formData.endDate}
                   onChange={e =>
                     setFormData({
                       ...formData,
-                      availability: {
-                        ...formData.availability,
-                        endDate: e.target.value,
-                      },
+                      endDate: e.target.value,
                     })
                   }
                 />
@@ -1030,11 +1024,9 @@ export default function DealManagement({ companyId }: DealManagementProps) {
             originalPrice: dealToDuplicate.originalPrice,
             duration: dealToDuplicate.duration,
             operatingSite: dealToDuplicate.operatingSite.map(site => site.id),
-            availability: {
-              startDate: dealToDuplicate.availability.startDate,
-              endDate: dealToDuplicate.availability.endDate,
-              maxBookings: dealToDuplicate.availability.maxBookings,
-            },
+            startDate: dealToDuplicate.startDate,
+            endDate: dealToDuplicate.endDate,
+            maxBookings: dealToDuplicate.maxBookings,
             status: 'active', // Always start duplicated deals as active
             tags: dealToDuplicate.tags,
             service: dealToDuplicate.service.id,

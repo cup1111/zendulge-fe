@@ -14,12 +14,10 @@ export interface Deal {
     name: string;
     address: string;
   }>;
-  availability: {
-    startDate: string;
-    endDate: string;
-    maxBookings?: number;
-    currentBookings: number;
-  };
+  startDate: string;
+  endDate: string;
+  maxBookings?: number;
+  currentBookings: number;
   status: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
@@ -49,11 +47,10 @@ export interface DealCreateRequest {
   originalPrice?: number;
   duration: number;
   operatingSite: string[];
-  availability: {
-    startDate: string;
-    endDate: string;
-    maxBookings?: number;
-  };
+  startDate: string;
+  endDate: string;
+  maxBookings?: number;
+  currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
@@ -68,11 +65,10 @@ export interface DealUpdateRequest {
   originalPrice?: number;
   duration?: number;
   operatingSite?: string[];
-  availability?: {
-    startDate?: string;
-    endDate?: string;
-    maxBookings?: number;
-  };
+  startDate?: string;
+  endDate?: string;
+  maxBookings?: number;
+  currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
