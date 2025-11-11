@@ -221,6 +221,9 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     loadDeals();
   }, [companyId, loadDeals]);
 
+  const toIsoUtc = (value: string) =>
+    value.includes('T') ? value : `${value}T00:00:00.000Z`;
+
   function toDateInputValue(value?: string) {
     return value ? value.split('T')[0] : new Date().toISOString().split('T')[0];
   }
@@ -261,7 +264,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     if (!editingDeal) return;
 
     try {
-      await DealService.updateDeal(companyId, editingDeal.id, formData);
+      await DealService.updateDeal(companyId, editingDeal.id, {
+        ...formData,
+        startDate: toIsoUtc(formData.startDate),
+        endDate: toIsoUtc(formData.endDate),
+      });
       toast({
         title: 'Success',
         description: 'Deal updated successfully',

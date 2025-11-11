@@ -89,6 +89,9 @@ const parseDateInput = (value?: string | Date) => {
   return parsed;
 };
 
+const toIsoUtcString = (value: string) =>
+  value.includes('T') ? value : `${value}T00:00:00.000Z`;
+
 export default function DealDialog({
   companyId,
   trigger,
@@ -322,8 +325,8 @@ export default function DealDialog({
     try {
       const dealData = {
         ...formData,
-        startDate: formData.startDate,
-        endDate: formData.endDate,
+        startDate: toIsoUtcString(formData.startDate),
+        endDate: toIsoUtcString(formData.endDate),
         maxBookings: formData.maxBookings ?? undefined,
       };
       await DealService.createDeal(companyId, dealData);
