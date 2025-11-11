@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -42,6 +43,15 @@ import { ServiceService } from '~/services/serviceService';
 import { BusinessUserRole } from '../constants/enums';
 import { useAuth } from '../contexts/AuthContext';
 
+type ApiError = {
+  response?: {
+    status?: number;
+    data?: {
+      message?: string;
+    };
+  };
+};
+
 interface ServiceManagementProps {
   companyId: string;
 }
@@ -58,6 +68,10 @@ export default function ServiceManagement({
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [isServiceLockedDialogOpen, setIsServiceLockedDialogOpen] =
+    useState(false);
+  const [lockedServiceName, setLockedServiceName] = useState('');
+  const [lockedServiceMessage, setLockedServiceMessage] = useState('');
 
   // Pagination and search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -127,6 +141,16 @@ export default function ServiceManagement({
     'Maintenance',
     'Consultation',
   ];
+
+  const serviceNameDisplay = lockedServiceName || 'This service';
+
+  const handleLockedDialogChange = (open: boolean) => {
+    setIsServiceLockedDialogOpen(open);
+    if (!open) {
+      setLockedServiceName('');
+      setLockedServiceMessage('');
+    }
+  };
 
   const loadServices = useCallback(async () => {
     try {
@@ -222,6 +246,21 @@ export default function ServiceManagement({
       setServiceToDelete(null);
       loadServices();
     } catch (error) {
+      const apiError = error as ApiError;
+      if (apiError.response?.status === 409) {
+        const serviceName = serviceToDelete?.name ?? 'This service';
+        const message =
+          apiError.response?.data?.message ??
+          'This service is in use by existing deals. Please update or remove those deals before deleting it.';
+
+        setLockedServiceName(serviceName);
+        setLockedServiceMessage(message);
+        setIsDeleteDialogOpen(false);
+        setServiceToDelete(null);
+        setIsServiceLockedDialogOpen(true);
+        return;
+      }
+
       toast({
         title: 'Error',
         description: 'Failed to delete service',
@@ -599,6 +638,41 @@ export default function ServiceManagement({
                   className='bg-red-600 hover:bg-red-700 text-white cursor-pointer'
                 >
                   Delete Service
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Service Locked Dialog */}
+        <Dialog
+          open={isServiceLockedDialogOpen}
+          onOpenChange={handleLockedDialogChange}
+        >
+          <DialogContent className='max-w-md'>
+            <DialogHeader>
+              <DialogTitle>Unable to Delete Service</DialogTitle>
+            </DialogHeader>
+            <div className='space-y-4'>
+              <div className='flex items-center space-x-3'>
+                <div className='w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center'>
+                  <AlertCircle className='w-6 h-6 text-amber-600' />
+                </div>
+                <div>
+                  <p className='text-sm text-gray-600'>
+                    {serviceNameDisplay} cannot be deleted right now.
+                  </p>
+                  <p className='text-sm text-gray-500'>
+                    {lockedServiceMessage}
+                  </p>
+                </div>
+              </div>
+              <div className='flex justify-end'>
+                <Button
+                  onClick={() => handleLockedDialogChange(false)}
+                  className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
+                >
+                  Got it
                 </Button>
               </div>
             </div>
