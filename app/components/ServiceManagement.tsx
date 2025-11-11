@@ -225,6 +225,18 @@ export default function ServiceManagement({
       setEditingService(null);
       loadServices();
     } catch (error) {
+      const apiError = error as ApiError;
+      if (apiError.response?.status === 409) {
+        toast({
+          title: 'Unable to update service',
+          description:
+            apiError.response?.data?.message ??
+            'This service is in use by existing deals. Please update or remove those deals before making it inactive.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       toast({
         title: 'Error',
         description: 'Failed to update service',
