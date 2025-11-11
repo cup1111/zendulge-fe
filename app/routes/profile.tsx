@@ -52,11 +52,11 @@ const profileSchema = z.object({
   address: z.object({
     country: z.string().min(1, 'Country is required'),
     streetNumber: z.string().min(1, 'Street number is required'),
-    streetName: z.string().min(1, 'Street name is required'),
+    street: z.string().min(1, 'Street name is required'),
     suburb: z.string().min(1, 'Suburb is required'),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(1, 'State is required'),
-    postalCode: z.string().min(1, 'Postal code is required'),
+    postcode: z.string().min(1, 'Postal code is required'),
     fullAddress: z.string().min(1, 'Full address is required'),
   }),
   interests: z.array(z.enum(WELLNESS_CATEGORIES)).optional(),
@@ -80,11 +80,11 @@ export default function Profile() {
       address: user.address ?? {
         country: 'Australia',
         streetNumber: '',
-        streetName: '',
+        street: '',
         suburb: '',
         city: '',
         state: '',
-        postalCode: '',
+        postcode: '',
         fullAddress: '',
       },
       interests: user.interests ?? [],
@@ -101,11 +101,11 @@ export default function Profile() {
       address: user.address ?? {
         country: 'Australia',
         streetNumber: '',
-        streetName: '',
+        street: '',
         suburb: '',
         city: '',
         state: '',
-        postalCode: '',
+        postcode: '',
         fullAddress: '',
       },
       interests: user.interests ?? [],
@@ -413,7 +413,7 @@ export default function Profile() {
                             />
                             <Input
                               placeholder='Street Name'
-                              {...form.register('address.streetName')}
+                              {...form.register('address.street')}
                             />
                             <Input
                               placeholder='Suburb'
@@ -429,7 +429,7 @@ export default function Profile() {
                             />
                             <Input
                               placeholder='Postal Code'
-                              {...form.register('address.postalCode')}
+                              {...form.register('address.postcode')}
                             />
                           </div>
                         ) : (

@@ -37,6 +37,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   setCurrentCompany: (company: Company) => void;
   logout: () => void;
+  errorMessage: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,11 +46,18 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Helper function to decode JWT and extract user data
-function decodeJWTUser(token: string): User | null {
+// Decodes a JWT token and extracts user information from the payload
+// JWT tokens consist of three parts separated by dots: header.payload.signature
+// This function extracts the payload (second part), converts base64url to base64,
+// decodes it, and parses the JSON to extract user data
+// Returns null if the token is invalid or cannot be decoded
+function decodeJWTTokenToUser(token: string): User | null {
   try {
+    // Extract the payload part (second part of the JWT)
     const base64Url = token.split('.')[1];
+    // Convert base64url to base64 (replace URL-safe characters)
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    // Decode base64 and convert to URI component format
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
@@ -57,6 +65,7 @@ function decodeJWTUser(token: string): User | null {
         .join('')
     );
 
+    // Parse JSON and extract user data
     const payload = JSON.parse(jsonPayload);
 
     return {
@@ -74,7 +83,13 @@ function decodeJWTUser(token: string): User | null {
   }
 }
 
-function getCurrentCompany(userData: User): Company | null {
+// Retrieves the current company from localStorage or defaults to the first company
+// Priority: 1) Check localStorage for saved 'currentCompany'
+//           2) If not found, use the first company from user's companies array
+//           3) Save the selected company to localStorage for future use
+//           4) Return null if no companies are available
+function getCurrentCompanyFromStorage(userData: User): Company | null {
+  // Try to load saved company from localStorage
   const savedCurrentCompany = localStorage.getItem('currentCompany');
   if (savedCurrentCompany) {
     try {
@@ -83,8 +98,10 @@ function getCurrentCompany(userData: User): Company | null {
       // Ignore parse error, fallback to first company
     }
   }
+  // Fallback to first company if available
   if (userData.companies && userData.companies.length > 0) {
     const [firstCompany] = userData.companies;
+    // Save to localStorage for future use
     localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
     return firstCompany;
   }
@@ -97,6 +114,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Clears the current error message from the auth context
+  const clearErrorMessage = () => setErrorMessage(null);
 
   const logout = () => {
     setUserState(null);
@@ -113,6 +133,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         API_CONFIG.endpoints.auth.login,
         { email, password }
       );
+      if (!response?.data) return;
 
       const { data } = response;
       const { accessToken } = data.data;
@@ -121,7 +142,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       localStorage.setItem('accessToken', accessToken);
 
       // Decode user data from token
-      const userData = decodeJWTUser(accessToken);
+      const userData = decodeJWTTokenToUser(accessToken);
       if (!userData) {
         throw new Error('Invalid token received');
       }
@@ -134,10 +155,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const firstCompany = userData.companies[0];
         setCurrentCompanyState(firstCompany);
         localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
+        clearErrorMessage();
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (error: any) {
+      // console.error('Login error:', error.response.data);
+      if (error.response.data.includes('Account not activated')) {
+        setErrorMessage(
+          'Account not activated. Please check your email for activation instructions.'
+        );
+      } else {
+        setErrorMessage('Invalid email or password. Please try again.');
+      }
     }
   }, []);
 
@@ -160,7 +188,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         // Check if token is expired
-        const userData = decodeJWTUser(token);
+        const userData = decodeJWTTokenToUser(token);
         if (!userData) {
           // Token is invalid, logout
           logout();
@@ -180,7 +208,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
 
         // Load saved company or auto-select first one
-        const company = getCurrentCompany(userData);
+        const company = getCurrentCompanyFromStorage(userData);
         setCurrentCompanyState(company);
 
         const response = await zendulgeAxios.get(
@@ -188,7 +216,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         );
         // Token is valid, set user data
         setUserState({ ...userData, role: response.data.role });
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error initializing auth:', error);
         logout();
       } finally {
@@ -208,10 +236,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       login,
       setCurrentCompany,
       logout,
+      errorMessage,
     }),
-    [user, currentCompany, isLoading]
+    [user, currentCompany, isLoading, errorMessage]
   );
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
@@ -229,6 +257,7 @@ export function useAuth() {
       login: async () => {},
       setCurrentCompany: () => {},
       logout: () => {},
+      errorMessage: null,
     };
   }
   return context;
