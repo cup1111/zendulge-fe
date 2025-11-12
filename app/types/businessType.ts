@@ -17,6 +17,7 @@ export type BusinessAddress = {
 
 export type BusinessRegistrationFormData = {
   companyName: BusinessField<string>;
+  companyABN: BusinessField<string>;
   description: BusinessField<string>;
   firstName: BusinessField<string>;
   lastName: BusinessField<string>;
@@ -58,6 +59,7 @@ type BusinessAddressValue = {
 
 export type BusinessRegisterPayload = {
   companyName: string;
+  companyABN: string;
   description: string;
   firstName: string;
   lastName: string;
