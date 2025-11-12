@@ -12,7 +12,8 @@ import { useAuth } from '~/contexts/AuthContext';
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, currentCompany, companies, setCurrentCompany } = useAuth();
+  const auth = useAuth();
+  const { user, currentCompany, companies, setCurrentCompany } = auth;
 
   // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
@@ -23,10 +24,8 @@ export default function Header() {
     role: { name: 'Super Admin', slug: 'super_admin', id: '1' },
   };
 
-  const authContext = useAuth();
-
   const handleSignOut = () => {
-    authContext.logout();
+    auth.logout();
   };
 
   const handleLinkToProfile = () => {

@@ -52,11 +52,6 @@ export default function BusinessRegistration() {
         value: [] as string[],
         defaultValue: [],
       },
-      serviceCategory: {
-        isRequired: true,
-        value: '',
-        defaultValue: '',
-      },
       jobTitle: {
         isRequired: true,
         value: '',

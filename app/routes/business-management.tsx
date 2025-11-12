@@ -189,13 +189,13 @@ export default function BusinessManagement() {
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [activeDeals, setActiveDeals] = useState<ActiveDeal[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
-  const [dataLoading, setDataLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        setDataLoading(true);
+        setIsDataLoading(true);
         setError(null);
 
         // Wait for auth to finish loading
@@ -238,7 +238,7 @@ export default function BusinessManagement() {
           err instanceof Error ? err.message : 'Unknown error occurred';
         setError(`Backend connection failed: ${errorMessage}`);
       } finally {
-        setDataLoading(false);
+        setIsDataLoading(false);
       }
     }
 
@@ -246,7 +246,7 @@ export default function BusinessManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]); // Re-run when auth state changes
 
-  if (isLoading || dataLoading) {
+  if (isLoading || isDataLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>

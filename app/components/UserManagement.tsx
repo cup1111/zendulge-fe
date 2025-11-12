@@ -38,10 +38,10 @@ export default function UserManagement({
   excludeUserId,
 }: Readonly<UserManagementProps>) {
   const { user } = useAuth();
-  const [companyUsers, setCompanyUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [operateSites, setOperateSites] = useState<OperateSite[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -133,7 +133,7 @@ export default function UserManagement({
 
   const loadData = useCallback(async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       setError(null);
 
       // Load users, roles, and operate sites
@@ -143,13 +143,13 @@ export default function UserManagement({
         fetchOperateSites(companyId),
       ]);
 
-      setCompanyUsers(usersData);
+      setUsers(usersData);
       setRoles(rolesData);
       setOperateSites(sitesData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   }, [companyId]);
 
@@ -181,26 +181,26 @@ export default function UserManagement({
     }
   };
 
-  const handleEditUser = (targetUser: User) => {
-    setSelectedUser(targetUser);
+  const handleEditUser = (userToEdit: User) => {
+    setSelectedUser(userToEdit);
     // Find all operateSites where this user is a member
     const assignedSiteIds = operateSites
       .filter(
         site =>
           Array.isArray(site.members) &&
           site.members.some(
-            (member: { id: string }) => member.id === targetUser.id
+            (member: { id: string }) => member.id === userToEdit.id
           )
       )
       .map(site => site.id);
     setEditForm({
-      firstName: targetUser.firstName ?? '',
-      lastName: targetUser.lastName ?? '',
-      phoneNumber: targetUser.phoneNumber ?? '',
-      jobTitle: targetUser.jobTitle ?? '',
-      department: targetUser.department ?? '',
-      location: targetUser.location ?? '',
-      role: targetUser.role?.id ?? '',
+      firstName: userToEdit.firstName ?? '',
+      lastName: userToEdit.lastName ?? '',
+      phoneNumber: userToEdit.phoneNumber ?? '',
+      jobTitle: userToEdit.jobTitle ?? '',
+      department: userToEdit.department ?? '',
+      location: userToEdit.location ?? '',
+      role: userToEdit.role?.id ?? '',
       operateSiteIds: assignedSiteIds,
     });
     setShowEditModal(true);
@@ -236,16 +236,16 @@ export default function UserManagement({
     }
   };
 
-  const handleDeleteUser = async (targetUser: User) => {
+  const handleDeleteUser = async (userToDelete: User) => {
     showConfirmation(
       'Delete User',
-      `Are you sure you want to delete ${targetUser.firstName} ${targetUser.lastName}? This action cannot be undone.`,
+      `Are you sure you want to delete ${userToDelete.firstName} ${userToDelete.lastName}? This action cannot be undone.`,
       async () => {
         try {
           setError(null);
           await UserManagementService.deleteCompanyUser(
             companyId,
-            targetUser.id
+            userToDelete.id
           );
           await loadData(); // Refresh the list
         } catch (err) {
@@ -258,7 +258,7 @@ export default function UserManagement({
     );
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='flex items-center justify-center p-8'>
         <div className='text-lg'>Loading users...</div>
@@ -307,7 +307,7 @@ export default function UserManagement({
             </tr>
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
-            {companyUsers
+            {users
               .filter(u => !excludeUserId || u.id !== excludeUserId)
               .map(companyUser => (
                 <tr key={companyUser.id}>
@@ -374,7 +374,7 @@ export default function UserManagement({
           </tbody>
         </table>
 
-        {companyUsers.length === 0 && (
+        {users.length === 0 && (
           <div className='text-center py-8 text-gray-500'>No users found.</div>
         )}
       </div>
