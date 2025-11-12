@@ -1,28 +1,54 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { registerCustomer } from '~/api/register';
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Input } from '~/components/ui/input';
+
+import ConfirmPasswordInput from '../components/inputs/ConfirmPasswordInput';
+import EmailInput from '../components/inputs/EmailInput';
+import PasswordInput from '../components/inputs/PasswordInput';
 
 export default function CustomerRegistration() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
   });
-  const handleSubmit = async () => {
-    await registerCustomer(formData);
+  // New state to track validity for email and password and confirm password
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+  const onPasswordValidityChange = (isValid: boolean) => {
+    setIsPasswordValid(isValid);
   };
 
-  const handleInputChange = (
-    field: string,
-    value: string | number | boolean
-  ) => {
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  const onEmailValidityChange = (isValid: boolean) => {
+    setIsEmailValid(isValid);
+  };
+
+  const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
+  const onConfirmPasswordValidityChange = (isValid: boolean) => {
+    setIsConfirmPasswordValid(isValid);
+  };
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async () => {
+    const submitForm = { email: formData.email, password: formData.password };
+    const response = await registerCustomer(submitForm);
+    if (response.success) {
+      navigate('/verify-email', {
+        state: { email: submitForm.email },
+      });
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
@@ -61,26 +87,47 @@ export default function CustomerRegistration() {
               <CardTitle className='text-3xl'>Sign Up</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <Input
-                className='h-12 text-base'
-                type='email'
-                placeholder='Email'
+              <EmailInput
+                onEmailValidityChange={onEmailValidityChange}
                 value={formData.email}
-                onChange={e => handleInputChange('email', e.target.value)}
+                onChange={(email: string) => handleInputChange('email', email)}
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
               />
-              <Input
-                className='h-12 text-base'
-                type='password'
-                placeholder='Password'
+              <PasswordInput
+                onPasswordValidityChange={onPasswordValidityChange}
                 value={formData.password}
-                onChange={e => handleInputChange('password', e.target.value)}
+                onChange={(password: string) =>
+                  handleInputChange('password', password)
+                }
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
               />
-              <Input
-                className='h-12 text-base'
-                type='Password'
-                placeholder='Confirm Password'
+              <ConfirmPasswordInput
+                onConfirmPasswordValidityChange={
+                  onConfirmPasswordValidityChange
+                }
+                password={formData.password}
+                value={formData.confirmPassword}
+                onChange={(confirmPassword: string) =>
+                  handleInputChange('confirmPassword', confirmPassword)
+                }
+                onEnter={e => {
+                  if (e.key === 'Enter') {
+                    handleSubmit();
+                  }
+                }}
               />
               <Button
+                disabled={
+                  !(isEmailValid && isPasswordValid && isConfirmPasswordValid)
+                }
                 variant='default'
                 className='w-full h-12 text-base mt-6'
                 onClick={handleSubmit}

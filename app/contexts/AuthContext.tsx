@@ -37,6 +37,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   setCurrentCompany: (company: Company) => void;
   logout: () => void;
+  errorMessage: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,11 +46,18 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-// Helper function to decode JWT and extract user data
-function decodeJWTUser(token: string): User | null {
+// Decodes a JWT token and extracts user information from the payload
+// JWT tokens consist of three parts separated by dots: header.payload.signature
+// This function extracts the payload (second part), converts base64url to base64,
+// decodes it, and parses the JSON to extract user data
+// Returns null if the token is invalid or cannot be decoded
+function decodeJWTTokenToUser(token: string): User | null {
   try {
+    // Extract the payload part (second part of the JWT)
     const base64Url = token.split('.')[1];
+    // Convert base64url to base64 (replace URL-safe characters)
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    // Decode base64 and convert to URI component format
     const jsonPayload = decodeURIComponent(
       atob(base64)
         .split('')
@@ -57,6 +65,7 @@ function decodeJWTUser(token: string): User | null {
         .join('')
     );
 
+    // Parse JSON and extract user data
     const payload = JSON.parse(jsonPayload);
 
     return {
@@ -73,7 +82,13 @@ function decodeJWTUser(token: string): User | null {
   }
 }
 
-function getCurrentCompany(userData: User): Company | null {
+// Retrieves the current company from localStorage or defaults to the first company
+// Priority: 1) Check localStorage for saved 'currentCompany'
+//           2) If not found, use the first company from user's companies array
+//           3) Save the selected company to localStorage for future use
+//           4) Return null if no companies are available
+function getCurrentCompanyFromStorage(userData: User): Company | null {
+  // Try to load saved company from localStorage
   const savedCurrentCompany = localStorage.getItem('currentCompany');
   if (savedCurrentCompany) {
     try {
@@ -82,8 +97,10 @@ function getCurrentCompany(userData: User): Company | null {
       // Ignore parse error, fallback to first company
     }
   }
+  // Fallback to first company if available
   if (userData.companies && userData.companies.length > 0) {
     const [firstCompany] = userData.companies;
+    // Save to localStorage for future use
     localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
     return firstCompany;
   }
@@ -96,6 +113,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     null
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Clears the current error message from the auth context
+  const clearErrorMessage = () => setErrorMessage(null);
 
   const logout = useCallback(() => {
     setUserState(null);
@@ -107,32 +127,54 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await zendulgeAxios.post(API_CONFIG.endpoints.auth.login, {
-      email,
-      password,
-    });
+    try {
+      const response = await zendulgeAxios.post(
+        API_CONFIG.endpoints.auth.login,
+        { email, password }
+      );
+      if (!response?.data) return;
 
-    const { data } = response;
-    const { accessToken } = data.data;
+      const { data } = response;
+      const { accessToken } = data.data;
 
-    // Store token
-    localStorage.setItem('accessToken', accessToken);
+      // Store token
+      localStorage.setItem('accessToken', accessToken);
 
-    // Decode user data from token
-    const userData = decodeJWTUser(accessToken);
-    if (!userData) {
-      throw new Error('Invalid token received');
-    }
+      // Decode user data from token
+      const userData = decodeJWTTokenToUser(accessToken);
+      if (!userData) {
+        throw new Error('Invalid token received');
+      }
 
-    // Set user state
-    setUserState(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+      // Set user state
+      setUserState(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
 
-    // Auto-select first company if available
-    if (userData.companies && userData.companies.length > 0) {
-      const firstCompany = userData.companies[0];
-      setCurrentCompanyState(firstCompany);
-      localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
+      // Auto-select first company if available
+      if (userData.companies && userData.companies.length > 0) {
+        const firstCompany = userData.companies[0];
+        setCurrentCompanyState(firstCompany);
+        localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
+        clearErrorMessage();
+      }
+    } catch (error: unknown) {
+      // Check if error has response data with activation message
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response &&
+        typeof error.response.data === 'string' &&
+        error.response.data.includes('Account not activated')
+      ) {
+        setErrorMessage(
+          'Account not activated. Please check your email for activation instructions.'
+        );
+      } else {
+        setErrorMessage('Invalid email or password. Please try again.');
+      }
     }
   }, []);
 
@@ -154,7 +196,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
 
-        const userData = decodeJWTUser(token);
+        // Check if token is expired
+        const userData = decodeJWTTokenToUser(token);
         if (!userData) {
           logout();
           return;
@@ -168,26 +211,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
 
-        const company = getCurrentCompany(userData);
+        // Load saved company or auto-select first one
+        const company = getCurrentCompanyFromStorage(userData);
         setCurrentCompanyState(company);
 
-        let updatedUser: User = userData;
-
-        if (company?.id) {
-          try {
-            const response = await zendulgeAxios.get(
-              API_CONFIG.endpoints.auth.role(company.id)
-            );
-            updatedUser = { ...userData, role: response.data.role };
-          } catch {
-            // Failed to load user role, continue with userData
-          }
-        }
-
-        setUserState(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-      } catch {
-        // Error initializing auth, silently fail
+        const response = await zendulgeAxios.get(
+          API_CONFIG.endpoints.auth.role(company?.id ?? '')
+        );
+        // Token is valid, set user data
+        setUserState({ ...userData, role: response.data.role });
+      } catch (error: unknown) {
+        // Error initializing auth - log out user
+        logout();
       } finally {
         setIsLoading(false);
       }
@@ -205,10 +240,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       login,
       setCurrentCompany,
       logout,
+      errorMessage,
     }),
-    [user, currentCompany, isLoading, login, logout]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      user,
+      currentCompany,
+      isLoading,
+      errorMessage,
+      login,
+      logout,
+      setCurrentCompany,
+    ]
   );
-
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
@@ -225,6 +269,7 @@ export function useAuth() {
       login: async () => {},
       setCurrentCompany: () => {},
       logout: () => {},
+      errorMessage: null,
     };
   }
   return context;

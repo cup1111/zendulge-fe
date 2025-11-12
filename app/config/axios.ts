@@ -6,8 +6,9 @@ import { API_CONFIG } from './api';
 const getAuthToken = (): string | null =>
   localStorage.getItem('accessToken') ?? localStorage.getItem('token');
 
-// Create the global axios instance
-const zendulge = axios.create({
+// Create the global axios instance configured with base URL and authentication interceptors
+// All API requests should use this instance instead of the default axios
+const zendulgeAxiosInstance = axios.create({
   baseURL: API_CONFIG.FULL_URL,
   timeout: 30000, // 30 seconds timeout
   headers: {
@@ -16,7 +17,7 @@ const zendulge = axios.create({
 });
 
 // Request interceptor to add authentication token
-zendulge.interceptors.request.use(
+zendulgeAxiosInstance.interceptors.request.use(
   config => {
     const token = getAuthToken();
     if (token) {
@@ -28,16 +29,16 @@ zendulge.interceptors.request.use(
   error => Promise.reject(error)
 );
 
-// Response interceptor to handle errors without forcing logout
-zendulge.interceptors.response.use(
+// Response interceptor to handle common errors
+zendulgeAxiosInstance.interceptors.response.use(
   response => response,
   error => Promise.reject(error)
 );
 
-export default zendulge;
+export default zendulgeAxiosInstance;
 
 // Export the instance with a named export as well for flexibility
-export { zendulge };
+export { zendulgeAxiosInstance };
 
 // Export types for better TypeScript support
-export type ZendulgeAxiosInstance = typeof zendulge;
+export type ZendulgeAxiosInstance = typeof zendulgeAxiosInstance;

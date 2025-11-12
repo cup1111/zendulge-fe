@@ -85,15 +85,27 @@ export const DropdownMenuItem = ({
   asChild: _asChild,
   onClick,
   className,
-}: DropdownMenuItemProps) => (
-  <div
-    className={combineClasses(
-      'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
-      'hover:bg-gray-100 transition-colors',
-      className
-    )}
-    onClick={onClick}
-  >
-    {children}
-  </div>
-);
+}: DropdownMenuItemProps) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+    }
+  };
+
+  return (
+    <div
+      role='button'
+      tabIndex={0}
+      className={combineClasses(
+        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
+        'hover:bg-gray-100 transition-colors focus:bg-gray-100',
+        className
+      )}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+    >
+      {children}
+    </div>
+  );
+};

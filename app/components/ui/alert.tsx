@@ -37,6 +37,7 @@ Alert.displayName = 'Alert';
 const AlertTitle = ({
   className,
   ref,
+  children,
   ...props
 }: React.ComponentPropsWithRef<'h5'>) => (
   <h5
@@ -46,7 +47,9 @@ const AlertTitle = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h5>
 );
 AlertTitle.displayName = 'AlertTitle';
 
@@ -63,4 +66,4 @@ const AlertDescription = ({
 );
 AlertDescription.displayName = 'AlertDescription';
 
-export { Alert, AlertTitle, AlertDescription };
+export { Alert, AlertDescription, AlertTitle };

@@ -1,82 +1,55 @@
 import axios from 'axios';
 
-export interface CustomerRegistrationData {
+import type { BusinessRegisterPayload } from '../types/businessType';
+
+export const registerCustomer = async (customerRegistrationData: {
   email: string;
   password: string;
-}
-
-export interface AddressData {
-  country: string;
-  streetNumber: string;
-  streetName: string;
-  suburb: string;
-  city: string;
-  state: string;
-  postalCode: string;
-  fullAddress: string;
-}
-
-export interface BusinessRegistrationData {
-  businessName: string;
-  description: string;
-  firstName: string;
-  lastName: string;
-  categories: string[];
-  primaryCategory: string;
-  jobTitle: string;
-  address: AddressData;
-  phone: string;
-  email: string;
-  contactPersonName: string;
-  contactPersonEmail: string;
-  contactPersonPhone: string;
-  website?: string;
-  facebook?: string;
-  twitter?: string;
-  logo?: string;
-}
-
-export const registerCustomer = async (data: CustomerRegistrationData) => {
+}) => {
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/register',
     {
-      email: data.email,
-      password: data.password, // TODO frontend 加上password和confirmPassword
+      email: customerRegistrationData.email,
+      password: customerRegistrationData.password,
+      firstName: 'asdf',
+      lastName: 'asdf',
     }
   );
   return response.data;
 };
 
-export const registerBusiness = async (data: BusinessRegistrationData) => {
+export const registerBusiness = async (
+  businessRegistrationData: BusinessRegisterPayload
+) => {
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/business-register',
     {
-      businessName: data.businessName,
-      description: data.description,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      categories: data.categories,
-      primaryCategory: data.primaryCategory,
-      jobTitle: data.jobTitle,
-      address: {
-        country: data.address.country,
-        streetNumber: data.address.streetNumber,
-        streetName: data.address.streetName,
-        suburb: data.address.suburb,
-        city: data.address.city,
-        state: data.address.state,
-        postalCode: data.address.postalCode,
-        fullAddress: data.address.fullAddress,
+      companyName: businessRegistrationData.companyName,
+      description: businessRegistrationData.description,
+      firstName: businessRegistrationData.firstName,
+      lastName: businessRegistrationData.lastName,
+      categories: businessRegistrationData.categories,
+      serviceCategory: businessRegistrationData.serviceCategory,
+      jobTitle: businessRegistrationData.jobTitle,
+      businessAddress: {
+        country: businessRegistrationData.businessAddress.country,
+        streetNumber: businessRegistrationData.businessAddress.streetNumber,
+        street: businessRegistrationData.businessAddress.street,
+        suburb: businessRegistrationData.businessAddress.suburb,
+        city: businessRegistrationData.businessAddress.city,
+        state: businessRegistrationData.businessAddress.state,
+        postcode: businessRegistrationData.businessAddress.postcode,
       },
-      phone: data.phone,
-      email: data.email,
-      contactPersonName: data.contactPersonName,
-      contactPersonEmail: data.contactPersonEmail,
-      contactPersonPhone: data.contactPersonPhone,
-      website: data.website,
-      facebook: data.facebook,
-      twitter: data.twitter,
-      logo: data.logo,
+      phone: businessRegistrationData.phone,
+      companyEmail: businessRegistrationData.companyEmail,
+      contactPersonName: businessRegistrationData.contactPersonName,
+      contactPersonEmail: businessRegistrationData.contactPersonEmail,
+      contactPersonPhone: businessRegistrationData.contactPersonPhone,
+      website: businessRegistrationData.website,
+      facebook: businessRegistrationData.facebook,
+      twitter: businessRegistrationData.twitter,
+      email: businessRegistrationData.email,
+      password: businessRegistrationData.password,
     }
   );
   return response.data;

@@ -46,6 +46,9 @@ type Pages = {
   "/customer-registration": {
     params: {};
   };
+  "/verify-email": {
+    params: {};
+  };
   "/*": {
     params: {
       "*": string;
@@ -56,7 +59,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/help" | "/business" | "/business-dashboard" | "/business-management" | "/user-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/*";
+    page: "/" | "/help" | "/business" | "/business-dashboard" | "/business-management" | "/user-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/verify-email" | "/*";
   };
   "./routes/_index.tsx": {
     id: "routes/_index";
@@ -102,6 +105,10 @@ type RouteFiles = {
     id: "routes/customer-registration";
     page: "/customer-registration";
   };
+  "./routes/customer-verify-email.tsx": {
+    id: "routes/customer-verify-email";
+    page: "/verify-email";
+  };
   "./routes/404.tsx": {
     id: "routes/404";
     page: "/*";
@@ -121,5 +128,6 @@ type RouteModules = {
   "routes/profile": typeof import("./app/./routes/profile.tsx");
   "routes/business-registration": typeof import("./app/./routes/business-registration.tsx");
   "routes/customer-registration": typeof import("./app/./routes/customer-registration.tsx");
+  "routes/customer-verify-email": typeof import("./app/./routes/customer-verify-email.tsx");
   "routes/404": typeof import("./app/./routes/404.tsx");
 };

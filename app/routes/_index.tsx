@@ -98,7 +98,7 @@ const DealCard = ({ deal }: DealCardProps) => (
             size='sm'
             className='bg-shadow-lavender hover:bg-shadow-lavender/90'
             onClick={e => {
-              e.preventDefault(); // 防止双重导航
+              e.preventDefault(); // prevent Link navigation
               e.stopPropagation();
             }}
           >

@@ -32,6 +32,7 @@ CardHeader.displayName = 'CardHeader';
 const CardTitle = ({
   ref,
   className,
+  children,
   ...props
 }: React.ComponentProps<'h3'>) => (
   <h3
@@ -41,7 +42,9 @@ const CardTitle = ({
       className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h3>
 );
 
 CardTitle.displayName = 'CardTitle';
