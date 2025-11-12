@@ -17,8 +17,8 @@ export default function CustomerRegistrationValidate() {
           </div>
 
           <p className='mt-4 text-sm text-gray-600 mb-6'>
-            We've sent a link to {location.email}. Click the link to complete
-            registration and redeeming your exclusive offer.
+            We&apos;ve sent a link to {location.email}. Click the link to
+            complete registration and redeeming your exclusive offer.
           </p>
         </CardContent>
       </Card>

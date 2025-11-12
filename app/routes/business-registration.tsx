@@ -280,7 +280,6 @@ export default function BusinessRegistration() {
 
     const hasError = Object.values(newErrors).some(msg => msg);
     if (hasError) {
-      console.warn('❌ Validation failed');
       return;
     }
 

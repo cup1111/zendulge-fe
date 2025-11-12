@@ -1,19 +1,12 @@
 import {
   BarChart3,
   Bell,
-  Building2,
   Calendar,
   Clock,
   DollarSign,
   Download,
-  Edit3,
-  Eye,
   Filter,
   Loader2,
-  Mail,
-  MapPin,
-  MoreHorizontal,
-  Phone,
   Plus,
   Settings,
   Star,
@@ -24,10 +17,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
-import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
-import { OperatingSiteStatus, UserRole } from '~/constants/enums';
+import { OperatingSiteStatus } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import {
   mockActiveDeals,
@@ -49,7 +41,7 @@ interface BusinessStats {
 }
 
 interface OperatingSite {
-  id: number;
+  id: string | number;
   name: string;
   address: string;
   phone: string;
@@ -91,15 +83,6 @@ async function fetchBusinessStats(): Promise<BusinessStats> {
   return mockBusinessStats;
 }
 
-// Helper function to format status with proper capitalization
-function formatStatus(status: OperatingSiteStatus): string {
-  return status
-    .replace('_', ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
-
 // Helper function to format operating hours
 function formatOperatingHours(hours: Record<string, unknown>): string {
   if (!hours) return 'Not configured';
@@ -138,7 +121,21 @@ async function fetchOperatingSites(
   const result = response.data;
 
   // Transform backend data to match frontend interface
-  const sites = result.data.operateSites.map((site: any) => ({
+  interface BackendSite {
+    id: string | number;
+    name: string;
+    address: string;
+    phoneNumber?: string;
+    emailAddress?: string;
+    isActive: boolean;
+    members?: Array<{ firstName?: string; lastName?: string }>;
+    services?: string[];
+    operatingHours?: Record<string, unknown>;
+    revenue?: number;
+    bookings?: number;
+  }
+
+  const sites = (result.data.operateSites as BackendSite[]).map(site => ({
     id: site.id,
     name: site.name,
     address: site.address,
@@ -149,14 +146,14 @@ async function fetchOperatingSites(
       : OperatingSiteStatus.Inactive,
     manager:
       site.members && site.members.length > 0
-        ? `${site.members[0].firstName || ''} ${site.members[0].lastName || ''}`.trim() ||
+        ? `${site.members[0].firstName ?? ''} ${site.members[0].lastName ?? ''}`.trim() ||
           'To be assigned'
         : 'To be assigned',
     services:
       site.services && Array.isArray(site.services) && site.services.length > 0
         ? site.services
         : ['To be configured'],
-    hours: formatOperatingHours(site.operatingHours || {}),
+    hours: formatOperatingHours(site.operatingHours ?? {}),
     revenue: site.revenue ? `$${site.revenue}` : '$0',
     bookings: site.bookings ?? 0,
   }));
@@ -179,7 +176,7 @@ async function fetchRecentActivity(): Promise<RecentActivity[]> {
   return mockRecentActivity;
 }
 
-export default function BusinessManagement() {
+export default function BusinessDashboard() {
   const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
   const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
     null
@@ -210,7 +207,9 @@ export default function BusinessManagement() {
 
         // Ensure we have a current company selected
         if (!currentCompany?.id) {
-          throw new Error('No company selected or invalid company ID');
+          // Don't throw error, just wait for company to be available
+          setDataLoading(false);
+          return;
         }
 
         const companyIdString = currentCompany.id;
@@ -243,15 +242,14 @@ export default function BusinessManagement() {
     }
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]); // Re-run when auth state changes
+  }, [isLoading, isAuthenticated, user, currentCompany?.id]); // Re-run when auth state or company changes
 
   if (isLoading || dataLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <Loader2 className='w-8 h-8 animate-spin text-shadow-lavender mx-auto mb-4' />
-          <p className='text-gray-600'>Loading business management data...</p>
+          <p className='text-gray-600'>Loading dashboard data...</p>
         </div>
       </div>
     );
@@ -272,6 +270,19 @@ export default function BusinessManagement() {
       </div>
     );
   }
+
+  if (operatingSites.length === 0) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center p-6'>
+          <p className='text-gray-600'>
+            You have no access to any store, please contact your Admin
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Development Mode Indicator */}
@@ -280,8 +291,8 @@ export default function BusinessManagement() {
           <div className='max-w-7xl mx-auto'>
             <p className='text-blue-800 text-sm'>
               <strong>Backend Status:</strong> Operating Sites from real API ✅
-              | Stats, Users, Bookings, Deals, Activity using mock data
-              (endpoints not implemented yet)
+              | Stats, Bookings, Deals, Activity using mock data (endpoints not
+              implemented yet)
             </p>
           </div>
         </div>
@@ -293,10 +304,10 @@ export default function BusinessManagement() {
           <div className='flex flex-col md:flex-row md:items-center md:justify-between'>
             <div>
               <h1 className='text-3xl font-bold text-shadow-lavender mb-2'>
-                Business Management Dashboard
+                Business Dashboard
               </h1>
               <p className='text-gray-600'>
-                Manage your business, deals, and bookings all in one place
+                Monitor your business performance and key metrics
               </p>
             </div>
             <div className='mt-4 md:mt-0 flex gap-3'>
@@ -563,9 +574,6 @@ export default function BusinessManagement() {
                             <h3 className='font-medium text-gray-900 text-sm'>
                               {deal.title}
                             </h3>
-                            <Button variant='ghost' size='sm'>
-                              <Edit3 className='w-3 h-3' />
-                            </Button>
                           </div>
                           <div className='flex items-center text-xs text-gray-600 mb-2'>
                             <Clock className='w-3 h-3 mr-1' />
@@ -603,226 +611,10 @@ export default function BusinessManagement() {
         </div>
       </section>
 
-      {/* Users Management Section */}
-      <section className='py-8 border-t border-gray-200 bg-white'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          {currentCompany?.id && user?.id && (
-            <UserManagement
-              companyId={currentCompany.id}
-              excludeUserId={user.id}
-            />
-          )}
-        </div>
-      </section>
-
-      {/* Operating Sites Section (only for owner) */}
-      {user?.role?.slug === UserRole.Owner && (
-        <section className='py-8 border-t border-gray-200 bg-gray-50'>
-          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-            <div className='mb-8'>
-              <div className='flex items-center justify-between mb-6'>
-                <div>
-                  <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
-                    Operating Sites
-                  </h2>
-                  <p className='text-gray-600'>
-                    Manage all business locations and their details
-                  </p>
-                </div>
-                <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                  <Plus className='w-4 h-4 mr-2' />
-                  Add Location
-                </Button>
-              </div>
-
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {operatingSites.length > 0 ? (
-                  operatingSites.map(site => (
-                    <div
-                      key={site.id}
-                      className='bg-white border border-gray-200 rounded-lg p-6'
-                    >
-                      <div className='flex items-start justify-between mb-4'>
-                        <div className='flex items-center'>
-                          <div className='w-12 h-12 bg-shadow-lavender/10 rounded-lg flex items-center justify-center mr-3'>
-                            <Building2 className='w-6 h-6 text-shadow-lavender' />
-                          </div>
-                          <div>
-                            <h3 className='text-lg font-semibold text-gray-900 mb-1'>
-                              {site.name}
-                            </h3>
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
-                                if (site.status === OperatingSiteStatus.Active)
-                                  return 'bg-green-100 text-green-800';
-                                if (
-                                  site.status ===
-                                  OperatingSiteStatus.OpeningSoon
-                                )
-                                  return 'bg-yellow-100 text-yellow-800';
-                                return 'bg-gray-100 text-gray-800';
-                              })()}`}
-                            >
-                              {formatStatus(site.status)}
-                            </span>
-                          </div>
-                        </div>
-                        <Button variant='ghost' size='sm'>
-                          <MoreHorizontal className='w-4 h-4' />
-                        </Button>
-                      </div>
-
-                      <div className='space-y-3 mb-4'>
-                        <div className='flex items-start'>
-                          <MapPin className='w-4 h-4 mr-2 text-gray-400 mt-0.5' />
-                          <div>
-                            <p className='text-sm text-gray-900'>
-                              {site.address}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className='flex items-center'>
-                          <Phone className='w-4 h-4 mr-2 text-gray-400' />
-                          <p className='text-sm text-gray-900'>{site.phone}</p>
-                        </div>
-
-                        <div className='flex items-center'>
-                          <Mail className='w-4 h-4 mr-2 text-gray-400' />
-                          <p className='text-sm text-gray-900'>{site.email}</p>
-                        </div>
-
-                        <div className='flex items-center'>
-                          <Users className='w-4 h-4 mr-2 text-gray-400' />
-                          <p className='text-sm text-gray-900'>
-                            Manager: {site.manager}
-                          </p>
-                        </div>
-
-                        <div className='flex items-center'>
-                          <Clock className='w-4 h-4 mr-2 text-gray-400' />
-                          <p className='text-sm text-gray-900'>{site.hours}</p>
-                        </div>
-                      </div>
-
-                      <div className='mb-4'>
-                        <p className='text-sm font-medium text-gray-900 mb-2'>
-                          Services:
-                        </p>
-                        <div className='flex flex-wrap gap-1'>
-                          {site.services.map(service => (
-                            <span
-                              key={service}
-                              className='inline-flex px-2 py-1 text-xs font-medium bg-shadow-lavender/10 text-shadow-lavender rounded-full'
-                            >
-                              {service}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {site.status === OperatingSiteStatus.Active && (
-                        <div className='grid grid-cols-2 gap-4 mb-4'>
-                          <div className='text-center p-3 bg-gray-50 rounded-lg'>
-                            <p className='text-sm text-gray-600'>Revenue</p>
-                            <p className='text-lg font-semibold text-gray-900'>
-                              {site.revenue}
-                            </p>
-                          </div>
-                          <div className='text-center p-3 bg-gray-50 rounded-lg'>
-                            <p className='text-sm text-gray-600'>Bookings</p>
-                            <p className='text-lg font-semibold text-gray-900'>
-                              {site.bookings}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className='flex gap-2'>
-                        <Button
-                          variant='ghost'
-                          className='flex-1 border border-gray-300 hover:bg-gray-50'
-                        >
-                          <Eye className='w-4 h-4 mr-2' />
-                          View Details
-                        </Button>
-                        <Button
-                          variant='ghost'
-                          className='flex-1 border border-gray-300 hover:bg-gray-50'
-                        >
-                          <Edit3 className='w-4 h-4 mr-2' />
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className='col-span-full text-center py-12'>
-                    <Building2 className='w-16 h-16 text-gray-400 mx-auto mb-4' />
-                    <p className='text-gray-500 text-lg'>
-                      No operating sites found
-                    </p>
-                    <p className='text-gray-400 text-sm'>
-                      Add your first location to get started
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Business Info Section */}
+      {/* Recent Activity Section */}
       <section className='py-8 border-t border-gray-200 bg-white'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-            <div>
-              <h2 className='text-2xl font-bold text-shadow-lavender mb-4'>
-                Business Profile
-              </h2>
-              <div className='space-y-4'>
-                <div className='flex items-center space-x-3'>
-                  <MapPin className='w-5 h-5 text-gray-400' />
-                  <div>
-                    <p className='font-medium text-gray-900'>
-                      Zen Spa & Wellness
-                    </p>
-                    <p className='text-sm text-gray-600'>
-                      123 Wellness Street, San Francisco, CA 94110
-                    </p>
-                  </div>
-                </div>
-                <div className='flex items-center space-x-3'>
-                  <Clock className='w-5 h-5 text-gray-400' />
-                  <div>
-                    <p className='font-medium text-gray-900'>Business Hours</p>
-                    <p className='text-sm text-gray-600'>
-                      Mon-Fri: 9:00 AM - 8:00 PM, Sat-Sun: 10:00 AM - 6:00 PM
-                    </p>
-                  </div>
-                </div>
-                <div className='flex items-center space-x-3'>
-                  <Bell className='w-5 h-5 text-gray-400' />
-                  <div>
-                    <p className='font-medium text-gray-900'>Notifications</p>
-                    <p className='text-sm text-gray-600'>
-                      Email and SMS notifications enabled
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className='mt-6'>
-                <Button
-                  variant='ghost'
-                  className='border border-gray-300 hover:bg-gray-50'
-                >
-                  <Edit3 className='w-4 h-4 mr-2' />
-                  Edit Business Profile
-                </Button>
-              </div>
-            </div>
-
             <div>
               <h2 className='text-2xl font-bold text-shadow-lavender mb-4'>
                 Recent Activity
@@ -851,6 +643,44 @@ export default function BusinessManagement() {
                     <p className='text-gray-500'>No recent activity</p>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div>
+              <h2 className='text-2xl font-bold text-shadow-lavender mb-4'>
+                Quick Stats
+              </h2>
+              <div className='space-y-4'>
+                <div className='p-4 bg-gray-50 rounded-lg'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <p className='text-sm text-gray-600'>Operating Sites</p>
+                      <p className='text-2xl font-bold text-gray-900'>
+                        {operatingSites.length}
+                      </p>
+                    </div>
+                    <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
+                      <BarChart3 className='w-6 h-6 text-blue-600' />
+                    </div>
+                  </div>
+                </div>
+                <div className='p-4 bg-gray-50 rounded-lg'>
+                  <div className='flex items-center justify-between'>
+                    <div>
+                      <p className='text-sm text-gray-600'>Active Sites</p>
+                      <p className='text-2xl font-bold text-gray-900'>
+                        {
+                          operatingSites.filter(
+                            site => site.status === OperatingSiteStatus.Active
+                          ).length
+                        }
+                      </p>
+                    </div>
+                    <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center'>
+                      <TrendingUp className='w-6 h-6 text-green-600' />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

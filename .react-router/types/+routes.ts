@@ -20,7 +20,13 @@ type Pages = {
   "/business": {
     params: {};
   };
+  "/business-dashboard": {
+    params: {};
+  };
   "/business-management": {
+    params: {};
+  };
+  "/user-management": {
     params: {};
   };
   "/deal-details/:id": {
@@ -53,7 +59,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/help" | "/business" | "/business-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/verify-email" | "/*";
+    page: "/" | "/help" | "/business" | "/business-dashboard" | "/business-management" | "/user-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/verify-email" | "/*";
   };
   "./routes/_index.tsx": {
     id: "routes/_index";
@@ -67,9 +73,17 @@ type RouteFiles = {
     id: "routes/business-info";
     page: "/business";
   };
+  "./routes/business-dashboard.tsx": {
+    id: "routes/business-dashboard";
+    page: "/business-dashboard";
+  };
   "./routes/business-management.tsx": {
     id: "routes/business-management";
     page: "/business-management";
+  };
+  "./routes/user-management.tsx": {
+    id: "routes/user-management";
+    page: "/user-management";
   };
   "./routes/deal-details.$id.tsx": {
     id: "routes/deal-details.$id";
@@ -106,7 +120,9 @@ type RouteModules = {
   "routes/_index": typeof import("./app/./routes/_index.tsx");
   "routes/help": typeof import("./app/./routes/help.tsx");
   "routes/business-info": typeof import("./app/./routes/business-info.tsx");
+  "routes/business-dashboard": typeof import("./app/./routes/business-dashboard.tsx");
   "routes/business-management": typeof import("./app/./routes/business-management.tsx");
+  "routes/user-management": typeof import("./app/./routes/user-management.tsx");
   "routes/deal-details.$id": typeof import("./app/./routes/deal-details.$id.tsx");
   "routes/login": typeof import("./app/./routes/login.tsx");
   "routes/profile": typeof import("./app/./routes/profile.tsx");

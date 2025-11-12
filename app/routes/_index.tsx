@@ -12,10 +12,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import { categories, mockDeals, recentBookings } from '~/lib/mockData';
+import {
+  categories,
+  mockDeals,
+  recentBookings,
+  type Deal,
+} from '~/lib/mockData';
 
 // Deal Card Component
-const DealCard = ({ deal }: { deal: any }) => (
+interface DealCardProps {
+  deal: Deal;
+}
+
+const DealCard = ({ deal }: DealCardProps) => (
   <Link to={`/deal-details/${deal.id}`} className='block'>
     <div className='bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow'>
       {/* Deal Image */}

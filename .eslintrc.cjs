@@ -116,7 +116,7 @@ module.exports = {
     ],
 
     // General rules
-    'no-console': 'warn',
+    'no-console': 'error',
     'prefer-const': 'error',
     'no-var': 'error',
 
@@ -147,7 +147,7 @@ module.exports = {
 
     // Make some rules warnings instead of errors for development
     'import/no-extraneous-dependencies': 'warn',
-    'react/no-unescaped-entities': 'warn',
+    'react/no-unescaped-entities': 'error',
     'jsx-a11y/heading-has-content': 'warn',
   },
   ignorePatterns: [
