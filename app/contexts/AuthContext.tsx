@@ -68,8 +68,7 @@ function decodeJWTUser(token: string): User | null {
       avatarIcon: payload.avatarIcon,
       companies: payload.companies || [],
     };
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
+  } catch {
     return null;
   }
 }
@@ -108,37 +107,32 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    try {
-      const response = await zendulgeAxios.post(
-        API_CONFIG.endpoints.auth.login,
-        { email, password }
-      );
+    const response = await zendulgeAxios.post(API_CONFIG.endpoints.auth.login, {
+      email,
+      password,
+    });
 
-      const { data } = response;
-      const { accessToken } = data.data;
+    const { data } = response;
+    const { accessToken } = data.data;
 
-      // Store token
-      localStorage.setItem('accessToken', accessToken);
+    // Store token
+    localStorage.setItem('accessToken', accessToken);
 
-      // Decode user data from token
-      const userData = decodeJWTUser(accessToken);
-      if (!userData) {
-        throw new Error('Invalid token received');
-      }
+    // Decode user data from token
+    const userData = decodeJWTUser(accessToken);
+    if (!userData) {
+      throw new Error('Invalid token received');
+    }
 
-      // Set user state
-      setUserState(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
+    // Set user state
+    setUserState(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
 
-      // Auto-select first company if available
-      if (userData.companies && userData.companies.length > 0) {
-        const firstCompany = userData.companies[0];
-        setCurrentCompanyState(firstCompany);
-        localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    // Auto-select first company if available
+    if (userData.companies && userData.companies.length > 0) {
+      const firstCompany = userData.companies[0];
+      setCurrentCompanyState(firstCompany);
+      localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
     }
   }, []);
 
@@ -185,16 +179,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               API_CONFIG.endpoints.auth.role(company.id)
             );
             updatedUser = { ...userData, role: response.data.role };
-          } catch (roleError) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to load user role:', roleError);
+          } catch {
+            // Failed to load user role, continue with userData
           }
         }
 
         setUserState(updatedUser);
         localStorage.setItem('user', JSON.stringify(updatedUser));
-      } catch (error) {
-        console.error('Error initializing auth:', error);
+      } catch {
+        // Error initializing auth, silently fail
       } finally {
         setIsLoading(false);
       }
@@ -223,7 +216,6 @@ export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     // Return default values instead of throwing error to handle edge cases
-    console.warn('useAuth called outside AuthProvider, using defaults');
     return {
       user: null,
       currentCompany: null,

@@ -96,12 +96,6 @@ export default function ServiceManagement({
 
   // Filtered and paginated services
   const filteredServices = useMemo(() => {
-    console.log('🔍 Search Debug:', {
-      searchTerm,
-      servicesCount: services.length,
-      services: services.map(s => ({ name: s.name, category: s.category })),
-    });
-
     const filtered = services.filter(service => {
       const searchLower = searchTerm.toLowerCase();
       const nameMatch = service.name?.toLowerCase().includes(searchLower);
@@ -156,10 +150,8 @@ export default function ServiceManagement({
     try {
       setIsLoading(true);
       const data = await ServiceService.getServices(companyId);
-      console.log('📦 Loaded services:', data);
       setServices(data);
     } catch (error) {
-      console.error('❌ Error loading services:', error);
       toast({
         title: 'Error',
         description: 'Failed to load services',
@@ -345,7 +337,6 @@ export default function ServiceManagement({
               placeholder='Search services...'
               value={searchTerm}
               onChange={e => {
-                console.log('🔍 Search input changed:', e.target.value);
                 setSearchTerm(e.target.value);
               }}
               className='pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64'

@@ -52,8 +52,11 @@ import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
 import type { Deal, DealCreateRequest } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
-import { OperateSiteService } from '~/services/operateSiteService';
-import { ServiceService } from '~/services/serviceService';
+import {
+  OperateSiteService,
+  type OperateSite,
+} from '~/services/operateSiteService';
+import { ServiceService, type Service } from '~/services/serviceService';
 
 interface DealManagementProps {
   companyId: string;
@@ -63,8 +66,8 @@ export default function DealManagement({ companyId }: DealManagementProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [operatingSites, setOperatingSites] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
@@ -195,14 +198,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
       setDeals(Array.isArray(dealsData) ? dealsData : []);
       setServices(Array.isArray(servicesData) ? servicesData : []);
       setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
-
-      console.log('Loaded data:', {
-        deals: dealsData,
-        services: servicesData,
-        sites: sitesData,
-      });
     } catch (error) {
-      console.error('Error loading deals:', error);
       toast({
         title: 'Error',
         description: 'Failed to load deals',
@@ -721,7 +717,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                       services.map(service => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name ?? 'Unknown Service'} -{' '}
-                          {formatPrice(service.basePrice || 0)}
+                          {formatPrice(service.basePrice ?? 0)}
                         </SelectItem>
                       ))}
                   </SelectContent>
@@ -749,7 +745,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
                             const siteName =
                               operatingSites.find(
                                 s => s.id === formData.operatingSite[0]
-                              )?.name || '1 site selected';
+                              )?.name ?? '1 site selected';
                             return siteName;
                           }
                           return `${formData.operatingSite.length} sites selected`;

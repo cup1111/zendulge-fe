@@ -44,7 +44,6 @@ export default function CustomerManagement({
         const data = await CompanyService.getCustomers(companyId);
         setCustomers(data);
       } catch (err) {
-        console.error('Error loading customers:', err);
         setError('Failed to load customers');
       } finally {
         setIsLoading(false);

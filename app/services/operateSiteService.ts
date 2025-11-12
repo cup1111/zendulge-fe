@@ -1,12 +1,18 @@
 import api from '../config/axios';
 
+export interface OperatingHourDay {
+  isClosed?: boolean;
+  open?: string;
+  close?: string;
+}
+
 export interface OperateSite {
   id: string;
   name: string;
   address: string;
   phoneNumber: string;
   emailAddress: string;
-  operatingHours: Record<string, any>;
+  operatingHours: Record<string, OperatingHourDay>;
   specialInstruction?: string;
   company: string;
   latitude: number;
@@ -14,6 +20,30 @@ export interface OperateSite {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface OperateSiteCreateRequest {
+  name: string;
+  address: string;
+  phoneNumber: string;
+  emailAddress: string;
+  operatingHours?: Record<string, OperatingHourDay>;
+  specialInstruction?: string;
+  latitude: number;
+  longitude: number;
+  isActive?: boolean;
+}
+
+export interface OperateSiteUpdateRequest {
+  name?: string;
+  address?: string;
+  phoneNumber?: string;
+  emailAddress?: string;
+  operatingHours?: Record<string, OperatingHourDay>;
+  specialInstruction?: string;
+  latitude?: number;
+  longitude?: number;
+  isActive?: boolean;
 }
 
 export interface OperateSiteApiResponse {
@@ -36,7 +66,7 @@ export class OperateSiteService {
     const response = await api.get<OperateSiteApiResponse>(
       `/company/${companyId}/operate-sites`
     );
-    return (response.data.data as any).operateSites as OperateSite[];
+    return response.data.data.operateSites;
   }
 
   static async getOperateSiteById(
@@ -51,19 +81,19 @@ export class OperateSiteService {
 
   static async createOperateSite(
     companyId: string,
-    siteData: any
+    siteData: OperateSiteCreateRequest
   ): Promise<OperateSite> {
     const response = await api.post<{ success: boolean; data: OperateSite }>(
       `/company/${companyId}/operate-sites`,
       siteData
     );
-    return response.data.data as OperateSite;
+    return response.data.data;
   }
 
   static async updateOperateSite(
     companyId: string,
     siteId: string,
-    siteData: any
+    siteData: OperateSiteUpdateRequest
   ): Promise<OperateSite> {
     const response = await api.patch<{ success: boolean; data: OperateSite }>(
       `/company/${companyId}/operate-sites/${siteId}`,

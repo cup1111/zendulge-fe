@@ -139,7 +139,6 @@ export default function Profile() {
 
         // Load user profile
         const profileData = await ProfileService.getProfile();
-        console.log('Profile data received:', profileData);
         setUser(profileData);
 
         // Update form with loaded data
@@ -179,8 +178,7 @@ export default function Profile() {
               facebookUrl: companyData.facebookUrl ?? '',
               twitterUrl: companyData.twitterUrl ?? '',
             });
-          } catch (companyError) {
-            console.error('Error loading company data:', companyError);
+          } catch {
             toast({
               title: 'Warning',
               description: 'Failed to load company information.',
@@ -188,8 +186,7 @@ export default function Profile() {
             });
           }
         }
-      } catch (error) {
-        console.error('Error loading profile:', error);
+      } catch {
         toast({
           title: 'Error',
           description: 'Failed to load profile data.',
@@ -225,8 +222,7 @@ export default function Profile() {
       });
 
       setIsEditing(false);
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update profile. Please try again.',
@@ -276,8 +272,7 @@ export default function Profile() {
       });
 
       setIsEditingCompany(false);
-    } catch (error) {
-      console.error('Error updating company:', error);
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update company information. Please try again.',

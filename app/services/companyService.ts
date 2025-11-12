@@ -22,8 +22,14 @@ export interface CompanyInfo {
   twitterUrl?: string;
   logo?: string;
   owner: string;
-  members?: any[];
-  customers?: any[];
+  members?: Array<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    role: string;
+  }>;
+  customers?: Customer[];
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

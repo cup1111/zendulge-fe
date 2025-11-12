@@ -24,6 +24,18 @@ const WELLNESS_CATEGORIES = [
   'aromatherapy',
 ] as const;
 
+interface BusinessRegistrationFlowProps {
+  step: number;
+  formData: Record<string, string | number | boolean | string[]>;
+  onInputChange: (
+    field: string,
+    value: string | number | boolean | string[]
+  ) => void;
+  onSubmit: () => void;
+  onNext: () => void;
+  onPrev: () => void;
+}
+
 function BusinessRegistrationFlow({
   step,
   formData,
@@ -31,7 +43,7 @@ function BusinessRegistrationFlow({
   onSubmit,
   onNext,
   onPrev,
-}: any) {
+}: BusinessRegistrationFlowProps) {
   const sections = [
     { key: 'basicInfo', title: 'Basic Information', number: 1 },
     { key: 'adminInfo', title: 'Business Group Admin Information', number: 2 },
@@ -652,7 +664,10 @@ export default function BusinessRegistration() {
     password: '',
   });
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (
+    field: string,
+    value: string | number | boolean | string[]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

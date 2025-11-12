@@ -29,8 +29,11 @@ import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
 import { DealService } from '~/services/dealService';
-import { OperateSiteService } from '~/services/operateSiteService';
-import { ServiceService } from '~/services/serviceService';
+import {
+  OperateSiteService,
+  type OperateSite,
+} from '~/services/operateSiteService';
+import { ServiceService, type Service } from '~/services/serviceService';
 
 interface DealDialogProps {
   companyId: string;
@@ -102,8 +105,8 @@ export default function DealDialog({
 }: DealDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [services, setServices] = useState<any[]>([]);
-  const [operatingSites, setOperatingSites] = useState<any[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [internalOpen, setInternalOpen] = useState(false);
@@ -219,7 +222,7 @@ export default function DealDialog({
   ];
 
   // Load services and operating sites when dialog opens
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [servicesData, sitesData] = await Promise.all([
@@ -240,7 +243,13 @@ export default function DealDialog({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [companyId, toast]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadData();
+    }
+  }, [isOpen, loadData]);
 
   // Update formData when initialData changes (for duplicating deals)
   useEffect(() => {
@@ -265,9 +274,7 @@ export default function DealDialog({
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (open) {
-      loadData();
-    } else if (!initialData) {
+    if (!open && !initialData) {
       // Reset form when dialog closes (unless we have initialData)
       const defaultSchedule = normalizeAvailability();
       setFormData({
@@ -458,7 +465,7 @@ export default function DealDialog({
                             const siteName =
                               operatingSites.find(
                                 s => s.id === formData.operatingSite[0]
-                              )?.name || '1 site selected';
+                              )?.name ?? '1 site selected';
                             return siteName;
                           }
                           return `${formData.operatingSite.length} sites selected`;

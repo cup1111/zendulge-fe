@@ -121,7 +121,21 @@ async function fetchOperatingSites(
   const result = response.data;
 
   // Transform backend data to match frontend interface
-  const sites = result.data.operateSites.map((site: any) => ({
+  interface BackendSite {
+    id: string | number;
+    name: string;
+    address: string;
+    phoneNumber?: string;
+    emailAddress?: string;
+    isActive: boolean;
+    members?: Array<{ firstName?: string; lastName?: string }>;
+    services?: string[];
+    operatingHours?: Record<string, unknown>;
+    revenue?: number;
+    bookings?: number;
+  }
+
+  const sites = (result.data.operateSites as BackendSite[]).map(site => ({
     id: site.id,
     name: site.name,
     address: site.address,
@@ -132,14 +146,14 @@ async function fetchOperatingSites(
       : OperatingSiteStatus.Inactive,
     manager:
       site.members && site.members.length > 0
-        ? `${site.members[0].firstName || ''} ${site.members[0].lastName || ''}`.trim() ||
+        ? `${site.members[0].firstName ?? ''} ${site.members[0].lastName ?? ''}`.trim() ||
           'To be assigned'
         : 'To be assigned',
     services:
       site.services && Array.isArray(site.services) && site.services.length > 0
         ? site.services
         : ['To be configured'],
-    hours: formatOperatingHours(site.operatingHours || {}),
+    hours: formatOperatingHours(site.operatingHours ?? {}),
     revenue: site.revenue ? `$${site.revenue}` : '$0',
     bookings: site.bookings ?? 0,
   }));

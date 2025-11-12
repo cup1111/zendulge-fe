@@ -49,7 +49,7 @@ export default function UserManagementPage() {
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <p className='text-red-600 mb-4'>
-            You don't have permission to access this page
+            You don&apos;t have permission to access this page
           </p>
           <p className='text-gray-600 text-sm'>
             Only Owners and Managers can manage users

@@ -147,15 +147,17 @@ ChartContainer.displayName = 'Chart';
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+interface ChartTooltipPayload {
+  dataKey?: string;
+  name?: string;
+  value?: string | number | boolean | null;
+  payload?: Record<string, unknown>;
+  color?: string;
+}
+
 interface ChartTooltipContentProps extends React.ComponentPropsWithRef<'div'> {
   active?: boolean;
-  payload?: Array<{
-    dataKey?: string;
-    name?: string;
-    value?: any;
-    payload?: any;
-    color?: string;
-  }>;
+  payload?: ChartTooltipPayload[];
   label?: string;
   hideLabel?: boolean;
   hideIndicator?: boolean;

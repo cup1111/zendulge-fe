@@ -189,8 +189,8 @@ export default function BusinessInfo() {
                 New Customers
               </h3>
               <p className='text-gray-900 text-sm'>
-                Reach customers you've never reached before and build lasting
-                relationships
+                Reach customers you&apos;ve never reached before and build
+                lasting relationships
               </p>
             </div>
 
