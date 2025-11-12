@@ -3,7 +3,18 @@ import React from 'react';
 
 import { combineClasses } from '~/lib/utils';
 
-export const Form = ({ children, onSubmit, className, ...props }: any) => (
+interface FormProps extends React.FormHTMLAttributes<HTMLFormElement> {
+  children: React.ReactNode;
+  onSubmit?: (e: React.FormEvent<HTMLFormElement>) => void;
+  className?: string;
+}
+
+export const Form = ({
+  children,
+  onSubmit,
+  className,
+  ...props
+}: FormProps) => (
   <form
     onSubmit={e => {
       e.preventDefault();
@@ -16,13 +27,34 @@ export const Form = ({ children, onSubmit, className, ...props }: any) => (
   </form>
 );
 
-export const FormField = ({ children }: any) => (
+interface FormFieldProps {
+  children: React.ReactNode;
+}
+
+export const FormField = ({ children }: FormFieldProps) => (
   <div className='space-y-2'>{children}</div>
 );
-export const FormItem = ({ children, className }: any) => (
+
+interface FormItemProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const FormItem = ({ children, className }: FormItemProps) => (
   <div className={combineClasses('space-y-1', className)}>{children}</div>
 );
-export const FormLabel = ({ children, className, htmlFor, ...props }: any) => (
+
+interface FormLabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const FormLabel = ({
+  children,
+  className,
+  htmlFor,
+  ...props
+}: FormLabelProps) => (
   <label
     className={combineClasses('text-sm font-medium', className)}
     htmlFor={htmlFor}
@@ -31,13 +63,33 @@ export const FormLabel = ({ children, className, htmlFor, ...props }: any) => (
     {children}
   </label>
 );
-export const FormControl = ({ children }: any) => children;
-export const FormDescription = ({ children, className }: any) => (
+
+interface FormControlProps {
+  children: React.ReactNode;
+}
+
+export const FormControl = ({ children }: FormControlProps) => children;
+
+interface FormDescriptionProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const FormDescription = ({
+  children,
+  className,
+}: FormDescriptionProps) => (
   <p className={combineClasses('text-sm text-muted-foreground', className)}>
     {children}
   </p>
 );
-export const FormMessage = ({ children, className }: any) =>
+
+interface FormMessageProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const FormMessage = ({ children, className }: FormMessageProps) =>
   children && (
     <p className={combineClasses('text-sm text-destructive', className)}>
       {children}

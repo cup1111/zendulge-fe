@@ -47,7 +47,7 @@ import { useToast } from '../hooks/use-toast';
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName: z.string().min(1, 'Last name is required').max(50),
-  email: z.email('Invalid email address'),
+  email: z.string().email('Invalid email address'),
   phone: z.string().min(8, 'Phone number is required'),
   address: z.object({
     country: z.string().min(1, 'Country is required'),
@@ -119,10 +119,14 @@ export default function Profile() {
       // eslint-disable-next-line no-promise-executor-return
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // 更新本地状态
+      // 更新本地状态 - 只更新 UserProfile 中存在的字段
       setUser({
         ...user,
-        ...data,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        address: data.address,
+        interests: data.interests,
       });
 
       toast({

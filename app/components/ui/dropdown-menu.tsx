@@ -34,19 +34,28 @@ export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
     >
       {React.Children.map(children, child =>
         React.isValidElement(child)
-          ? React.cloneElement(child as any, { isOpen, setIsOpen })
+          ? React.cloneElement(child, { isOpen, setIsOpen } as Partial<
+              typeof child.props
+            >)
           : child
       )}
     </div>
   );
 };
 
+interface DropdownMenuContentProps {
+  children: React.ReactNode;
+  align?: 'center' | 'start' | 'end';
+  className?: string;
+  isOpen?: boolean;
+}
+
 export const DropdownMenuContent = ({
   children,
   align = 'center',
   className,
   isOpen,
-}: any) => {
+}: DropdownMenuContentProps) => {
   if (!isOpen) return null;
 
   return (
@@ -64,20 +73,39 @@ export const DropdownMenuContent = ({
   );
 };
 
+interface DropdownMenuItemProps {
+  children: React.ReactNode;
+  asChild?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  className?: string;
+}
+
 export const DropdownMenuItem = ({
   children,
   asChild: _asChild,
   onClick,
   className,
-}: any) => (
-  <div
-    className={combineClasses(
-      'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
-      'hover:bg-gray-100 transition-colors',
-      className
-    )}
-    onClick={onClick}
-  >
-    {children}
-  </div>
-);
+}: DropdownMenuItemProps) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+    }
+  };
+
+  return (
+    <div
+      role='button'
+      tabIndex={0}
+      className={combineClasses(
+        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none',
+        'hover:bg-gray-100 transition-colors focus:bg-gray-100',
+        className
+      )}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+    >
+      {children}
+    </div>
+  );
+};

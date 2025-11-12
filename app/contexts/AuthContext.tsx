@@ -10,7 +10,7 @@ import React, {
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 
-import type { UserRole } from '../constants/enums';
+import type { BusinessUserRole } from '../constants/enums';
 
 interface Company {
   id: string;
@@ -24,7 +24,7 @@ interface User {
   lastName?: string;
   userName?: string;
   avatarIcon?: string;
-  role?: { slug: UserRole; name: string; id: string };
+  role?: { slug: BusinessUserRole; name: string; id: string };
   companies: Company[];
 }
 
@@ -77,8 +77,7 @@ function decodeJWTTokenToUser(token: string): User | null {
       avatarIcon: payload.avatarIcon,
       companies: payload.companies || [],
     };
-  } catch (error) {
-    console.error('Error decoding JWT:', error);
+  } catch {
     return null;
   }
 }
@@ -118,14 +117,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Clears the current error message from the auth context
   const clearErrorMessage = () => setErrorMessage(null);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUserState(null);
     setCurrentCompanyState(null);
     localStorage.removeItem('user');
     localStorage.removeItem('currentCompany');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('token');
-  };
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -149,6 +148,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       // Set user state
       setUserState(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
 
       // Auto-select first company if available
       if (userData.companies && userData.companies.length > 0) {
@@ -157,9 +157,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
         clearErrorMessage();
       }
-    } catch (error: any) {
-      // console.error('Login error:', error.response.data);
-      if (error.response.data.includes('Account not activated')) {
+    } catch (error: unknown) {
+      // Check if error has response data with activation message
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response &&
+        typeof error.response.data === 'string' &&
+        error.response.data.includes('Account not activated')
+      ) {
         setErrorMessage(
           'Account not activated. Please check your email for activation instructions.'
         );
@@ -190,20 +199,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Check if token is expired
         const userData = decodeJWTTokenToUser(token);
         if (!userData) {
-          // Token is invalid, logout
           logout();
-          window.location.href = '/';
           return;
         }
 
-        // Check token expiry
         const payload = JSON.parse(atob(token.split('.')[1]));
         const currentTime = Date.now() / 1000;
 
         if (payload.exp && payload.exp < currentTime) {
-          // Token is expired, logout and redirect
           logout();
-          window.location.href = '/';
           return;
         }
 
@@ -216,15 +220,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         );
         // Token is valid, set user data
         setUserState({ ...userData, role: response.data.role });
-      } catch (error: any) {
-        console.error('Error initializing auth:', error);
+      } catch (error: unknown) {
+        // Error initializing auth - log out user
         logout();
       } finally {
         setIsLoading(false);
       }
     };
     initAuth();
-  }, []);
+  }, [logout]);
 
   const value: AuthContextType = React.useMemo(
     () => ({
@@ -238,7 +242,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       logout,
       errorMessage,
     }),
-    [user, currentCompany, isLoading, errorMessage]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [
+      user,
+      currentCompany,
+      isLoading,
+      errorMessage,
+      login,
+      logout,
+      setCurrentCompany,
+    ]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
@@ -247,7 +260,6 @@ export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     // Return default values instead of throwing error to handle edge cases
-    console.warn('useAuth called outside AuthProvider, using defaults');
     return {
       user: null,
       currentCompany: null,

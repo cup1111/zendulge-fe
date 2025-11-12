@@ -98,7 +98,9 @@ export default function Login() {
                 Login
               </Button>
               <div className='flex justify-center'>
-                <p className='text-sm text-gray-600'>Don't have an account?</p>
+                <p className='text-sm text-gray-600'>
+                  Don&apos;t have an account?
+                </p>
               </div>
               <Button variant='default' className='w-full h-12 text-base'>
                 <Link to='/signup'>Sign Up</Link>

@@ -32,23 +32,7 @@ zendulgeAxiosInstance.interceptors.request.use(
 // Response interceptor to handle common errors
 zendulgeAxiosInstance.interceptors.response.use(
   response => response,
-  error => {
-    // Handle common HTTP errors
-    if (error.response?.status === 401) {
-      // Token expired or invalid - redirect to login or refresh token
-      // eslint-disable-next-line no-console
-      console.warn('Authentication failed - token may be expired');
-      // You could dispatch a logout action here or redirect to login
-    } else if (error.response?.status === 403) {
-      // eslint-disable-next-line no-console
-      console.warn('Access forbidden - insufficient permissions');
-    } else if (error.response?.status >= 500) {
-      // eslint-disable-next-line no-console
-      console.error('Server error occurred');
-    }
-
-    return Promise.reject(error);
-  }
+  error => Promise.reject(error)
 );
 
 export default zendulgeAxiosInstance;
