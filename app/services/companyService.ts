@@ -7,7 +7,6 @@ export interface CompanyInfo {
   name: string;
   email: string;
   description?: string;
-  serviceCategory: string;
   businessAddress: {
     street: string;
     city: string;
@@ -39,7 +38,6 @@ export interface CompanyUpdateRequest {
   name?: string;
   email?: string;
   description?: string;
-  serviceCategory?: string;
   businessAddress?: {
     street?: string;
     city?: string;
