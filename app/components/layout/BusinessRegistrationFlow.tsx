@@ -165,6 +165,23 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
+                  htmlFor='BusinessABN'
+                >
+                  Business ABN *
+                  <input
+                    type='text'
+                    id='BusinessABN'
+                    placeholder='e.g., 12 345 678 901'
+                    value={businessRegistrationFormData.companyABN.value}
+                    onChange={e => onInputChange('companyABN', e.target.value)}
+                    className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
+                  />
+                </label>
+                {error.companyABN && renderErrorMessage(error.companyABN)}
+              </div>
+              <div>
+                <label
+                  className='block text-sm font-medium text-gray-700 mb-2'
                   htmlFor='businessDescription'
                 >
                   Business Description
