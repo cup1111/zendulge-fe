@@ -23,7 +23,7 @@ import { BusinessUserRole, OperatingSiteStatus } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 
 interface OperatingSite {
-  id: number;
+  id: string | number;
   name: string;
   address: string;
   phone: string;

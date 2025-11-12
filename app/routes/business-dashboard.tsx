@@ -41,7 +41,7 @@ interface BusinessStats {
 }
 
 interface OperatingSite {
-  id: number;
+  id: string | number;
   name: string;
   address: string;
   phone: string;
