@@ -1,5 +1,5 @@
 import { XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import appIcon from '~/assets/app-icon.png';
@@ -18,15 +18,21 @@ export default function Login() {
     email: '',
     password: '',
   });
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      if (auth.companies.length > 0) navigate('/business-management');
+      else navigate('/');
+    }
+  }, [auth.isAuthenticated]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   const handleLogin = async () => {
     await auth.login(formData.email, formData.password);
-    if (auth.isAuthenticated) {
-      navigate('/');
-    }
   };
+
   return (
     <div className='min-h-screen'>
       {/* Hero Section */}
