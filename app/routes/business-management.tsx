@@ -27,7 +27,7 @@ import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
-import { OperatingSiteStatus, UserRole } from '~/constants/enums';
+import { OperatingSiteStatus } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import {
   mockActiveDeals,
