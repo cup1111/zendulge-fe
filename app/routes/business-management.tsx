@@ -1,55 +1,29 @@
 import {
-  BarChart3,
-  Bell,
   Building2,
-  Calendar,
   Clock,
-  DollarSign,
-  Download,
   Edit3,
   Eye,
-  Filter,
   Loader2,
   Mail,
   MapPin,
   MoreHorizontal,
   Phone,
   Plus,
-  Settings,
-  Star,
-  TrendingUp,
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
 
+import CustomerManagement from '~/components/CustomerManagement';
+import DealManagement from '~/components/DealManagement';
+import ServiceManagement from '~/components/ServiceManagement';
 import { Button } from '~/components/ui/button';
-import UserManagement from '~/components/UserManagement';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 import { BusinessUserRole, OperatingSiteStatus } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
-import {
-  mockActiveDeals,
-  mockBusinessStats,
-  mockRecentActivity,
-  mockRecentBookings,
-} from '~/lib/mockData';
-
-// Types for our data
-interface BusinessStats {
-  totalRevenue: number;
-  revenueGrowth: number;
-  totalBookings: number;
-  bookingsGrowth: number;
-  activeDeals: number;
-  expiringDeals: number;
-  customerRating: number;
-  reviewCount: number;
-}
 
 interface OperatingSite {
-  id: number;
+  id: string | number;
   name: string;
   address: string;
   phone: string;
@@ -60,35 +34,6 @@ interface OperatingSite {
   hours: string;
   revenue: string;
   bookings: number;
-}
-
-interface RecentBooking {
-  id: number;
-  customer: string;
-  service: string;
-  date: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
-  amount: string;
-}
-
-interface ActiveDeal {
-  id: number;
-  title: string;
-  timeSlot: string;
-  bookings: number;
-  status: 'active' | 'expiring' | 'inactive';
-}
-
-interface RecentActivity {
-  action: string;
-  details: string;
-  time: string;
-}
-
-async function fetchBusinessStats(): Promise<BusinessStats> {
-  // Since there's no dedicated stats endpoint, we'll use mock data
-  // In a real scenario, you'd calculate these from other endpoints
-  return mockBusinessStats;
 }
 
 // Helper function to format status with proper capitalization
@@ -138,7 +83,21 @@ async function fetchOperatingSites(
   const result = response.data;
 
   // Transform backend data to match frontend interface
-  const sites = result.data.operateSites.map((site: any) => ({
+  interface BackendSite {
+    id: string | number;
+    name: string;
+    address: string;
+    phoneNumber?: string;
+    emailAddress?: string;
+    isActive: boolean;
+    members?: Array<{ firstName?: string; lastName?: string }>;
+    services?: string[];
+    operatingHours?: Record<string, unknown>;
+    revenue?: number;
+    bookings?: number;
+  }
+
+  const sites = (result.data.operateSites as BackendSite[]).map(site => ({
     id: site.id,
     name: site.name,
     address: site.address,
@@ -149,14 +108,14 @@ async function fetchOperatingSites(
       : OperatingSiteStatus.Inactive,
     manager:
       site.members && site.members.length > 0
-        ? `${site.members[0].firstName || ''} ${site.members[0].lastName || ''}`.trim() ||
+        ? `${site.members[0].firstName ?? ''} ${site.members[0].lastName ?? ''}`.trim() ||
           'To be assigned'
         : 'To be assigned',
     services:
       site.services && Array.isArray(site.services) && site.services.length > 0
         ? site.services
         : ['To be configured'],
-    hours: formatOperatingHours(site.operatingHours || {}),
+    hours: formatOperatingHours(site.operatingHours ?? {}),
     revenue: site.revenue ? `$${site.revenue}` : '$0',
     bookings: site.bookings ?? 0,
   }));
@@ -164,31 +123,9 @@ async function fetchOperatingSites(
   return sites;
 }
 
-async function fetchRecentBookings(): Promise<RecentBooking[]> {
-  // Backend doesn't have booking system yet
-  return mockRecentBookings;
-}
-
-async function fetchActiveDeals(): Promise<ActiveDeal[]> {
-  // Backend doesn't have deals system yet
-  return mockActiveDeals;
-}
-
-async function fetchRecentActivity(): Promise<RecentActivity[]> {
-  // Backend doesn't have activity tracking yet
-  return mockRecentActivity;
-}
-
 export default function BusinessManagement() {
   const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
-  const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
-    null
-  );
-
   const [operatingSites, setOperatingSites] = useState<OperatingSite[]>([]);
-  const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
-  const [activeDeals, setActiveDeals] = useState<ActiveDeal[]>([]);
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -210,28 +147,16 @@ export default function BusinessManagement() {
 
         // Ensure we have a current company selected
         if (!currentCompany?.id) {
-          throw new Error('No company selected or invalid company ID');
+          // Don't throw error, just wait for company to be available
+          setDataLoading(false);
+          return;
         }
 
         const companyIdString = currentCompany.id;
 
-        // Fetch operating sites from real backend (REQUIRED)
+        // Fetch operating sites from real backend
         const sitesData = await fetchOperatingSites(companyIdString);
         setOperatingSites(sitesData);
-
-        // Fetch other data (using mock data where endpoints don't exist yet)
-        const [statsData, bookingsData, dealsData, activityData] =
-          await Promise.all([
-            fetchBusinessStats(),
-            fetchRecentBookings(),
-            fetchActiveDeals(),
-            fetchRecentActivity(),
-          ]);
-
-        setBusinessStats(statsData);
-        setRecentBookings(bookingsData);
-        setActiveDeals(dealsData);
-        setRecentActivity(activityData);
       } catch (err) {
         // Show real errors for backend connectivity issues
         const errorMessage =
@@ -243,15 +168,14 @@ export default function BusinessManagement() {
     }
 
     loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading]); // Re-run when auth state changes
+  }, [isLoading, isAuthenticated, user, currentCompany?.id]); // Re-run when auth state or company changes
 
   if (isLoading || dataLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <Loader2 className='w-8 h-8 animate-spin text-shadow-lavender mx-auto mb-4' />
-          <p className='text-gray-600'>Loading business management data...</p>
+          <p className='text-gray-600'>Loading management data...</p>
         </div>
       </div>
     );
@@ -272,6 +196,24 @@ export default function BusinessManagement() {
       </div>
     );
   }
+
+  // Show "no access" message if user has no operating sites
+  // Business owners are excluded - they can access everything even without site assignments
+  if (
+    operatingSites.length === 0 &&
+    user?.role?.slug !== BusinessUserRole.Owner
+  ) {
+    return (
+      <div className='min-h-screen flex items-center justify-center'>
+        <div className='text-center p-6'>
+          <p className='text-gray-600'>
+            You have no access to any store, please contact your Admin
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Development Mode Indicator */}
@@ -280,8 +222,7 @@ export default function BusinessManagement() {
           <div className='max-w-7xl mx-auto'>
             <p className='text-blue-800 text-sm'>
               <strong>Backend Status:</strong> Operating Sites from real API ✅
-              | Stats, Users, Bookings, Deals, Activity using mock data
-              (endpoints not implemented yet)
+              | Service Management integrated ✅
             </p>
           </div>
         </div>
@@ -293,337 +234,64 @@ export default function BusinessManagement() {
           <div className='flex flex-col md:flex-row md:items-center md:justify-between'>
             <div>
               <h1 className='text-3xl font-bold text-shadow-lavender mb-2'>
-                Business Management Dashboard
+                Business Management
               </h1>
               <p className='text-gray-600'>
-                Manage your business, deals, and bookings all in one place
+                Manage your services, deals, customers, and business locations
               </p>
             </div>
-            <div className='mt-4 md:mt-0 flex gap-3'>
-              <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                <Plus className='w-4 h-4 mr-2' />
-                Create Deal
-              </Button>
-              <Button
-                variant='ghost'
-                className='border border-gray-300 hover:bg-gray-50'
-              >
-                <Download className='w-4 h-4 mr-2' />
-                Export Report
-              </Button>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Overview */}
-      <section className='py-8'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-            <div className='bg-white p-6 rounded-lg border border-gray-200'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-sm text-gray-600 mb-1'>Total Revenue</p>
-                  <p className='text-2xl font-bold text-gray-900'>
-                    ${businessStats?.totalRevenue.toLocaleString()}
-                  </p>
-                  <p
-                    className={`text-sm ${
-                      businessStats?.revenueGrowth &&
-                      businessStats.revenueGrowth > 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }`}
-                  >
-                    {businessStats?.revenueGrowth &&
-                    businessStats.revenueGrowth > 0
-                      ? '+'
-                      : ''}
-                    {businessStats?.revenueGrowth ?? 0}% from last month
-                  </p>
-                </div>
-                <div className='w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center'>
-                  <DollarSign className='w-6 h-6 text-green-600' />
-                </div>
-              </div>
-            </div>
-
-            <div className='bg-white p-6 rounded-lg border border-gray-200'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-sm text-gray-600 mb-1'>Total Bookings</p>
-                  <p className='text-2xl font-bold text-gray-900'>
-                    {businessStats?.totalBookings}
-                  </p>
-                  <p
-                    className={`text-sm ${
-                      businessStats?.bookingsGrowth &&
-                      businessStats.bookingsGrowth > 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                    }`}
-                  >
-                    {businessStats?.bookingsGrowth &&
-                    businessStats.bookingsGrowth > 0
-                      ? '+'
-                      : ''}
-                    {businessStats?.bookingsGrowth ?? 0}% from last month
-                  </p>
-                </div>
-                <div className='w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center'>
-                  <Calendar className='w-6 h-6 text-blue-600' />
-                </div>
-              </div>
-            </div>
-
-            <div className='bg-white p-6 rounded-lg border border-gray-200'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-sm text-gray-600 mb-1'>Active Deals</p>
-                  <p className='text-2xl font-bold text-gray-900'>
-                    {businessStats?.activeDeals}
-                  </p>
-                  <p className='text-sm text-gray-500'>
-                    {businessStats?.expiringDeals} expiring soon
-                  </p>
-                </div>
-                <div className='w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center'>
-                  <TrendingUp className='w-6 h-6 text-purple-600' />
-                </div>
-              </div>
-            </div>
-
-            <div className='bg-white p-6 rounded-lg border border-gray-200'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <p className='text-sm text-gray-600 mb-1'>Customer Rating</p>
-                  <p className='text-2xl font-bold text-gray-900'>
-                    {businessStats?.customerRating}
-                  </p>
-                  <p className='text-sm text-gray-500'>
-                    Based on {businessStats?.reviewCount} reviews
-                  </p>
-                </div>
-                <div className='w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center'>
-                  <Star className='w-6 h-6 text-yellow-600' />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content */}
-      <section className='pb-8'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
-            {/* Recent Bookings */}
-            <div className='lg:col-span-2'>
-              <div className='bg-white rounded-lg border border-gray-200'>
-                <div className='p-6 border-b border-gray-200'>
-                  <div className='flex items-center justify-between'>
-                    <h2 className='text-xl font-semibold text-gray-900'>
-                      Recent Bookings
-                    </h2>
-                    <div className='flex gap-2'>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        className='border border-gray-300 hover:bg-gray-50'
-                      >
-                        <Filter className='w-4 h-4 mr-2' />
-                        Filter
-                      </Button>
-                      <Link to='/bookings'>
-                        <Button variant='ghost' size='sm'>
-                          View All
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-                <div className='p-6'>
-                  <div className='space-y-4'>
-                    {recentBookings.length > 0 ? (
-                      recentBookings.map(booking => (
-                        <div
-                          key={booking.id}
-                          className='flex items-center justify-between p-4 bg-gray-50 rounded-lg'
-                        >
-                          <div className='flex items-center space-x-4'>
-                            <div className='w-10 h-10 bg-shadow-lavender/10 rounded-full flex items-center justify-center'>
-                              <Users className='w-5 h-5 text-shadow-lavender' />
-                            </div>
-                            <div>
-                              <p className='font-medium text-gray-900'>
-                                {booking.customer}
-                              </p>
-                              <p className='text-sm text-gray-600'>
-                                {booking.service}
-                              </p>
-                              <p className='text-sm text-gray-500'>
-                                {booking.date}
-                              </p>
-                            </div>
-                          </div>
-                          <div className='text-right'>
-                            <p className='font-semibold text-gray-900'>
-                              {booking.amount}
-                            </p>
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
-                                if (booking.status === 'confirmed')
-                                  return 'bg-green-100 text-green-800';
-                                if (booking.status === 'pending')
-                                  return 'bg-yellow-100 text-yellow-800';
-                                return 'bg-red-100 text-red-800';
-                              })()}`}
-                            >
-                              {booking.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className='text-center py-8'>
-                        <Users className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                        <p className='text-gray-500'>
-                          No recent bookings found
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Actions & Active Deals */}
-            <div className='space-y-8'>
-              {/* Quick Actions */}
-              <div className='bg-white rounded-lg border border-gray-200'>
-                <div className='p-6 border-b border-gray-200'>
-                  <h2 className='text-xl font-semibold text-gray-900'>
-                    Quick Actions
-                  </h2>
-                </div>
-                <div className='p-6'>
-                  <div className='space-y-3'>
-                    <Button className='w-full justify-start bg-shadow-lavender hover:bg-shadow-lavender/90'>
-                      <Plus className='w-4 h-4 mr-3' />
-                      Create New Deal
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      className='w-full justify-start border border-gray-300 hover:bg-gray-50'
-                    >
-                      <Calendar className='w-4 h-4 mr-3' />
-                      Manage Calendar
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      className='w-full justify-start border border-gray-300 hover:bg-gray-50'
-                    >
-                      <Settings className='w-4 h-4 mr-3' />
-                      Business Settings
-                    </Button>
-                    <Button
-                      variant='ghost'
-                      className='w-full justify-start border border-gray-300 hover:bg-gray-50'
-                    >
-                      <BarChart3 className='w-4 h-4 mr-3' />
-                      View Analytics
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Deals */}
-              <div className='bg-white rounded-lg border border-gray-200'>
-                <div className='p-6 border-b border-gray-200'>
-                  <div className='flex items-center justify-between'>
-                    <h2 className='text-xl font-semibold text-gray-900'>
-                      Active Deals
-                    </h2>
-                    <Link to='/deals'>
-                      <Button variant='ghost' size='sm'>
-                        View All
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-                <div className='p-6'>
-                  <div className='space-y-4'>
-                    {activeDeals.length > 0 ? (
-                      activeDeals.map(deal => (
-                        <div
-                          key={deal.id}
-                          className='p-4 bg-gray-50 rounded-lg'
-                        >
-                          <div className='flex items-start justify-between mb-2'>
-                            <h3 className='font-medium text-gray-900 text-sm'>
-                              {deal.title}
-                            </h3>
-                            <Button variant='ghost' size='sm'>
-                              <Edit3 className='w-3 h-3' />
-                            </Button>
-                          </div>
-                          <div className='flex items-center text-xs text-gray-600 mb-2'>
-                            <Clock className='w-3 h-3 mr-1' />
-                            {deal.timeSlot}
-                          </div>
-                          <div className='flex items-center justify-between'>
-                            <span className='text-xs text-gray-600'>
-                              {deal.bookings} bookings
-                            </span>
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
-                                if (deal.status === 'active')
-                                  return 'bg-green-100 text-green-800';
-                                if (deal.status === 'expiring')
-                                  return 'bg-orange-100 text-orange-800';
-                                return 'bg-gray-100 text-gray-800';
-                              })()}`}
-                            >
-                              {deal.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className='text-center py-8'>
-                        <TrendingUp className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                        <p className='text-gray-500'>No active deals found</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Users Management Section */}
-      <section className='py-8 border-t border-gray-200 bg-white'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          {currentCompany?.id && user?.id && (
-            <UserManagement
-              companyId={currentCompany.id}
-              excludeUserId={user.id}
-            />
-          )}
-        </div>
-      </section>
-
-      {/* Operating Sites Section (only for owner) */}
-      {user?.role?.slug === BusinessUserRole.Owner && (
+      {/* Customers Management Section (only for owners and managers) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager) && (
         <section className='py-8 border-t border-gray-200 bg-gray-50'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && (
+              <CustomerManagement companyId={currentCompany.id} />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Service Management Section (for owners, managers, and employees) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager ||
+        user?.role?.slug === BusinessUserRole.Employee) && (
+        <section className='py-8 border-t border-gray-200 bg-gray-50'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && (
+              <ServiceManagement companyId={currentCompany.id} />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Deal Management Section (for owners, managers, and employees) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager ||
+        user?.role?.slug === BusinessUserRole.Employee) && (
+        <section className='py-8 border-t border-gray-200 bg-white'>
+          <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+            {currentCompany?.id && (
+              <DealManagement companyId={currentCompany.id} />
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Operating Sites Section (for owners and managers) */}
+      {(user?.role?.slug === BusinessUserRole.Owner ||
+        user?.role?.slug === BusinessUserRole.Manager) && (
+        <section className='py-8 border-t border-gray-200 bg-white'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
             <div className='mb-8'>
               <div className='flex items-center justify-between mb-6'>
                 <div>
                   <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
-                    Operating Sites
+                    Operating Sites (WIP)
                   </h2>
                   <p className='text-gray-600'>
                     Manage all business locations and their details
@@ -772,90 +440,6 @@ export default function BusinessManagement() {
           </div>
         </section>
       )}
-
-      {/* Business Info Section */}
-      <section className='py-8 border-t border-gray-200 bg-white'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-            <div>
-              <h2 className='text-2xl font-bold text-shadow-lavender mb-4'>
-                Business Profile
-              </h2>
-              <div className='space-y-4'>
-                <div className='flex items-center space-x-3'>
-                  <MapPin className='w-5 h-5 text-gray-400' />
-                  <div>
-                    <p className='font-medium text-gray-900'>
-                      Zen Spa & Wellness
-                    </p>
-                    <p className='text-sm text-gray-600'>
-                      123 Wellness Street, San Francisco, CA 94110
-                    </p>
-                  </div>
-                </div>
-                <div className='flex items-center space-x-3'>
-                  <Clock className='w-5 h-5 text-gray-400' />
-                  <div>
-                    <p className='font-medium text-gray-900'>Business Hours</p>
-                    <p className='text-sm text-gray-600'>
-                      Mon-Fri: 9:00 AM - 8:00 PM, Sat-Sun: 10:00 AM - 6:00 PM
-                    </p>
-                  </div>
-                </div>
-                <div className='flex items-center space-x-3'>
-                  <Bell className='w-5 h-5 text-gray-400' />
-                  <div>
-                    <p className='font-medium text-gray-900'>Notifications</p>
-                    <p className='text-sm text-gray-600'>
-                      Email and SMS notifications enabled
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className='mt-6'>
-                <Button
-                  variant='ghost'
-                  className='border border-gray-300 hover:bg-gray-50'
-                >
-                  <Edit3 className='w-4 h-4 mr-2' />
-                  Edit Business Profile
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <h2 className='text-2xl font-bold text-shadow-lavender mb-4'>
-                Recent Activity
-              </h2>
-              <div className='space-y-3'>
-                {recentActivity.length > 0 ? (
-                  recentActivity.map(activity => (
-                    <div
-                      key={`${activity.action}-${activity.time}`}
-                      className='p-3 bg-gray-50 rounded-lg'
-                    >
-                      <p className='font-medium text-gray-900 text-sm'>
-                        {activity.action}
-                      </p>
-                      <p className='text-sm text-gray-600'>
-                        {activity.details}
-                      </p>
-                      <p className='text-xs text-gray-500 mt-1'>
-                        {activity.time}
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <div className='text-center py-8'>
-                    <Bell className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-                    <p className='text-gray-500'>No recent activity</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
