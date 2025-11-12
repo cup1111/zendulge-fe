@@ -101,7 +101,7 @@ export default function Login() {
                 <p className='text-sm text-gray-600'>Don't have an account?</p>
               </div>
               <Button variant='default' className='w-full h-12 text-base'>
-                <Link to='/signup'>Sign Up</Link>
+                <Link to='/customer-registration'>Sign Up</Link>
               </Button>
             </CardContent>
           </Card>
