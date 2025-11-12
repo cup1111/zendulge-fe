@@ -1,9 +1,9 @@
 // Enums for user roles and operating site statuses
 
-export enum UserRole {
+export enum BusinessUserRole {
   Owner = 'owner',
-  Admin = 'admin',
-  Staff = 'staff',
+  Manager = 'manager',
+  Employee = 'employee',
 }
 
 export enum OperatingSiteStatus {

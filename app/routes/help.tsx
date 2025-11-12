@@ -90,7 +90,7 @@ export default function Help() {
                 <AccordionTrigger>How do I book a deal?</AccordionTrigger>
                 <AccordionContent>
                   Simply browse available deals, select your preferred time
-                  slot, and complete the payment process. You'll receive an
+                  slot, and complete the payment process. You&apos;ll receive an
                   instant confirmation with booking details.
                 </AccordionContent>
               </AccordionItem>
@@ -120,7 +120,7 @@ export default function Help() {
               <AccordionItem value='refunds'>
                 <AccordionTrigger>How do refunds work?</AccordionTrigger>
                 <AccordionContent>
-                  Refunds are processed according to each business's
+                  Refunds are processed according to each business&apos;s
                   cancellation policy. Most refunds are processed within 3-5
                   business days.
                 </AccordionContent>

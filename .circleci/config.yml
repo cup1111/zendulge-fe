@@ -127,7 +127,11 @@ jobs:
             - ~/.cache
           key: v1-dependencies-{{ checksum "package.json" }}
       - jq/install
-      - run: yarn lint
+      - run:
+          name: Clear ESLint cache and run lint
+          command: |
+            rm -rf .eslintcache
+            yarn lint --no-cache
 
   semantic_release:
     docker:

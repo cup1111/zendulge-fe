@@ -10,59 +10,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+import { countries } from '~/constants/countries';
 
-interface SimplePhoneValidatorProps {
+interface PhoneInputProps {
   value: string;
+  selectedCountry: string;
   onChange: (value: string) => void;
+  onCountryChange: (value: string) => void;
   placeholder?: string;
   label?: string;
-  mobileOnly?: boolean;
   showValidationDetails?: boolean;
 }
 
-const countries = [
-  { code: '+61', name: 'Australia', flag: '🇦🇺' },
-  { code: '+1', name: 'United States', flag: '🇺🇸' },
-  { code: '+44', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: '+86', name: 'China', flag: '🇨🇳' },
-  { code: '+81', name: 'Japan', flag: '🇯🇵' },
-];
-
-export default function SimplePhoneValidator({
+export default function PhoneInput({
   value,
+  selectedCountry,
   onChange,
+  onCountryChange,
   placeholder = 'Enter phone number',
   label = 'Phone Number',
-  mobileOnly = false,
   showValidationDetails = true,
-}: SimplePhoneValidatorProps) {
-  const [selectedCountry, setSelectedCountry] = React.useState('+61');
-
+}: PhoneInputProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
 
     if (newValue && !newValue.startsWith('+') && selectedCountry) {
       if (/^\d/.test(newValue)) {
-        newValue = selectedCountry + newValue;
+        const dialCode = selectedCountry.split('-')[1];
+        newValue = dialCode + newValue;
       }
     }
 
     onChange(newValue);
   };
 
-  const handleCountryChange = (countryCode: string) => {
-    setSelectedCountry(countryCode);
-
+  const handleCountryChange = (val: string) => {
+    onCountryChange(val);
+    const dialCode = val.split('-')[1];
     if (value && !value.startsWith('+')) {
-      onChange(countryCode + value);
+      onChange(dialCode + value);
     }
   };
 
   const isValid = value && value.length > 8;
   const hasError = value && value.length > 0 && value.length <= 8;
 
-  function telFieldClass() {
-    if (!value) return 'flex-1 border-green-500 focus:border-green-500';
+  // Returns the CSS class name for the phone input field based on validation state
+  function getPhoneFieldClassName() {
     if (hasError) return 'flex-1 border-red-500 focus:border-red-500';
     return 'flex-1';
   }
@@ -79,14 +73,17 @@ export default function SimplePhoneValidator({
       <div className='flex space-x-2'>
         <Select value={selectedCountry} onValueChange={handleCountryChange}>
           <SelectTrigger className='w-[180px]'>
-            <SelectValue />
+            <SelectValue placeholder='Select country code' />
           </SelectTrigger>
           <SelectContent>
             {countries.map(country => (
-              <SelectItem key={country.code} value={country.code}>
+              <SelectItem
+                key={country.name}
+                value={`${country.name}-${country.dial_code}`}
+              >
                 <span className='flex items-center space-x-2'>
-                  <span>{country.flag}</span>
-                  <span>{country.code}</span>
+                  <span>{country.emoji}</span>
+                  <span>{country.dial_code}</span>
                   <span className='text-sm text-gray-500'>{country.name}</span>
                 </span>
               </SelectItem>
@@ -99,7 +96,7 @@ export default function SimplePhoneValidator({
           value={value}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className={telFieldClass()}
+          className={getPhoneFieldClassName()}
         />
       </div>
 
@@ -110,9 +107,6 @@ export default function SimplePhoneValidator({
               <div className='text-xs bg-green-50 text-green-700 px-2 py-1 rounded border border-green-200'>
                 <CheckCircle className='w-3 h-3 inline mr-1' />
                 Valid
-              </div>
-              <div className='text-xs bg-gray-50 text-gray-700 px-2 py-1 rounded border'>
-                {mobileOnly ? '📱 Mobile' : '☎️ Phone'}
               </div>
             </div>
           )}

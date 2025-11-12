@@ -1,3 +1,4 @@
+import * as ScrollArea from '@radix-ui/react-scroll-area';
 import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import React from 'react';
@@ -91,17 +92,20 @@ const SelectContent = ({
       position={position}
       {...props}
     >
-      <SelectScrollUpButton />
-      <SelectPrimitive.Viewport
-        className={combineClasses(
-          'p-1',
-          position === 'popper' &&
-            'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]'
-        )}
-      >
-        {children}
-      </SelectPrimitive.Viewport>
-      <SelectScrollDownButton />
+      <ScrollArea.Root className='w-[200px] h-[225px] rounded-md overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.25)] bg-white [--scrollbar-size:10px]'>
+        <ScrollArea.Viewport className='w-full h-full rounded-inherit'>
+          {children}
+        </ScrollArea.Viewport>
+
+        <ScrollArea.Scrollbar
+          orientation='vertical'
+          className='flex select-none touch-none p-[2px] bg-black/10 hover:bg-black/20 w-[var(--scrollbar-size)] transition-colors'
+        >
+          <ScrollArea.Thumb className="flex-1 bg-mauve-10 rounded-[var(--scrollbar-size)] relative before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-full before:h-full before:min-w-[44px] before:min-h-[44px]" />
+        </ScrollArea.Scrollbar>
+
+        <ScrollArea.Corner className='bg-black/30' />
+      </ScrollArea.Root>
     </SelectPrimitive.Content>
   </SelectPrimitive.Portal>
 );
@@ -163,13 +167,13 @@ SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
 export {
   Select,
-  SelectGroup,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
-  SelectLabel,
+  SelectGroup,
   SelectItem,
-  SelectSeparator,
-  SelectScrollUpButton,
+  SelectLabel,
   SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
 };

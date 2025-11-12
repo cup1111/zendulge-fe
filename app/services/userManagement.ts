@@ -38,7 +38,7 @@ export interface CreateUserRequest {
   operateSiteIds?: string[]; // Array of operate site IDs the user has access to
 }
 
-export interface UpdateUserRoleRequest {
+export interface UpdateBusinessUserRoleRequest {
   role: string; // Role ID
 }
 
@@ -110,10 +110,10 @@ export class UserManagementService {
   /**
    * Update a user's role in a company
    */
-  static async updateCompanyUserRole(
+  static async updateCompanyBusinessUserRole(
     companyId: string,
     userId: string,
-    roleData: UpdateUserRoleRequest
+    roleData: UpdateBusinessUserRoleRequest
   ): Promise<User> {
     const response = await api.patch<User>(
       API_CONFIG.endpoints.company.userRole(companyId, userId),

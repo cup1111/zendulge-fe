@@ -48,7 +48,8 @@ export default function DealDetailsPage() {
               Deal Not Found
             </h2>
             <p className='text-gray-600'>
-              The deal you're looking for doesn't exist or has expired.
+              The deal you&apos;re looking for doesn&apos;t exist or has
+              expired.
             </p>
           </div>
         </div>

@@ -9,9 +9,9 @@ interface ValidationState {
 
 interface UseAnimatedValidationProps {
   error?: FieldError;
-  value?: any;
+  value?: string | number | boolean | null | undefined;
   customValidation?: (
-    value: any
+    value: string | number | boolean
   ) => Promise<{ isValid: boolean; message?: string; type?: 'warning' }>;
   debounceMs?: number;
 }

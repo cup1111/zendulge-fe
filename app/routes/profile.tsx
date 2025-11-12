@@ -47,16 +47,16 @@ import { useToast } from '../hooks/use-toast';
 const profileSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName: z.string().min(1, 'Last name is required').max(50),
-  email: z.email('Invalid email address'),
+  email: z.string().email('Invalid email address'),
   phone: z.string().min(8, 'Phone number is required'),
   address: z.object({
     country: z.string().min(1, 'Country is required'),
     streetNumber: z.string().min(1, 'Street number is required'),
-    streetName: z.string().min(1, 'Street name is required'),
+    street: z.string().min(1, 'Street name is required'),
     suburb: z.string().min(1, 'Suburb is required'),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(1, 'State is required'),
-    postalCode: z.string().min(1, 'Postal code is required'),
+    postcode: z.string().min(1, 'Postal code is required'),
     fullAddress: z.string().min(1, 'Full address is required'),
   }),
   interests: z.array(z.enum(WELLNESS_CATEGORIES)).optional(),
@@ -80,11 +80,11 @@ export default function Profile() {
       address: user.address ?? {
         country: 'Australia',
         streetNumber: '',
-        streetName: '',
+        street: '',
         suburb: '',
         city: '',
         state: '',
-        postalCode: '',
+        postcode: '',
         fullAddress: '',
       },
       interests: user.interests ?? [],
@@ -101,11 +101,11 @@ export default function Profile() {
       address: user.address ?? {
         country: 'Australia',
         streetNumber: '',
-        streetName: '',
+        street: '',
         suburb: '',
         city: '',
         state: '',
-        postalCode: '',
+        postcode: '',
         fullAddress: '',
       },
       interests: user.interests ?? [],
@@ -119,10 +119,14 @@ export default function Profile() {
       // eslint-disable-next-line no-promise-executor-return
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      // 更新本地状态
+      // 更新本地状态 - 只更新 UserProfile 中存在的字段
       setUser({
         ...user,
-        ...data,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        address: data.address,
+        interests: data.interests,
       });
 
       toast({
@@ -413,7 +417,7 @@ export default function Profile() {
                             />
                             <Input
                               placeholder='Street Name'
-                              {...form.register('address.streetName')}
+                              {...form.register('address.street')}
                             />
                             <Input
                               placeholder='Suburb'
@@ -429,7 +433,7 @@ export default function Profile() {
                             />
                             <Input
                               placeholder='Postal Code'
-                              {...form.register('address.postalCode')}
+                              {...form.register('address.postcode')}
                             />
                           </div>
                         ) : (

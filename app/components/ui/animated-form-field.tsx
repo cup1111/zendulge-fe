@@ -21,7 +21,7 @@ interface AnimatedFormFieldProps<
   label?: string;
   description?: string;
   customValidation?: (
-    value: any
+    value: string | number | boolean
   ) => Promise<{ isValid: boolean; message?: string; type?: 'warning' }>;
   showValidationIcon?: boolean;
   animateOnChange?: boolean;
