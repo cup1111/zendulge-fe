@@ -30,7 +30,6 @@ export const registerBusiness = async (
       firstName: businessRegistrationData.firstName,
       lastName: businessRegistrationData.lastName,
       categories: businessRegistrationData.categories,
-      serviceCategory: businessRegistrationData.serviceCategory,
       jobTitle: businessRegistrationData.jobTitle,
       businessAddress: {
         country: businessRegistrationData.businessAddress.country,

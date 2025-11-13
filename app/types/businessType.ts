@@ -22,7 +22,6 @@ export type BusinessRegistrationFormData = {
   firstName: BusinessField<string>;
   lastName: BusinessField<string>;
   categories: BusinessField<string[]>;
-  serviceCategory: BusinessField<string>;
   jobTitle: BusinessField<string>;
   businessAddress: BusinessAddress;
   phone: BusinessField<string>;
@@ -65,7 +64,6 @@ export type BusinessRegisterPayload = {
   firstName: string;
   lastName: string;
   categories: string[];
-  serviceCategory: string;
   jobTitle: string;
   businessAddress: BusinessAddressValue;
   phone: string;
