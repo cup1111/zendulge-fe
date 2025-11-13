@@ -22,6 +22,11 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: 'Company Name',
       },
+      companyABN: {
+        isRequired: true,
+        value: '',
+        defaultValue: '12345678901',
+      },
       description: {
         validate: value => {
           if (value.length > 500) {
