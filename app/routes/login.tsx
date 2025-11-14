@@ -108,7 +108,7 @@ export default function Login() {
                 </p>
               </div>
               <Button variant='default' className='w-full h-12 text-base'>
-                <Link to='/signup'>Sign Up</Link>
+                <Link to='/customer-registration'>Sign Up</Link>
               </Button>
             </CardContent>
           </Card>
