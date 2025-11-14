@@ -120,13 +120,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const navigate = useNavigate();
 
   const logout = useCallback(() => {
-    navigate('/');
     setUserState(null);
     setCurrentCompanyState(null);
     localStorage.removeItem('user');
     localStorage.removeItem('currentCompany');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('token');
+    navigate('/');
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
