@@ -6,6 +6,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { useNavigate } from 'react-router';
 
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
@@ -116,8 +117,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   // Clears the current error message from the auth context
   const clearErrorMessage = () => setErrorMessage(null);
+  const navigate = useNavigate();
 
   const logout = useCallback(() => {
+    navigate('/');
     setUserState(null);
     setCurrentCompanyState(null);
     localStorage.removeItem('user');
