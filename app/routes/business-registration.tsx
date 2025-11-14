@@ -220,6 +220,7 @@ export default function BusinessRegistration() {
     setSectionStep(prev => prev + 1);
     setHasChanged(false);
   };
+
   const prevStep = () => {
     setSectionStep(prev => prev - 1);
     setHasChanged(true);
@@ -310,7 +311,7 @@ export default function BusinessRegistration() {
     const data = extractFormValues(businessRegistrationFormData);
     delete data.confirmPassword; // 提交前移除 confirmPassword
     const response = await registerBusiness(data);
-    if (response.successful) {
+    if (response.successful || response.success) {
       nextStep();
     }
   };
