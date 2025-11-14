@@ -7,7 +7,7 @@ export interface Service {
   duration: number; // Duration in minutes
   basePrice: number;
   description?: string;
-  company: string;
+  business: string;
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
@@ -39,11 +39,11 @@ export interface ServiceApiResponse {
 
 export class ServiceService {
   /**
-   * Get all services for a company
+   * Get all services for a business
    */
-  static async getServices(companyId: string): Promise<Service[]> {
+  static async getServices(businessId: string): Promise<Service[]> {
     const response = await api.get<ServiceApiResponse>(
-      `/company/${companyId}/services`
+      `/business/${businessId}/services`
     );
     return response.data.data as Service[];
   }
@@ -52,11 +52,11 @@ export class ServiceService {
    * Get a single service by ID
    */
   static async getServiceById(
-    companyId: string,
+    businessId: string,
     serviceId: string
   ): Promise<Service> {
     const response = await api.get<ServiceApiResponse>(
-      `/company/${companyId}/services/${serviceId}`
+      `/business/${businessId}/services/${serviceId}`
     );
     return response.data.data as Service;
   }
@@ -65,11 +65,11 @@ export class ServiceService {
    * Create a new service
    */
   static async createService(
-    companyId: string,
+    businessId: string,
     serviceData: ServiceCreateRequest
   ): Promise<Service> {
     const response = await api.post<ServiceApiResponse>(
-      `/company/${companyId}/services`,
+      `/business/${businessId}/services`,
       serviceData
     );
     return response.data.data as Service;
@@ -79,12 +79,12 @@ export class ServiceService {
    * Update a service
    */
   static async updateService(
-    companyId: string,
+    businessId: string,
     serviceId: string,
     serviceData: ServiceUpdateRequest
   ): Promise<Service> {
     const response = await api.patch<ServiceApiResponse>(
-      `/company/${companyId}/services/${serviceId}`,
+      `/business/${businessId}/services/${serviceId}`,
       serviceData
     );
     return response.data.data as Service;
@@ -94,10 +94,10 @@ export class ServiceService {
    * Delete a service
    */
   static async deleteService(
-    companyId: string,
+    businessId: string,
     serviceId: string
   ): Promise<void> {
-    await api.delete(`/company/${companyId}/services/${serviceId}`);
+    await api.delete(`/business/${businessId}/services/${serviceId}`);
   }
 }
 

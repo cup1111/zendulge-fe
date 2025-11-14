@@ -17,12 +17,12 @@ export default function BusinessRegistration() {
   const [businessRegistrationFormData, setBusinessRegistrationFormData] =
     useState<BusinessRegistrationFormData>({
       // Business fields
-      companyName: {
+      businessName: {
         isRequired: true,
         value: '',
-        defaultValue: 'Company Name',
+        defaultValue: 'Business Name',
       },
-      companyABN: {
+      businessABN: {
         isRequired: true,
         value: '',
         defaultValue: '12345678901',
@@ -109,7 +109,7 @@ export default function BusinessRegistration() {
         value: 'Australia +61',
         defaultValue: 'Australia +611',
       },
-      companyEmail: {
+      businessEmail: {
         isRequired: true,
         value: '',
         defaultValue: '',
@@ -286,7 +286,7 @@ export default function BusinessRegistration() {
 
     // Extracts the actual values from the nested BusinessField structure
     // Transforms the form data structure into a flat payload for API submission
-    // Example: { companyName: { value: "My Company", ... } } becomes { companyName: "My Company" }
+    // Example: { businessName: { value: "My Business", ... } } becomes { businessName: "My Business" }
     type ExtractValues<T> = {
       [K in keyof T]: T[K] extends { value: infer V }
         ? V

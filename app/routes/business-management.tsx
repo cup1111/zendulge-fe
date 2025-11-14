@@ -70,14 +70,14 @@ function formatOperatingHours(hours: Record<string, unknown>): string {
 }
 
 async function fetchOperatingSites(
-  companyId: string
+  businessId: string
 ): Promise<OperatingSite[]> {
-  if (!companyId) {
-    throw new Error('Company ID is required to fetch operating sites');
+  if (!businessId) {
+    throw new Error('Business ID is required to fetch operating sites');
   }
 
   const response = await zendulgeAxios.get(
-    API_CONFIG.endpoints.company.operateSites(companyId)
+    API_CONFIG.endpoints.business.operateSites(businessId)
   );
 
   const result = response.data;
@@ -124,7 +124,7 @@ async function fetchOperatingSites(
 }
 
 export default function BusinessManagement() {
-  const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
+  const { user, currentBusiness, isAuthenticated, isLoading } = useAuth();
   const [operatingSites, setOperatingSites] = useState<OperatingSite[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -145,17 +145,17 @@ export default function BusinessManagement() {
           throw new Error('No user authentication found');
         }
 
-        // Ensure we have a current company selected
-        if (!currentCompany?.id) {
-          // Don't throw error, just wait for company to be available
+        // Ensure we have a current business selected
+        if (!currentBusiness?.id) {
+          // Don't throw error, just wait for business to be available
           setDataLoading(false);
           return;
         }
 
-        const companyIdString = currentCompany.id;
+        const businessIdString = currentBusiness.id;
 
         // Fetch operating sites from real backend
-        const sitesData = await fetchOperatingSites(companyIdString);
+        const sitesData = await fetchOperatingSites(businessIdString);
         setOperatingSites(sitesData);
       } catch (err) {
         // Show real errors for backend connectivity issues
@@ -168,7 +168,7 @@ export default function BusinessManagement() {
     }
 
     loadData();
-  }, [isLoading, isAuthenticated, user, currentCompany?.id]); // Re-run when auth state or company changes
+  }, [isLoading, isAuthenticated, user, currentBusiness?.id]); // Re-run when auth state or business changes
 
   if (isLoading || dataLoading) {
     return (
@@ -249,8 +249,8 @@ export default function BusinessManagement() {
         user?.role?.slug === BusinessUserRole.Manager) && (
         <section className='py-8 border-t border-gray-200 bg-gray-50'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-            {currentCompany?.id && (
-              <CustomerManagement companyId={currentCompany.id} />
+            {currentBusiness?.id && (
+              <CustomerManagement businessId={currentBusiness.id} />
             )}
           </div>
         </section>
@@ -262,8 +262,8 @@ export default function BusinessManagement() {
         user?.role?.slug === BusinessUserRole.Employee) && (
         <section className='py-8 border-t border-gray-200 bg-gray-50'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-            {currentCompany?.id && (
-              <ServiceManagement companyId={currentCompany.id} />
+            {currentBusiness?.id && (
+              <ServiceManagement businessId={currentBusiness.id} />
             )}
           </div>
         </section>
@@ -275,8 +275,8 @@ export default function BusinessManagement() {
         user?.role?.slug === BusinessUserRole.Employee) && (
         <section className='py-8 border-t border-gray-200 bg-white'>
           <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-            {currentCompany?.id && (
-              <DealManagement companyId={currentCompany.id} />
+            {currentBusiness?.id && (
+              <DealManagement businessId={currentBusiness.id} />
             )}
           </div>
         </section>

@@ -108,14 +108,14 @@ function formatOperatingHours(hours: Record<string, unknown>): string {
 }
 
 async function fetchOperatingSites(
-  companyId: string
+  businessId: string
 ): Promise<OperatingSite[]> {
-  if (!companyId) {
-    throw new Error('Company ID is required to fetch operating sites');
+  if (!businessId) {
+    throw new Error('Business ID is required to fetch operating sites');
   }
 
   const response = await zendulgeAxios.get(
-    API_CONFIG.endpoints.company.operateSites(companyId)
+    API_CONFIG.endpoints.business.operateSites(businessId)
   );
 
   const result = response.data;
@@ -177,7 +177,7 @@ async function fetchRecentActivity(): Promise<RecentActivity[]> {
 }
 
 export default function BusinessDashboard() {
-  const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
+  const { user, currentBusiness, isAuthenticated, isLoading } = useAuth();
   const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
     null
   );
@@ -205,17 +205,17 @@ export default function BusinessDashboard() {
           throw new Error('No user authentication found');
         }
 
-        // Ensure we have a current company selected
-        if (!currentCompany?.id) {
-          // Don't throw error, just wait for company to be available
+        // Ensure we have a current business selected
+        if (!currentBusiness?.id) {
+          // Don't throw error, just wait for business to be available
           setDataLoading(false);
           return;
         }
 
-        const companyIdString = currentCompany.id;
+        const businessIdString = currentBusiness.id;
 
         // Fetch operating sites from real backend (REQUIRED)
-        const sitesData = await fetchOperatingSites(companyIdString);
+        const sitesData = await fetchOperatingSites(businessIdString);
         setOperatingSites(sitesData);
 
         // Fetch other data (using mock data where endpoints don't exist yet)
@@ -242,7 +242,7 @@ export default function BusinessDashboard() {
     }
 
     loadData();
-  }, [isLoading, isAuthenticated, user, currentCompany?.id]); // Re-run when auth state or company changes
+  }, [isLoading, isAuthenticated, user, currentBusiness?.id]); // Re-run when auth state or business changes
 
   if (isLoading || dataLoading) {
     return (

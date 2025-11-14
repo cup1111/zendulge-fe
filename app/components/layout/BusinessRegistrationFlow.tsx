@@ -155,12 +155,14 @@ export default function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessRegistrationFlow'
                     placeholder='e.g., Zen Wellness Spa'
-                    value={businessRegistrationFormData.companyName.value}
-                    onChange={e => onInputChange('companyName', e.target.value)}
+                    value={businessRegistrationFormData.businessName.value}
+                    onChange={e =>
+                      onInputChange('businessName', e.target.value)
+                    }
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
-                {error.companyName && renderErrorMessage(error.companyName)}
+                {error.businessName && renderErrorMessage(error.businessName)}
               </div>
               <div>
                 <label
@@ -172,12 +174,12 @@ export default function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessABN'
                     placeholder='e.g., 12 345 678 901'
-                    value={businessRegistrationFormData.companyABN.value}
-                    onChange={e => onInputChange('companyABN', e.target.value)}
+                    value={businessRegistrationFormData.businessABN.value}
+                    onChange={e => onInputChange('businessABN', e.target.value)}
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
-                {error.companyABN && renderErrorMessage(error.companyABN)}
+                {error.businessABN && renderErrorMessage(error.businessABN)}
               </div>
               <div>
                 <label
@@ -408,13 +410,13 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <EmailInput
-                  value={businessRegistrationFormData.companyEmail.value || ''}
-                  onChange={value => onInputChange('companyEmail', value)}
+                  value={businessRegistrationFormData.businessEmail.value || ''}
+                  onChange={value => onInputChange('businessEmail', value)}
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
                   showValidationDetails
                 />
-                {error.companyEmail && renderErrorMessage(error.companyEmail)}
+                {error.businessEmail && renderErrorMessage(error.businessEmail)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Primary email for customer communication
                 </p>

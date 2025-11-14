@@ -1,8 +1,8 @@
 import { API_CONFIG } from '../config/api';
 import api from '../config/axios';
 
-// Types for company management
-export interface CompanyInfo {
+// Types for business management
+export interface BusinessInfo {
   id: string;
   name: string;
   email: string;
@@ -34,7 +34,7 @@ export interface CompanyInfo {
   updatedAt?: string;
 }
 
-export interface CompanyUpdateRequest {
+export interface BusinessUpdateRequest {
   name?: string;
   email?: string;
   description?: string;
@@ -66,40 +66,40 @@ export interface Customer {
   active: boolean;
 }
 
-export class CompanyService {
+export class BusinessService {
   /**
-   * Get company information for the current user's company
+   * Get business information for the current user's business
    */
-  static async getCompanyInfo(companyId: string): Promise<CompanyInfo> {
-    const response = await api.get<ApiResponse<CompanyInfo>>(
-      `/company/${companyId}`
+  static async getBusinessInfo(businessId: string): Promise<BusinessInfo> {
+    const response = await api.get<ApiResponse<BusinessInfo>>(
+      `/business/${businessId}`
     );
     return response.data.data;
   }
 
   /**
-   * Update company information
+   * Update business information
    */
-  static async updateCompanyInfo(
-    companyId: string,
-    companyData: CompanyUpdateRequest
-  ): Promise<CompanyInfo> {
-    const response = await api.patch<ApiResponse<CompanyInfo>>(
-      `/company/${companyId}`,
-      companyData
+  static async updateBusinessInfo(
+    businessId: string,
+    businessData: BusinessUpdateRequest
+  ): Promise<BusinessInfo> {
+    const response = await api.patch<ApiResponse<BusinessInfo>>(
+      `/business/${businessId}`,
+      businessData
     );
     return response.data.data;
   }
 
   /**
-   * Get customers for a company
+   * Get customers for a business
    */
-  static async getCustomers(companyId: string): Promise<Customer[]> {
+  static async getCustomers(businessId: string): Promise<Customer[]> {
     const response = await api.get<ApiResponse<Customer[]>>(
-      API_CONFIG.endpoints.company.getCustomers(companyId)
+      API_CONFIG.endpoints.business.getCustomers(businessId)
     );
     return response.data.data;
   }
 }
 
-export default CompanyService;
+export default BusinessService;

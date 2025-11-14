@@ -59,10 +59,10 @@ import {
 import { ServiceService, type Service } from '~/services/serviceService';
 
 interface DealManagementProps {
-  companyId: string;
+  businessId: string;
 }
 
-export default function DealManagement({ companyId }: DealManagementProps) {
+export default function DealManagement({ businessId }: DealManagementProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -189,9 +189,9 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     try {
       setIsLoading(true);
       const [dealsData, servicesData, sitesData] = await Promise.all([
-        DealService.getDeals(companyId),
-        ServiceService.getServices(companyId),
-        OperateSiteService.getOperateSites(companyId),
+        DealService.getDeals(businessId),
+        ServiceService.getServices(businessId),
+        OperateSiteService.getOperateSites(businessId),
       ]);
 
       // Ensure we have arrays
@@ -211,11 +211,11 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, toast]);
+  }, [businessId, toast]);
 
   useEffect(() => {
     loadDeals();
-  }, [companyId, loadDeals]);
+  }, [businessId, loadDeals]);
 
   const toIsoUtc = (value: string) =>
     value.includes('T') ? value : `${value}T00:00:00.000Z`;
@@ -260,7 +260,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     if (!editingDeal) return;
 
     try {
-      await DealService.updateDeal(companyId, editingDeal.id, {
+      await DealService.updateDeal(businessId, editingDeal.id, {
         ...formData,
         startDate: toIsoUtc(formData.startDate),
         endDate: toIsoUtc(formData.endDate),
@@ -295,7 +295,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     if (!dealToDelete) return;
 
     try {
-      await DealService.deleteDeal(companyId, dealToDelete.id);
+      await DealService.deleteDeal(businessId, dealToDelete.id);
       toast({
         title: 'Success',
         description: 'Deal deleted successfully',
@@ -397,7 +397,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
     const actionText = newStatus === 'active' ? 'activated' : 'deactivated';
 
     try {
-      await DealService.updateDealStatus(companyId, deal.id, {
+      await DealService.updateDealStatus(businessId, deal.id, {
         status: newStatus,
       });
       toast({
@@ -451,7 +451,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
 
           {canCreateDeal() && (
             <DealDialog
-              companyId={companyId}
+              businessId={businessId}
               trigger={
                 <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer whitespace-nowrap'>
                   <Plus className='w-4 h-4 mr-2' />
@@ -637,7 +637,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
           </p>
           {canCreateDeal() && (
             <DealDialog
-              companyId={companyId}
+              businessId={businessId}
               trigger={
                 <Button className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'>
                   <Plus className='w-4 h-4 mr-2' />
@@ -1006,7 +1006,7 @@ export default function DealManagement({ companyId }: DealManagementProps) {
       {/* Duplicate Deal Dialog */}
       {dealToDuplicate && (
         <DealDialog
-          companyId={companyId}
+          businessId={businessId}
           open={isDuplicateDialogOpen}
           onOpenChange={open => {
             setIsDuplicateDialogOpen(open);
