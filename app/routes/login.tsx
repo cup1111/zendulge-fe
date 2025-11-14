@@ -18,10 +18,13 @@ export default function Login() {
     email: '',
     password: '',
   });
+  const [hasChanged, setHasChanged] = useState(false);
   const handleInputChange = (field: string, value: string) => {
+    setHasChanged(true);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   const handleLogin = async () => {
+    setHasChanged(false);
     await auth.login(formData.email, formData.password);
     if (auth.isAuthenticated) {
       navigate('/');
@@ -86,7 +89,7 @@ export default function Login() {
                 }}
                 showValidationDetails={false}
               />
-              {!auth.isAuthenticated && auth.errorMessage && (
+              {!auth.isAuthenticated && auth.errorMessage && !hasChanged && (
                 <div className='text-xs text-red-600'>
                   <XCircle className='w-3 h-3 inline mr-1' />
                   {auth.errorMessage}
