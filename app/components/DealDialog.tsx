@@ -36,7 +36,7 @@ import {
 import { ServiceService, type Service } from '~/services/serviceService';
 
 interface DealDialogProps {
-  companyId: string;
+  businessId: string;
   trigger?: React.ReactNode;
   onDealCreated?: () => void;
   initialData?: {
@@ -96,7 +96,7 @@ const toIsoUtcString = (value: string) =>
   value.includes('T') ? value : `${value}T00:00:00.000Z`;
 
 export default function DealDialog({
-  companyId,
+  businessId,
   trigger,
   onDealCreated,
   initialData,
@@ -226,8 +226,8 @@ export default function DealDialog({
     setIsLoading(true);
     try {
       const [servicesData, sitesData] = await Promise.all([
-        ServiceService.getServices(companyId),
-        OperateSiteService.getOperateSites(companyId),
+        ServiceService.getServices(businessId),
+        OperateSiteService.getOperateSites(businessId),
       ]);
 
       setServices(Array.isArray(servicesData) ? servicesData : []);
@@ -243,7 +243,7 @@ export default function DealDialog({
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, toast]);
+  }, [businessId, toast]);
 
   useEffect(() => {
     if (isOpen) {
@@ -336,7 +336,7 @@ export default function DealDialog({
         endDate: toIsoUtcString(formData.endDate),
         maxBookings: formData.maxBookings ?? undefined,
       };
-      await DealService.createDeal(companyId, dealData);
+      await DealService.createDeal(businessId, dealData);
       toast({
         title: 'Success',
         description: 'Deal created successfully!',

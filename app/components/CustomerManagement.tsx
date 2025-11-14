@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
-import { CompanyService } from '~/services/companyService';
+import { BusinessService } from '~/services/businessService';
 
 interface Customer {
   id: string;
@@ -26,11 +26,11 @@ interface Customer {
 }
 
 interface CustomerManagementProps {
-  companyId: string;
+  businessId: string;
 }
 
 export default function CustomerManagement({
-  companyId,
+  businessId,
 }: CustomerManagementProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,7 +41,7 @@ export default function CustomerManagement({
       try {
         setIsLoading(true);
         setError(null);
-        const data = await CompanyService.getCustomers(companyId);
+        const data = await BusinessService.getCustomers(businessId);
         setCustomers(data);
       } catch (err) {
         setError('Failed to load customers');
@@ -50,10 +50,10 @@ export default function CustomerManagement({
       }
     }
 
-    if (companyId) {
+    if (businessId) {
       loadCustomers();
     }
-  }, [companyId]);
+  }, [businessId]);
 
   if (isLoading) {
     return (
@@ -83,7 +83,7 @@ export default function CustomerManagement({
               Customers
             </h2>
             <p className='text-gray-600'>
-              Manage your company&apos;s customers
+              Manage your business&apos;s customers
             </p>
           </div>
           <div className='flex items-center gap-2 text-sm text-gray-600'>
@@ -192,7 +192,7 @@ export default function CustomerManagement({
             <UsersIcon className='w-16 h-16 text-gray-400 mx-auto mb-4' />
             <p className='text-gray-500 text-lg'>No customers found</p>
             <p className='text-gray-400 text-sm mt-1'>
-              Customers will appear here once added to your company
+              Customers will appear here once added to your business
             </p>
           </div>
         )}

@@ -25,19 +25,19 @@ export const API_CONFIG = {
       refresh: '/refresh-token',
       profile: '/me',
       updateProfile: '/me',
-      role: (companyId: string) => `/company/${companyId}/me/role`,
+      role: (businessId: string) => `/business/${businessId}/me/role`,
     },
-    company: {
-      operateSites: (companyId: string) =>
-        `/company/${companyId}/operate-sites`,
-      inviteUser: (companyId: string) => `/company/${companyId}/invite`,
-      getUsers: (companyId: string) => `/company/${companyId}/users`,
-      getCustomers: (companyId: string) => `/company/${companyId}/customers`,
-      user: (companyId: string, userId: string) =>
-        `/company/${companyId}/users/${userId}`,
-      userRole: (companyId: string, userId: string) =>
-        `/company/${companyId}/users/${userId}/role`,
-      roles: (companyId: string) => `/company/${companyId}/roles`,
+    business: {
+      operateSites: (businessId: string) =>
+        `/business/${businessId}/operate-sites`,
+      inviteUser: (businessId: string) => `/business/${businessId}/invite`,
+      getUsers: (businessId: string) => `/business/${businessId}/users`,
+      getCustomers: (businessId: string) => `/business/${businessId}/customers`,
+      user: (businessId: string, userId: string) =>
+        `/business/${businessId}/users/${userId}`,
+      userRole: (businessId: string, userId: string) =>
+        `/business/${businessId}/users/${userId}/role`,
+      roles: (businessId: string) => `/business/${businessId}/roles`,
     },
   },
 };

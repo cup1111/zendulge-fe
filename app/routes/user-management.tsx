@@ -7,7 +7,7 @@ import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 
 export default function UserManagementPage() {
-  const { user, currentCompany, isAuthenticated, isLoading } = useAuth();
+  const { user, currentBusiness, isAuthenticated, isLoading } = useAuth();
   const [error] = useState<string | null>(null);
 
   if (isLoading) {
@@ -96,9 +96,9 @@ export default function UserManagementPage() {
       {/* User Management Section */}
       <section className='py-8'>
         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-          {currentCompany?.id && user?.id && (
+          {currentBusiness?.id && user?.id && (
             <UserManagement
-              companyId={currentCompany.id}
+              businessId={currentBusiness.id}
               excludeUserId={user.id}
             />
           )}

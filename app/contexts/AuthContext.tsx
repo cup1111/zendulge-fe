@@ -13,7 +13,7 @@ import zendulgeAxios from '~/config/axios';
 
 import type { BusinessUserRole } from '../constants/enums';
 
-interface Company {
+interface Business {
   id: string;
   name: string;
 }
@@ -26,17 +26,17 @@ interface User {
   userName?: string;
   avatarIcon?: string;
   role?: { slug: BusinessUserRole; name: string; id: string };
-  companies: Company[];
+  businesses: Business[];
 }
 
 interface AuthContextType {
   user: User | null;
-  currentCompany: Company | null;
-  companies: Company[];
+  currentBusiness: Business | null;
+  businesses: Business[];
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  setCurrentCompany: (company: Company) => void;
+  setCurrentBusiness: (business: Business) => void;
   logout: () => void;
   errorMessage: string | null;
 }
@@ -76,41 +76,41 @@ function decodeJWTTokenToUser(token: string): User | null {
       lastName: payload.lastName,
       userName: payload.userName,
       avatarIcon: payload.avatarIcon,
-      companies: payload.companies || [],
+      businesses: payload.businesses || [],
     };
   } catch {
     return null;
   }
 }
 
-// Retrieves the current company from localStorage or defaults to the first company
-// Priority: 1) Check localStorage for saved 'currentCompany'
-//           2) If not found, use the first company from user's companies array
-//           3) Save the selected company to localStorage for future use
-//           4) Return null if no companies are available
-function getCurrentCompanyFromStorage(userData: User): Company | null {
-  // Try to load saved company from localStorage
-  const savedCurrentCompany = localStorage.getItem('currentCompany');
-  if (savedCurrentCompany) {
+// Retrieves the current business from localStorage or defaults to the first business
+// Priority: 1) Check localStorage for saved 'currentBusiness'
+//           2) If not found, use the first business from user's businesses array
+//           3) Save the selected business to localStorage for future use
+//           4) Return null if no businesses are available
+function getCurrentBusinessFromStorage(userData: User): Business | null {
+  // Try to load saved business from localStorage
+  const savedCurrentBusiness = localStorage.getItem('currentBusiness');
+  if (savedCurrentBusiness) {
     try {
-      return JSON.parse(savedCurrentCompany);
+      return JSON.parse(savedCurrentBusiness);
     } catch {
-      // Ignore parse error, fallback to first company
+      // Ignore parse error, fallback to first business
     }
   }
-  // Fallback to first company if available
-  if (userData.companies && userData.companies.length > 0) {
-    const [firstCompany] = userData.companies;
+  // Fallback to first business if available
+  if (userData.businesses && userData.businesses.length > 0) {
+    const [firstBusiness] = userData.businesses;
     // Save to localStorage for future use
-    localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
-    return firstCompany;
+    localStorage.setItem('currentBusiness', JSON.stringify(firstBusiness));
+    return firstBusiness;
   }
   return null;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUserState] = useState<User | null>(null);
-  const [currentCompany, setCurrentCompanyState] = useState<Company | null>(
+  const [currentBusiness, setCurrentBusinessState] = useState<Business | null>(
     null
   );
   const [isLoading, setIsLoading] = useState(true);
@@ -121,9 +121,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const logout = useCallback(() => {
     setUserState(null);
-    setCurrentCompanyState(null);
+    setCurrentBusinessState(null);
     localStorage.removeItem('user');
-    localStorage.removeItem('currentCompany');
+    localStorage.removeItem('currentBusiness');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('token');
     navigate('/');
@@ -153,11 +153,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setUserState(userData);
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Auto-select first company if available
-      if (userData.companies && userData.companies.length > 0) {
-        const firstCompany = userData.companies[0];
-        setCurrentCompanyState(firstCompany);
-        localStorage.setItem('currentCompany', JSON.stringify(firstCompany));
+      // Auto-select first business if available
+      if (userData.businesses && userData.businesses.length > 0) {
+        const firstBusiness = userData.businesses[0];
+        setCurrentBusinessState(firstBusiness);
+        localStorage.setItem('currentBusiness', JSON.stringify(firstBusiness));
         clearErrorMessage();
       }
     } catch (error: unknown) {
@@ -181,9 +181,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, []);
 
-  const setCurrentCompany = (company: Company) => {
-    setCurrentCompanyState(company);
-    localStorage.setItem('currentCompany', JSON.stringify(company));
+  const setCurrentBusiness = (business: Business) => {
+    setCurrentBusinessState(business);
+    localStorage.setItem('currentBusiness', JSON.stringify(business));
   };
 
   // Check for existing authentication on init
@@ -214,12 +214,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
 
-        // Load saved company or auto-select first one
-        const company = getCurrentCompanyFromStorage(userData);
-        setCurrentCompanyState(company);
+        // Load saved business or auto-select first one
+        const business = getCurrentBusinessFromStorage(userData);
+        setCurrentBusinessState(business);
 
         const response = await zendulgeAxios.get(
-          API_CONFIG.endpoints.auth.role(company?.id ?? '')
+          API_CONFIG.endpoints.auth.role(business?.id ?? '')
         );
         // Token is valid, set user data
         setUserState({ ...userData, role: response.data.role });
@@ -236,24 +236,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value: AuthContextType = React.useMemo(
     () => ({
       user,
-      currentCompany,
-      companies: user?.companies ?? [],
+      currentBusiness,
+      businesses: user?.businesses ?? [],
       isAuthenticated: !!user,
       isLoading,
       login,
-      setCurrentCompany,
+      setCurrentBusiness,
       logout,
       errorMessage,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       user,
-      currentCompany,
+      currentBusiness,
       isLoading,
       errorMessage,
       login,
       logout,
-      setCurrentCompany,
+      setCurrentBusiness,
     ]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -265,12 +265,12 @@ export function useAuth() {
     // Return default values instead of throwing error to handle edge cases
     return {
       user: null,
-      currentCompany: null,
-      companies: [],
+      currentBusiness: null,
+      businesses: [],
       isAuthenticated: false,
       isLoading: false,
       login: async () => {},
-      setCurrentCompany: () => {},
+      setCurrentBusiness: () => {},
       logout: () => {},
       errorMessage: null,
     };
