@@ -19,11 +19,23 @@ export default function BusinessRegistration() {
       // Business fields
       companyName: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!value || value.trim().length < 2 || value.length > 100) {
+            return 'Company name must be between 2 and 100 characters';
+          }
+          return null;
+        },
         value: '',
         defaultValue: 'Company Name',
       },
       companyABN: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^\d{11}$/.test(value)) {
+            return 'ABN must be 11 digits';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '12345678901',
       },
@@ -39,11 +51,23 @@ export default function BusinessRegistration() {
       },
       firstName: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^[a-zA-Z\s'-]{2,50}$/.test(value)) {
+            return 'First name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes';
+          }
+          return null;
+        },
         value: '',
         defaultValue: 'First Name',
       },
       lastName: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^[a-zA-Z\s'-]{2,50}$/.test(value)) {
+            return 'Last name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes';
+          }
+          return null;
+        },
         value: '',
         defaultValue: 'Last Name',
       },
@@ -59,6 +83,12 @@ export default function BusinessRegistration() {
       },
       jobTitle: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!value || value.trim().length < 2 || value.length > 50) {
+            return 'Job title must be between 2 and 50 characters';
+          }
+          return null;
+        },
         value: '',
         defaultValue: 'Job Title',
       },
@@ -70,37 +100,79 @@ export default function BusinessRegistration() {
         },
         streetNumber: {
           isRequired: true,
+          validate: (value: string) => {
+            if (!/^[0-9A-Za-z\s-]{1,20}$/.test(value)) {
+              return 'Street number format is invalid';
+            }
+            return null;
+          },
           value: '',
           defaultValue: '',
         },
         street: {
           isRequired: true,
+          validate: (value: string) => {
+            if (!value || value.trim().length < 2 || value.length > 100) {
+              return 'Street name must be between 2 and 100 characters';
+            }
+            return null;
+          },
           value: '',
           defaultValue: '',
         },
         suburb: {
           isRequired: true,
+          validate: (value: string) => {
+            if (!/^[a-zA-Z\s'-]{2,50}$/.test(value)) {
+              return 'Suburb name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes';
+            }
+            return null;
+          },
           value: '',
           defaultValue: '',
         },
         city: {
           isRequired: true,
+          validate: (value: string) => {
+            if (!/^[a-zA-Z\s'-]{2,50}$/.test(value)) {
+              return 'City name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes';
+            }
+            return null;
+          },
           value: '',
           defaultValue: '',
         },
         state: {
           isRequired: true,
+          validate: (value: string) => {
+            if (!/^[a-zA-Z\s'-]{2,50}$/.test(value)) {
+              return 'State name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes';
+            }
+            return null;
+          },
           value: '',
           defaultValue: '',
         },
         postcode: {
           isRequired: true,
+          validate: (value: string) => {
+            if (!/^\d{4}$/.test(value)) {
+              return 'Postcode must be 4 digits';
+            }
+            return null;
+          },
           value: '',
           defaultValue: '',
         },
       },
       phone: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^\+?[1-9]\d{1,14}$/.test(value)) {
+            return 'Please enter a valid phone number';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
@@ -111,21 +183,45 @@ export default function BusinessRegistration() {
       },
       companyEmail: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return 'Please enter a valid email address';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       contactPersonName: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^[a-zA-Z\s'-]{2,50}$/.test(value)) {
+            return 'Contact person name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       contactPersonEmail: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return 'Please enter a valid email address';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       contactPersonPhone: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^\+?[1-9]\d{1,14}$/.test(value)) {
+            return 'Please enter a valid phone number';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
@@ -136,26 +232,56 @@ export default function BusinessRegistration() {
       },
       website: {
         isRequired: false,
+        validate: (value: string) => {
+          if (value && !/^https?:\/\/.+/.test(value)) {
+            return 'Please enter a valid URL (must start with http:// or https://)';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       facebook: {
         isRequired: false,
+        validate: (value: string) => {
+          if (value && !/^https?:\/\/.+/.test(value)) {
+            return 'Please enter a valid URL (must start with http:// or https://)';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       twitter: {
         isRequired: false,
+        validate: (value: string) => {
+          if (value && !/^https?:\/\/.+/.test(value)) {
+            return 'Please enter a valid URL (must start with http:// or https://)';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       email: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            return 'Please enter a valid email address';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
       password: {
         isRequired: true,
+        validate: (value: string) => {
+          if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(value)) {
+            return 'Password must be at least 8 characters with uppercase, lowercase, number, and special character';
+          }
+          return null;
+        },
         value: '',
         defaultValue: '',
       },
