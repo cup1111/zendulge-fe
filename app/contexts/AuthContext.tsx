@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import type { ReactNode } from 'react';
 import React, {
   createContext,
@@ -147,6 +148,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const userData = decodeJWTTokenToUser(accessToken);
       if (!userData) {
         throw new Error('Invalid token received');
+      } else {
+        navigate('/');
       }
 
       // Set user state
@@ -161,16 +164,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         clearErrorMessage();
       }
     } catch (error: unknown) {
+      const axiosError = error as AxiosError<{ message: string }>;
       // Check if error has response data with activation message
       if (
-        error &&
-        typeof error === 'object' &&
-        'response' in error &&
-        error.response &&
-        typeof error.response === 'object' &&
-        'data' in error.response &&
-        typeof error.response.data === 'string' &&
-        error.response.data.includes('Account not activated')
+        axiosError &&
+        typeof axiosError === 'object' &&
+        'response' in axiosError &&
+        axiosError.response &&
+        typeof axiosError.response === 'object' &&
+        'data' in axiosError.response &&
+        typeof axiosError.response.data.message === 'string' &&
+        axiosError.response.data.message.includes('Account not activated')
       ) {
         setErrorMessage(
           'Account not activated. Please check your email for activation instructions.'
