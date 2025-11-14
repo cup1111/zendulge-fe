@@ -24,8 +24,8 @@ export const registerBusiness = async (
   const response = await axios.post(
     'https://zendulge-be-production.up.railway.app/api/v1/business-register',
     {
-      companyName: businessRegistrationData.companyName,
-      companyABN: businessRegistrationData.companyABN,
+      businessName: businessRegistrationData.businessName,
+      businessABN: businessRegistrationData.businessABN,
       description: businessRegistrationData.description,
       firstName: businessRegistrationData.firstName,
       lastName: businessRegistrationData.lastName,
@@ -41,7 +41,7 @@ export const registerBusiness = async (
         postcode: businessRegistrationData.businessAddress.postcode,
       },
       phone: businessRegistrationData.phone,
-      companyEmail: businessRegistrationData.companyEmail,
+      businessEmail: businessRegistrationData.businessEmail,
       contactPersonName: businessRegistrationData.contactPersonName,
       contactPersonEmail: businessRegistrationData.contactPersonEmail,
       contactPersonPhone: businessRegistrationData.contactPersonPhone,

@@ -68,91 +68,91 @@ export interface OperateSite {
 }
 
 export class UserManagementService {
-  // Company-scoped operations (business owners/members)
+  // Business-scoped operations (business owners/members)
 
   /**
-   * Get all users in a company
+   * Get all users in a business
    */
-  static async getCompanyUsers(companyId: string): Promise<User[]> {
+  static async getBusinessUsers(businessId: string): Promise<User[]> {
     const response = await api.get<User[]>(
-      API_CONFIG.endpoints.company.getUsers(companyId)
+      API_CONFIG.endpoints.business.getUsers(businessId)
     );
     return response.data;
   }
 
   /**
-   * Get a specific user in a company
+   * Get a specific user in a business
    */
-  static async getCompanyUser(
-    companyId: string,
+  static async getBusinessUser(
+    businessId: string,
     userId: string
   ): Promise<User> {
     const response = await api.get<User>(
-      API_CONFIG.endpoints.company.user(companyId, userId)
+      API_CONFIG.endpoints.business.user(businessId, userId)
     );
     return response.data;
   }
 
   /**
-   * Create a new user in a company
+   * Create a new user in a business
    */
-  static async createCompanyUser(
-    companyId: string,
+  static async createBusinessUser(
+    businessId: string,
     userData: CreateUserRequest
   ): Promise<User> {
     const response = await api.post<User>(
-      API_CONFIG.endpoints.company.inviteUser(companyId),
+      API_CONFIG.endpoints.business.inviteUser(businessId),
       userData
     );
     return response.data;
   }
 
   /**
-   * Update a user's role in a company
+   * Update a user's role in a business
    */
-  static async updateCompanyBusinessUserRole(
-    companyId: string,
+  static async updateBusinessUserRole(
+    businessId: string,
     userId: string,
     roleData: UpdateBusinessUserRoleRequest
   ): Promise<User> {
     const response = await api.patch<User>(
-      API_CONFIG.endpoints.company.userRole(companyId, userId),
+      API_CONFIG.endpoints.business.userRole(businessId, userId),
       roleData
     );
     return response.data;
   }
 
   /**
-   * Update a user's information in a company
+   * Update a user's information in a business
    */
-  static async updateCompanyUser(
-    companyId: string,
+  static async updateBusinessUser(
+    businessId: string,
     userId: string,
     userData: UpdateUserRequest
   ): Promise<User> {
     const response = await api.patch<User>(
-      API_CONFIG.endpoints.company.user(companyId, userId),
+      API_CONFIG.endpoints.business.user(businessId, userId),
       userData
     );
     return response.data;
   }
 
   /**
-   * Delete a user from a company
+   * Delete a user from a business
    */
-  static async deleteCompanyUser(
-    companyId: string,
+  static async deleteBusinessUser(
+    businessId: string,
     userId: string
   ): Promise<void> {
-    await api.delete(API_CONFIG.endpoints.company.user(companyId, userId));
+    await api.delete(API_CONFIG.endpoints.business.user(businessId, userId));
   }
 
   /**
-   * Get all available roles for a company
+   * Get all available roles for a business
    */
-  static async getCompanyRoles(companyId: string): Promise<Role[]> {
+  static async getBusinessRoles(businessId: string): Promise<Role[]> {
     const response = await api.get<ApiResponse<Role[]>>(
-      API_CONFIG.endpoints.company.roles(companyId)
+      API_CONFIG.endpoints.business.roles(businessId)
     );
     return response.data.data;
   }

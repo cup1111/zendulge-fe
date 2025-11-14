@@ -53,11 +53,11 @@ type ApiError = {
 };
 
 interface ServiceManagementProps {
-  companyId: string;
+  businessId: string;
 }
 
 export default function ServiceManagement({
-  companyId,
+  businessId,
 }: ServiceManagementProps) {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -149,7 +149,7 @@ export default function ServiceManagement({
   const loadServices = useCallback(async () => {
     try {
       setIsLoading(true);
-      const data = await ServiceService.getServices(companyId);
+      const data = await ServiceService.getServices(businessId);
       setServices(data);
     } catch (error) {
       toast({
@@ -160,15 +160,15 @@ export default function ServiceManagement({
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, toast]);
+  }, [businessId, toast]);
 
   useEffect(() => {
     loadServices();
-  }, [companyId, loadServices]);
+  }, [businessId, loadServices]);
 
   const handleCreateService = async () => {
     try {
-      await ServiceService.createService(companyId, formData);
+      await ServiceService.createService(businessId, formData);
       toast({
         title: 'Success',
         description: 'Service created successfully',
@@ -205,7 +205,7 @@ export default function ServiceManagement({
         status: formData.status,
       };
       await ServiceService.updateService(
-        companyId,
+        businessId,
         editingService.id,
         updateData
       );
@@ -241,7 +241,7 @@ export default function ServiceManagement({
     if (!serviceToDelete) return;
 
     try {
-      await ServiceService.deleteService(companyId, serviceToDelete.id);
+      await ServiceService.deleteService(businessId, serviceToDelete.id);
       toast({
         title: 'Success',
         description: 'Service deleted successfully',

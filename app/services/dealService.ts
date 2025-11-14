@@ -21,7 +21,7 @@ export interface Deal {
   status: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
-  company: string;
+  business: string;
   service: {
     id: string;
     name: string;
@@ -86,54 +86,54 @@ export interface DealApiResponse {
 }
 
 export class DealService {
-  static async getDeals(companyId: string): Promise<Deal[]> {
+  static async getDeals(businessId: string): Promise<Deal[]> {
     const response = await api.get<DealApiResponse>(
-      `/company/${companyId}/deals`
+      `/business/${businessId}/deals`
     );
     return response.data.data as Deal[];
   }
 
-  static async getDealById(companyId: string, dealId: string): Promise<Deal> {
+  static async getDealById(businessId: string, dealId: string): Promise<Deal> {
     const response = await api.get<DealApiResponse>(
-      `/company/${companyId}/deals/${dealId}`
+      `/business/${businessId}/deals/${dealId}`
     );
     return response.data.data as Deal;
   }
 
   static async createDeal(
-    companyId: string,
+    businessId: string,
     dealData: DealCreateRequest
   ): Promise<Deal> {
     const response = await api.post<DealApiResponse>(
-      `/company/${companyId}/deals`,
+      `/business/${businessId}/deals`,
       dealData
     );
     return response.data.data as Deal;
   }
 
   static async updateDeal(
-    companyId: string,
+    businessId: string,
     dealId: string,
     dealData: DealUpdateRequest
   ): Promise<Deal> {
     const response = await api.patch<DealApiResponse>(
-      `/company/${companyId}/deals/${dealId}`,
+      `/business/${businessId}/deals/${dealId}`,
       dealData
     );
     return response.data.data as Deal;
   }
 
-  static async deleteDeal(companyId: string, dealId: string): Promise<void> {
-    await api.delete(`/company/${companyId}/deals/${dealId}`);
+  static async deleteDeal(businessId: string, dealId: string): Promise<void> {
+    await api.delete(`/business/${businessId}/deals/${dealId}`);
   }
 
   static async updateDealStatus(
-    companyId: string,
+    businessId: string,
     dealId: string,
     statusData: DealStatusUpdateRequest
   ): Promise<Deal> {
     const response = await api.patch<DealApiResponse>(
-      `/company/${companyId}/deals/${dealId}/status`,
+      `/business/${businessId}/deals/${dealId}/status`,
       statusData
     );
     return response.data.data as Deal;

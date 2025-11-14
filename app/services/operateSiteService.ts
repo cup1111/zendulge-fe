@@ -14,7 +14,7 @@ export interface OperateSite {
   emailAddress: string;
   operatingHours: Record<string, OperatingHourDay>;
   specialInstruction?: string;
-  company: string;
+  business: string;
   latitude: number;
   longitude: number;
   isActive: boolean;
@@ -62,59 +62,59 @@ export interface OperateSiteApiResponse {
 }
 
 export class OperateSiteService {
-  static async getOperateSites(companyId: string): Promise<OperateSite[]> {
+  static async getOperateSites(businessId: string): Promise<OperateSite[]> {
     const response = await api.get<OperateSiteApiResponse>(
-      `/company/${companyId}/operate-sites`
+      `/business/${businessId}/operate-sites`
     );
     return response.data.data.operateSites;
   }
 
   static async getOperateSiteById(
-    companyId: string,
+    businessId: string,
     siteId: string
   ): Promise<OperateSite> {
     const response = await api.get<{ success: boolean; data: OperateSite }>(
-      `/company/${companyId}/operate-sites/${siteId}`
+      `/business/${businessId}/operate-sites/${siteId}`
     );
     return response.data.data as OperateSite;
   }
 
   static async createOperateSite(
-    companyId: string,
+    businessId: string,
     siteData: OperateSiteCreateRequest
   ): Promise<OperateSite> {
     const response = await api.post<{ success: boolean; data: OperateSite }>(
-      `/company/${companyId}/operate-sites`,
+      `/business/${businessId}/operate-sites`,
       siteData
     );
     return response.data.data;
   }
 
   static async updateOperateSite(
-    companyId: string,
+    businessId: string,
     siteId: string,
     siteData: OperateSiteUpdateRequest
   ): Promise<OperateSite> {
     const response = await api.patch<{ success: boolean; data: OperateSite }>(
-      `/company/${companyId}/operate-sites/${siteId}`,
+      `/business/${businessId}/operate-sites/${siteId}`,
       siteData
     );
     return response.data.data as OperateSite;
   }
 
   static async deleteOperateSite(
-    companyId: string,
+    businessId: string,
     siteId: string
   ): Promise<void> {
-    await api.delete(`/company/${companyId}/operate-sites/${siteId}`);
+    await api.delete(`/business/${businessId}/operate-sites/${siteId}`);
   }
 
   static async toggleOperateSiteStatus(
-    companyId: string,
+    businessId: string,
     siteId: string
   ): Promise<OperateSite> {
     const response = await api.patch<{ success: boolean; data: OperateSite }>(
-      `/company/${companyId}/operate-sites/${siteId}/toggle-status`
+      `/business/${businessId}/operate-sites/${siteId}/toggle-status`
     );
     return response.data.data as OperateSite;
   }

@@ -14,7 +14,7 @@ import {
 } from '../services/userManagement';
 
 interface UserManagementProps {
-  companyId: string;
+  businessId: string;
   excludeUserId?: string;
 }
 
@@ -34,11 +34,11 @@ interface OperateSite {
 }
 
 export default function UserManagement({
-  companyId,
+  businessId,
   excludeUserId,
 }: Readonly<UserManagementProps>) {
   const { user } = useAuth();
-  const [companyUsers, setCompanyUsers] = useState<User[]>([]);
+  const [businessUsers, setBusinessUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [operateSites, setOperateSites] = useState<OperateSite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,21 +115,21 @@ export default function UserManagement({
 
   // Filtered and paginated users
   const filteredUsers = useMemo(() => {
-    const filtered = companyUsers.filter(companyUser => {
-      if (excludeUserId && companyUser.id === excludeUserId) return false;
+    const filtered = businessUsers.filter(businessUser => {
+      if (excludeUserId && businessUser.id === excludeUserId) return false;
 
       const searchLower = searchTerm.toLowerCase();
       return (
-        companyUser.firstName?.toLowerCase().includes(searchLower) ??
-        companyUser.lastName?.toLowerCase().includes(searchLower) ??
-        companyUser.email?.toLowerCase().includes(searchLower) ??
-        companyUser.jobTitle?.toLowerCase().includes(searchLower) ??
-        companyUser.role?.name?.toLowerCase().includes(searchLower)
+        businessUser.firstName?.toLowerCase().includes(searchLower) ??
+        businessUser.lastName?.toLowerCase().includes(searchLower) ??
+        businessUser.email?.toLowerCase().includes(searchLower) ??
+        businessUser.jobTitle?.toLowerCase().includes(searchLower) ??
+        businessUser.role?.name?.toLowerCase().includes(searchLower)
       );
     });
 
     return filtered;
-  }, [companyUsers, excludeUserId, searchTerm]);
+  }, [businessUsers, excludeUserId, searchTerm]);
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -156,10 +156,10 @@ export default function UserManagement({
 
   // Function to fetch operate sites
   const fetchOperateSites = async (
-    companyIdParam: string
+    businessIdParam: string
   ): Promise<OperateSite[]> => {
     const response = await api.get(
-      API_CONFIG.endpoints.company.operateSites(companyIdParam)
+      API_CONFIG.endpoints.business.operateSites(businessIdParam)
     );
 
     const sites = response.data.data.operateSites.map(
@@ -184,12 +184,12 @@ export default function UserManagement({
 
       // Load users, roles, and operate sites
       const [usersData, rolesData, sitesData] = await Promise.all([
-        UserManagementService.getCompanyUsers(companyId),
-        UserManagementService.getCompanyRoles(companyId),
-        fetchOperateSites(companyId),
+        UserManagementService.getBusinessUsers(businessId),
+        UserManagementService.getBusinessRoles(businessId),
+        fetchOperateSites(businessId),
       ]);
 
-      setCompanyUsers(usersData);
+      setBusinessUsers(usersData);
       setRoles(rolesData);
       setOperateSites(sitesData);
     } catch (err) {
@@ -197,7 +197,7 @@ export default function UserManagement({
     } finally {
       setLoading(false);
     }
-  }, [companyId]);
+  }, [businessId]);
 
   // Load users and roles on component mount
   useEffect(() => {
@@ -208,7 +208,7 @@ export default function UserManagement({
     e.preventDefault();
     try {
       setError(null);
-      await UserManagementService.createCompanyUser(companyId, createForm);
+      await UserManagementService.createBusinessUser(businessId, createForm);
       setShowCreateForm(false);
       setCreateForm({
         email: '',
@@ -258,8 +258,8 @@ export default function UserManagement({
 
     try {
       setError(null);
-      await UserManagementService.updateCompanyUser(
-        companyId,
+      await UserManagementService.updateBusinessUser(
+        businessId,
         selectedUser.id,
         editForm
       );
@@ -289,8 +289,8 @@ export default function UserManagement({
       async () => {
         try {
           setError(null);
-          await UserManagementService.deleteCompanyUser(
-            companyId,
+          await UserManagementService.deleteBusinessUser(
+            businessId,
             targetUser.id
           );
           await loadData(); // Refresh the list
@@ -316,7 +316,7 @@ export default function UserManagement({
     <div className='space-y-6'>
       {/* Header */}
       <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
-        <h2 className='text-2xl font-bold'>Company Users</h2>
+        <h2 className='text-2xl font-bold'>Business Users</h2>
 
         {/* Search and Add User */}
         <div className='flex flex-col sm:flex-row gap-3'>
@@ -376,50 +376,50 @@ export default function UserManagement({
             </tr>
           </thead>
           <tbody className='bg-white divide-y divide-gray-200'>
-            {paginatedUsers.map(companyUser => (
-              <tr key={companyUser.id}>
+            {paginatedUsers.map(businessUser => (
+              <tr key={businessUser.id}>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <div>
                     <div className='text-sm font-medium text-gray-900'>
-                      {companyUser.firstName} {companyUser.lastName}
+                      {businessUser.firstName} {businessUser.lastName}
                     </div>
                     <div className='text-sm text-gray-500'>
-                      {companyUser.email}
+                      {businessUser.email}
                     </div>
-                    {companyUser.phoneNumber && (
+                    {businessUser.phoneNumber && (
                       <div className='text-xs text-gray-400'>
-                        📞 {companyUser.phoneNumber}
+                        📞 {businessUser.phoneNumber}
                       </div>
                     )}
-                    {companyUser.jobTitle && (
+                    {businessUser.jobTitle && (
                       <div className='text-xs text-gray-400'>
-                        {companyUser.jobTitle}
+                        {businessUser.jobTitle}
                       </div>
                     )}
                   </div>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <div className='text-sm text-gray-900'>
-                    {companyUser.role?.name
-                      ? capitalizeFirstLetter(companyUser.role.name)
+                    {businessUser.role?.name
+                      ? capitalizeFirstLetter(businessUser.role.name)
                       : 'No role assigned'}
                   </div>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap'>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      companyUser.active
+                      businessUser.active
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
-                    {companyUser.active ? 'Active' : 'Email Unverified'}
+                    {businessUser.active ? 'Active' : 'Email Unverified'}
                   </span>
                 </td>
                 <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
                   <button
                     type='button'
-                    onClick={() => handleEditUser(companyUser)}
+                    onClick={() => handleEditUser(businessUser)}
                     className='inline-flex items-center px-2 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors cursor-pointer'
                     title='Edit User'
                   >
@@ -428,7 +428,7 @@ export default function UserManagement({
                   </button>
                   <button
                     type='button'
-                    onClick={() => handleDeleteUser(companyUser)}
+                    onClick={() => handleDeleteUser(businessUser)}
                     className='inline-flex items-center px-2 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors cursor-pointer'
                     title='Delete User'
                   >
