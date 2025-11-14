@@ -100,10 +100,10 @@ export default function Profile() {
   useEffect(() => {
     async function loadBusinessInfo() {
       if (currentBusiness?.id) {
-          const businessInfo = await BusinessService.getBusinessInfo(
-            currentBusiness.id
-          );
-          setBusiness(businessInfo);
+        const businessInfo = await BusinessService.getBusinessInfo(
+          currentBusiness.id
+        );
+        setBusiness(businessInfo);
       }
     }
     loadBusinessInfo();
