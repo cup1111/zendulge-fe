@@ -14,7 +14,7 @@ import { useAuth } from '~/contexts/AuthContext';
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, currentCompany, companies, setCurrentCompany } = useAuth();
+  const { user, currentBusiness, businesses, setCurrentBusiness } = useAuth();
 
   // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
@@ -65,9 +65,9 @@ export default function Header() {
             </Link>
 
             {/* Create Deal Button - Next to Logo */}
-            {currentCompany?.id && (
+            {currentBusiness?.id && (
               <DealDialog
-                companyId={currentCompany.id}
+                businessId={currentBusiness.id}
                 trigger={
                   <Button className='ml-6 bg-shadow-lavender hover:bg-shadow-lavender/90 text-white font-bold font-montserrat cursor-pointer'>
                     Create Deal
@@ -87,7 +87,7 @@ export default function Header() {
             </Link>
 
             {/* Business Dropdown Menu - After Browse Deals */}
-            {isAuthenticated && companies.length > 0 && (
+            {isAuthenticated && businesses.length > 0 && (
               <DropdownMenu>
                 <div
                   className={`ml-6 text-shadow-lavender hover:opacity-80 transition-colors font-bold font-montserrat cursor-pointer flex items-center ${
@@ -151,26 +151,26 @@ export default function Header() {
             {/* Navigation content can be added here if needed */}
           </nav>
 
-          {/* Company Selector (if user has multiple companies) */}
-          {isAuthenticated && companies.length > 1 && (
+          {/* Business Selector (if user has multiple businesses) */}
+          {isAuthenticated && businesses.length > 1 && (
             <div className='flex items-center space-x-2'>
               <Building2 className='w-4 h-4 text-shadow-lavender' />
               <DropdownMenu>
                 <Button variant='ghost' className='text-shadow-lavender'>
-                  {currentCompany?.name ?? 'Select Company'}
+                  {currentBusiness?.name ?? 'Select Business'}
                   <ChevronDown className='ml-1 h-4 w-4' />
                 </Button>
 
                 <DropdownMenuContent align='end'>
-                  {companies.map(company => (
+                  {businesses.map(business => (
                     <DropdownMenuItem
-                      key={company.id}
-                      onClick={() => setCurrentCompany(company)}
+                      key={business.id}
+                      onClick={() => setCurrentBusiness(business)}
                       className={
-                        currentCompany?.id === company.id ? 'bg-gray-100' : ''
+                        currentBusiness?.id === business.id ? 'bg-gray-100' : ''
                       }
                     >
-                      {company.name}
+                      {business.name}
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>

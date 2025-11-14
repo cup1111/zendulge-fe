@@ -431,7 +431,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
             Deal Management
           </h2>
           <p className='text-gray-600'>
-            Manage your company&apos;s deals and promotions
+            Manage your business&apos;s deals and promotions
           </p>
         </div>
 
