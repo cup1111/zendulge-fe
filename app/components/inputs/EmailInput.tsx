@@ -27,7 +27,7 @@ export default function EmailInput({
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const isEmailValid = emailRegex.test(value);
   const hasInput = value.length > 0;
-  const shouldShowError = hasInput && !isEmailValid;
+  const shouldShowError = hasInput && !isEmailValid && showValidationDetails;
 
   // Returns the CSS class name for the email input field based on validation state
   function getEmailFieldClassName() {

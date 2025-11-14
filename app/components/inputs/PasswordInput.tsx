@@ -28,7 +28,7 @@ export default function PasswordInput({
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
   const isPasswordValid = passwordRegex.test(value);
   const passwordNotEmpty = value.length > 0;
-  const shouldShowError = passwordNotEmpty && !isPasswordValid;
+  const shouldShowError = passwordNotEmpty && !isPasswordValid && showValidationDetails;
 
   useEffect(() => {
     if (onValidityChange) onValidityChange(isPasswordValid);
