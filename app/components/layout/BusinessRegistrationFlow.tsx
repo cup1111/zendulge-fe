@@ -165,6 +165,23 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
+                  htmlFor='BusinessABN'
+                >
+                  Business ABN *
+                  <input
+                    type='text'
+                    id='BusinessABN'
+                    placeholder='e.g., 12 345 678 901'
+                    value={businessRegistrationFormData.companyABN.value}
+                    onChange={e => onInputChange('companyABN', e.target.value)}
+                    className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
+                  />
+                </label>
+                {error.companyABN && renderErrorMessage(error.companyABN)}
+              </div>
+              <div>
+                <label
+                  className='block text-sm font-medium text-gray-700 mb-2'
                   htmlFor='businessDescription'
                 >
                   Business Description
@@ -330,38 +347,6 @@ export default function BusinessRegistrationFlow({
                 </label>
                 {error.categories && renderErrorMessage(error.categories)}
               </div>
-              {businessRegistrationFormData.categories.value.length > 1 && (
-                <div>
-                  <label
-                    className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='serviceCategory'
-                  >
-                    Primary Service Category *
-                    <select
-                      id='serviceCategory'
-                      value={businessRegistrationFormData.serviceCategory.value}
-                      onChange={e =>
-                        onInputChange('serviceCategory', e.target.value)
-                      }
-                      className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
-                    >
-                      <option value=''>Select your primary category</option>
-                      {businessRegistrationFormData.categories?.value.map(
-                        (category: string) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </label>
-                  {error.serviceCategory &&
-                    renderErrorMessage(error.serviceCategory)}
-                  <p className='text-sm text-gray-600 mt-1'>
-                    Choose your main category for business listing and search
-                  </p>
-                </div>
-              )}
             </div>
           )}
 

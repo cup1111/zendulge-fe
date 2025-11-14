@@ -22,6 +22,11 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: 'Company Name',
       },
+      companyABN: {
+        isRequired: true,
+        value: '',
+        defaultValue: '12345678901',
+      },
       description: {
         validate: value => {
           if (value.length > 500) {
@@ -51,11 +56,6 @@ export default function BusinessRegistration() {
         },
         value: [] as string[],
         defaultValue: [],
-      },
-      serviceCategory: {
-        isRequired: true,
-        value: '',
-        defaultValue: '',
       },
       jobTitle: {
         isRequired: true,
@@ -220,6 +220,7 @@ export default function BusinessRegistration() {
     setSectionStep(prev => prev + 1);
     setHasChanged(false);
   };
+
   const prevStep = () => {
     setSectionStep(prev => prev - 1);
     setHasChanged(true);
@@ -310,7 +311,7 @@ export default function BusinessRegistration() {
     const data = extractFormValues(businessRegistrationFormData);
     delete data.confirmPassword; // 提交前移除 confirmPassword
     const response = await registerBusiness(data);
-    if (response.successful) {
+    if (response.successful || response.success) {
       nextStep();
     }
   };

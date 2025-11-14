@@ -25,11 +25,11 @@ export const registerBusiness = async (
     'https://zendulge-be-production.up.railway.app/api/v1/business-register',
     {
       companyName: businessRegistrationData.companyName,
+      companyABN: businessRegistrationData.companyABN,
       description: businessRegistrationData.description,
       firstName: businessRegistrationData.firstName,
       lastName: businessRegistrationData.lastName,
       categories: businessRegistrationData.categories,
-      serviceCategory: businessRegistrationData.serviceCategory,
       jobTitle: businessRegistrationData.jobTitle,
       businessAddress: {
         country: businessRegistrationData.businessAddress.country,
