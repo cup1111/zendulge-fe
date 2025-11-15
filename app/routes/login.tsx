@@ -1,6 +1,6 @@
 import { XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
@@ -12,20 +12,19 @@ import EmailInput from '../components/inputs/EmailInput';
 import PasswordInput from '../components/inputs/PasswordInput';
 
 export default function Login() {
-  const navigate = useNavigate();
   const auth = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [hasChanged, setHasChanged] = useState(false);
   const handleInputChange = (field: string, value: string) => {
+    setHasChanged(true);
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   const handleLogin = async () => {
     await auth.login(formData.email, formData.password);
-    if (auth.isAuthenticated) {
-      navigate('/');
-    }
+    setHasChanged(false);
   };
   return (
     <div className='min-h-screen'>
@@ -72,6 +71,7 @@ export default function Login() {
                     handleLogin();
                   }
                 }}
+                showValidationDetails={false}
               />
               <PasswordInput
                 value={formData.password}
@@ -83,8 +83,9 @@ export default function Login() {
                     handleLogin();
                   }
                 }}
+                showValidationDetails={false}
               />
-              {!auth.isAuthenticated && auth.errorMessage && (
+              {!auth.isAuthenticated && auth.errorMessage && !hasChanged && (
                 <div className='text-xs text-red-600'>
                   <XCircle className='w-3 h-3 inline mr-1' />
                   {auth.errorMessage}
@@ -103,7 +104,7 @@ export default function Login() {
                 </p>
               </div>
               <Button variant='default' className='w-full h-12 text-base'>
-                <Link to='/signup'>Sign Up</Link>
+                <Link to='/customer-registration'>Sign Up</Link>
               </Button>
             </CardContent>
           </Card>
