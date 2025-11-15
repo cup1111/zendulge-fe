@@ -48,6 +48,13 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+interface ServerErrorResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  errors?: { field: string; message: string }[];
+}
+
 // Decodes a JWT token and extracts user information from the payload
 // JWT tokens consist of three parts separated by dots: header.payload.signature
 // This function extracts the payload (second part), converts base64url to base64,
@@ -128,10 +135,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('token');
     navigate('/');
-  }, []);
+  }, [navigate]);
 
   const login = useCallback(async (email: string, password: string) => {
     try {
+      if (!email) {
+        setErrorMessage('Email is missing.'); // this will change the errorMessage, then isAuthenticated, if a user user enter wrong eamil, maybe he will not see the errorMessage
+        return;
+      }
+      if (!password) {
+        setErrorMessage('Password is missing');
+        return;
+      }
       const response = await zendulgeAxios.post(
         API_CONFIG.endpoints.auth.login,
         { email, password }
@@ -164,26 +179,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         clearErrorMessage();
       }
     } catch (error: unknown) {
-      const axiosError = error as AxiosError<{ message: string }>;
-      // Check if error has response data with activation message
-      if (
-        axiosError &&
-        typeof axiosError === 'object' &&
-        'response' in axiosError &&
-        axiosError.response &&
-        typeof axiosError.response === 'object' &&
-        'data' in axiosError.response &&
-        typeof axiosError.response.data.message === 'string' &&
-        axiosError.response.data.message.includes('Account not activated')
-      ) {
+      const axiosError = error as AxiosError<ServerErrorResponse>;
+      const data = axiosError.response?.data;
+      // if no data in response, means something is worong
+      if (!data) {
+        setErrorMessage('Something went wrong. Please try again.');
+        return;
+      }
+      // if not activated, shows the problem
+      if (data.message?.includes('Account not activated')) {
         setErrorMessage(
           'Account not activated. Please check your email for activation instructions.'
         );
-      } else {
-        setErrorMessage('Invalid email or password. Please try again.');
+        return;
       }
+      // if multiple error message, just show the first one
+      if (data.statusCode === 422 && data.errors && data.errors.length > 0) {
+        setErrorMessage(data.errors[0].message);
+        return;
+      }
+      // if invalid email or password, shows the case
+      if (data.message.includes('Invalid email or password')) {
+        setErrorMessage('Invalid email or password');
+        return;
+      }
+      setErrorMessage(
+        data.message || 'Something went wrong. Please try again.'
+      );
     }
-  }, []);
+  }, [navigate]);
 
   const setCurrentBusiness = (business: Business) => {
     setCurrentBusinessState(business);
