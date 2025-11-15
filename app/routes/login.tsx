@@ -1,6 +1,6 @@
 import { XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
@@ -12,7 +12,6 @@ import EmailInput from '../components/inputs/EmailInput';
 import PasswordInput from '../components/inputs/PasswordInput';
 
 export default function Login() {
-  const navigate = useNavigate();
   const auth = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -24,11 +23,8 @@ export default function Login() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
   const handleLogin = async () => {
-    setHasChanged(false);
     await auth.login(formData.email, formData.password);
-    if (auth.isAuthenticated) {
-      navigate('/');
-    }
+    setHasChanged(false);
   };
   return (
     <div className='min-h-screen'>

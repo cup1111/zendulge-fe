@@ -15,6 +15,17 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -31,6 +42,7 @@ import {
 import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import { BusinessStatus } from '~/constants/businessStatus';
 import { useAuth } from '~/contexts/AuthContext';
 import {
   mockBusinesses,
@@ -94,6 +106,9 @@ export default function Profile() {
   const [isBusinessLoading, setIsBusinessLoading] = useState(false);
   const [user, setUser] = useState<UserProfile>(mockUser);
   const [business, setBusiness] = useState<BusinessInfo | null>(null);
+  const [showAbnWarningDialog, setShowAbnWarningDialog] = useState(false);
+  const [pendingBusinessData, setPendingBusinessData] =
+    useState<BusinessFormData | null>(null);
   const businesses = mockBusinesses;
 
   // Load business info if user has a current business
@@ -257,29 +272,29 @@ export default function Profile() {
     );
   };
 
-  // Handle business form submission
-  const onBusinessSubmit = async (data: BusinessFormData) => {
+  // Actually submit the business update
+  const submitBusinessUpdate = async (data: BusinessFormData) => {
     if (!currentBusiness?.id) {
-      toast({
-        title: 'Error',
-        description: 'No business selected',
-        variant: 'destructive',
-      });
       return;
     }
 
     try {
       setIsBusinessLoading(true);
-      const updatedBusiness = await BusinessService.updateBusinessInfo(
+      const response = await BusinessService.updateBusinessInfo(
         currentBusiness.id,
         data
       );
-      setBusiness(updatedBusiness);
+      setBusiness(response);
       toast({
         title: 'Business updated',
-        description: 'Your business information has been successfully updated.',
+        description:
+          response.warning ??
+          'Your business information has been successfully updated.',
+        variant: response.warning ? 'default' : 'default',
       });
       setIsEditingBusiness(false);
+      setShowAbnWarningDialog(false);
+      setPendingBusinessData(null);
     } catch (error) {
       toast({
         title: 'Error',
@@ -291,8 +306,92 @@ export default function Profile() {
     }
   };
 
+  // Handle business form submission
+  const onBusinessSubmit = async (data: BusinessFormData) => {
+    if (!currentBusiness?.id) {
+      toast({
+        title: 'Error',
+        description: 'No business selected',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Check if ABN is being changed
+    const abnChanged =
+      business &&
+      data.abn &&
+      business.abn &&
+      data.abn.replace(/\s/g, '').toUpperCase() !==
+        business.abn.replace(/\s/g, '').toUpperCase();
+
+    // Show warning dialog if ABN is being changed
+    if (abnChanged) {
+      setPendingBusinessData(data);
+      setShowAbnWarningDialog(true);
+      return;
+    }
+
+    // Proceed with update if no ABN change
+    await submitBusinessUpdate(data);
+  };
+
+  // Handle ABN warning confirmation
+  const handleAbnWarningConfirm = () => {
+    if (pendingBusinessData) {
+      submitBusinessUpdate(pendingBusinessData);
+    }
+  };
+
+  // Handle ABN warning cancellation
+  const handleAbnWarningCancel = () => {
+    setShowAbnWarningDialog(false);
+    setPendingBusinessData(null);
+  };
+
   return (
     <div className='min-h-screen bg-gray-50'>
+      {/* ABN Change Warning Dialog */}
+      <AlertDialog
+        open={showAbnWarningDialog}
+        onOpenChange={setShowAbnWarningDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className='flex items-center gap-2'>
+              <span>⚠️ Warning: ABN Change Detected</span>
+            </AlertDialogTitle>
+            <AlertDialogDescription className='space-y-3 pt-2'>
+              <p>Changing your ABN will have the following consequences:</p>
+              <ul className='list-disc list-inside space-y-1 text-left ml-2'>
+                <li>
+                  Set your business status to &quot;pending&quot; (requires
+                  re-verification)
+                </li>
+                <li>Disable all active deals</li>
+                <li>
+                  Hide all deals from customers until verification is complete
+                </li>
+              </ul>
+              <p className='font-semibold pt-2'>
+                Are you sure you want to continue?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleAbnWarningCancel}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleAbnWarningConfirm}
+              className='bg-red-600 hover:bg-red-700 focus:ring-red-600'
+            >
+              Yes, Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
         {/* Header */}
         <div className='mb-8'>
@@ -727,234 +826,268 @@ export default function Profile() {
                   </CardHeader>
                   <CardContent>
                     {business ? (
-                      <form
-                        onSubmit={businessForm.handleSubmit(onBusinessSubmit)}
-                        className='space-y-6'
-                      >
-                        {/* Business Name */}
-                        <div className='space-y-2'>
-                          <Label htmlFor='businessName'>Business Name</Label>
-                          {isEditingBusiness ? (
-                            <Input
-                              id='businessName'
-                              {...businessForm.register('name')}
-                            />
-                          ) : (
-                            <p className='text-sm text-gray-900 py-2'>
-                              {business.name}
-                            </p>
-                          )}
-                          {businessForm.formState.errors.name && (
-                            <p className='text-sm text-red-600'>
-                              {businessForm.formState.errors.name.message}
-                            </p>
-                          )}
-                        </div>
+                      <>
+                        {/* Business Status Alert */}
+                        {business.status === BusinessStatus.PENDING && (
+                          <Alert variant='destructive' className='mb-6'>
+                            <AlertTitle className='flex items-center gap-2'>
+                              <span className='font-bold'>
+                                ⚠️ Verification in Progress
+                              </span>
+                            </AlertTitle>
+                            <AlertDescription>
+                              Your business details are being verified. Deals
+                              are temporarily hidden from customers until
+                              verification is complete. We&apos;ll notify you
+                              once verified.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        {business.status === BusinessStatus.DISABLED && (
+                          <Alert variant='destructive' className='mb-6'>
+                            <AlertTitle className='flex items-center gap-2'>
+                              <span className='font-bold'>
+                                ⚠️ Business Disabled
+                              </span>
+                            </AlertTitle>
+                            <AlertDescription>
+                              Your business is currently disabled. Please
+                              contact us to reactivate your business.
+                            </AlertDescription>
+                          </Alert>
+                        )}
 
-                        {/* Business Email */}
-                        <div className='space-y-2'>
-                          <Label htmlFor='businessEmail'>Business Email</Label>
-                          {isEditingBusiness ? (
-                            <Input
-                              id='businessEmail'
-                              type='email'
-                              {...businessForm.register('email')}
-                            />
-                          ) : (
-                            <p className='text-sm text-gray-900 py-2'>
-                              {business.email}
-                            </p>
-                          )}
-                          {businessForm.formState.errors.email && (
-                            <p className='text-sm text-red-600'>
-                              {businessForm.formState.errors.email.message}
-                            </p>
-                          )}
-                        </div>
+                        <form
+                          onSubmit={businessForm.handleSubmit(onBusinessSubmit)}
+                          className='space-y-6'
+                        >
+                          {/* Business Name */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='businessName'>Business Name</Label>
+                            {isEditingBusiness ? (
+                              <Input
+                                id='businessName'
+                                {...businessForm.register('name')}
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {business.name}
+                              </p>
+                            )}
+                            {businessForm.formState.errors.name && (
+                              <p className='text-sm text-red-600'>
+                                {businessForm.formState.errors.name.message}
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Description */}
-                        <div className='space-y-2'>
-                          <Label htmlFor='description'>Description</Label>
-                          {isEditingBusiness ? (
-                            <textarea
-                              id='description'
-                              {...businessForm.register('description')}
-                              className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shadow-lavender'
-                              rows={3}
-                              placeholder='Describe your business...'
-                            />
-                          ) : (
-                            <p className='text-sm text-gray-900 py-2'>
-                              {business.description ??
-                                'No description provided'}
-                            </p>
-                          )}
-                          {businessForm.formState.errors.description && (
-                            <p className='text-sm text-red-600'>
-                              {
-                                businessForm.formState.errors.description
-                                  .message
-                              }
-                            </p>
-                          )}
-                        </div>
+                          {/* Business Email */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='businessEmail'>
+                              Business Email
+                            </Label>
+                            {isEditingBusiness ? (
+                              <Input
+                                id='businessEmail'
+                                type='email'
+                                {...businessForm.register('email')}
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {business.email}
+                              </p>
+                            )}
+                            {businessForm.formState.errors.email && (
+                              <p className='text-sm text-red-600'>
+                                {businessForm.formState.errors.email.message}
+                              </p>
+                            )}
+                          </div>
 
-                        {/* Business Address */}
-                        <div className='space-y-4'>
-                          <Label className='flex items-center'>
-                            <MapPin className='w-4 h-4 mr-2 text-shadow-lavender' />
-                            Business Address
-                          </Label>
-                          {isEditingBusiness ? (
-                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                              <div className='md:col-span-2'>
+                          {/* Description */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='description'>Description</Label>
+                            {isEditingBusiness ? (
+                              <textarea
+                                id='description'
+                                {...businessForm.register('description')}
+                                className='w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-shadow-lavender'
+                                rows={3}
+                                placeholder='Describe your business...'
+                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {business.description ??
+                                  'No description provided'}
+                              </p>
+                            )}
+                            {businessForm.formState.errors.description && (
+                              <p className='text-sm text-red-600'>
+                                {
+                                  businessForm.formState.errors.description
+                                    .message
+                                }
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Business Address */}
+                          <div className='space-y-4'>
+                            <Label className='flex items-center'>
+                              <MapPin className='w-4 h-4 mr-2 text-shadow-lavender' />
+                              Business Address
+                            </Label>
+                            {isEditingBusiness ? (
+                              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                <div className='md:col-span-2'>
+                                  <Input
+                                    placeholder='Street Address'
+                                    {...businessForm.register(
+                                      'businessAddress.street'
+                                    )}
+                                  />
+                                </div>
                                 <Input
-                                  placeholder='Street Address'
+                                  placeholder='City'
                                   {...businessForm.register(
-                                    'businessAddress.street'
+                                    'businessAddress.city'
+                                  )}
+                                />
+                                <Input
+                                  placeholder='State'
+                                  {...businessForm.register(
+                                    'businessAddress.state'
+                                  )}
+                                />
+                                <Input
+                                  placeholder='Postcode'
+                                  {...businessForm.register(
+                                    'businessAddress.postcode'
+                                  )}
+                                />
+                                <Input
+                                  placeholder='Country'
+                                  {...businessForm.register(
+                                    'businessAddress.country'
                                   )}
                                 />
                               </div>
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {business.businessAddress
+                                  ? `${business.businessAddress.street}, ${business.businessAddress.city}, ${business.businessAddress.state} ${business.businessAddress.postcode}, ${business.businessAddress.country}`
+                                  : 'No address provided'}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* ABN */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='abn'>
+                              ABN (Australian Business Number)
+                            </Label>
+                            {isEditingBusiness ? (
                               <Input
-                                placeholder='City'
-                                {...businessForm.register(
-                                  'businessAddress.city'
-                                )}
+                                id='abn'
+                                {...businessForm.register('abn')}
+                                placeholder='11-digit ABN'
                               />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {business.abn ?? 'No ABN provided'}
+                              </p>
+                            )}
+                            {businessForm.formState.errors.abn && (
+                              <p className='text-sm text-red-600'>
+                                {businessForm.formState.errors.abn.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Website */}
+                          <div className='space-y-2'>
+                            <Label htmlFor='website'>Website</Label>
+                            {isEditingBusiness ? (
                               <Input
-                                placeholder='State'
-                                {...businessForm.register(
-                                  'businessAddress.state'
-                                )}
+                                id='website'
+                                {...businessForm.register('website')}
+                                placeholder='https://example.com'
                               />
-                              <Input
-                                placeholder='Postcode'
-                                {...businessForm.register(
-                                  'businessAddress.postcode'
-                                )}
-                              />
-                              <Input
-                                placeholder='Country'
-                                {...businessForm.register(
-                                  'businessAddress.country'
-                                )}
-                              />
+                            ) : (
+                              <p className='text-sm text-gray-900 py-2'>
+                                {business.website ?? 'No website provided'}
+                              </p>
+                            )}
+                            {businessForm.formState.errors.website && (
+                              <p className='text-sm text-red-600'>
+                                {businessForm.formState.errors.website.message}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Social Media Links */}
+                          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                            <div className='space-y-2'>
+                              <Label htmlFor='facebookUrl'>Facebook URL</Label>
+                              {isEditingBusiness ? (
+                                <Input
+                                  id='facebookUrl'
+                                  {...businessForm.register('facebookUrl')}
+                                  placeholder='https://facebook.com/yourpage'
+                                />
+                              ) : (
+                                <p className='text-sm text-gray-900 py-2'>
+                                  {business.facebookUrl ?? 'No Facebook page'}
+                                </p>
+                              )}
+                              {businessForm.formState.errors.facebookUrl && (
+                                <p className='text-sm text-red-600'>
+                                  {
+                                    businessForm.formState.errors.facebookUrl
+                                      .message
+                                  }
+                                </p>
+                              )}
                             </div>
-                          ) : (
-                            <p className='text-sm text-gray-900 py-2'>
-                              {business.businessAddress
-                                ? `${business.businessAddress.street}, ${business.businessAddress.city}, ${business.businessAddress.state} ${business.businessAddress.postcode}, ${business.businessAddress.country}`
-                                : 'No address provided'}
-                            </p>
-                          )}
-                        </div>
 
-                        {/* ABN */}
-                        <div className='space-y-2'>
-                          <Label htmlFor='abn'>
-                            ABN (Australian Business Number)
-                          </Label>
-                          {isEditingBusiness ? (
-                            <Input
-                              id='abn'
-                              {...businessForm.register('abn')}
-                              placeholder='11-digit ABN'
-                            />
-                          ) : (
-                            <p className='text-sm text-gray-900 py-2'>
-                              {business.abn ?? 'No ABN provided'}
-                            </p>
-                          )}
-                          {businessForm.formState.errors.abn && (
-                            <p className='text-sm text-red-600'>
-                              {businessForm.formState.errors.abn.message}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Website */}
-                        <div className='space-y-2'>
-                          <Label htmlFor='website'>Website</Label>
-                          {isEditingBusiness ? (
-                            <Input
-                              id='website'
-                              {...businessForm.register('website')}
-                              placeholder='https://example.com'
-                            />
-                          ) : (
-                            <p className='text-sm text-gray-900 py-2'>
-                              {business.website ?? 'No website provided'}
-                            </p>
-                          )}
-                          {businessForm.formState.errors.website && (
-                            <p className='text-sm text-red-600'>
-                              {businessForm.formState.errors.website.message}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Social Media Links */}
-                        <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                          <div className='space-y-2'>
-                            <Label htmlFor='facebookUrl'>Facebook URL</Label>
-                            {isEditingBusiness ? (
-                              <Input
-                                id='facebookUrl'
-                                {...businessForm.register('facebookUrl')}
-                                placeholder='https://facebook.com/yourpage'
-                              />
-                            ) : (
-                              <p className='text-sm text-gray-900 py-2'>
-                                {business.facebookUrl ?? 'No Facebook page'}
-                              </p>
-                            )}
-                            {businessForm.formState.errors.facebookUrl && (
-                              <p className='text-sm text-red-600'>
-                                {
-                                  businessForm.formState.errors.facebookUrl
-                                    .message
-                                }
-                              </p>
-                            )}
+                            <div className='space-y-2'>
+                              <Label htmlFor='twitterUrl'>Twitter URL</Label>
+                              {isEditingBusiness ? (
+                                <Input
+                                  id='twitterUrl'
+                                  {...businessForm.register('twitterUrl')}
+                                  placeholder='https://twitter.com/yourhandle'
+                                />
+                              ) : (
+                                <p className='text-sm text-gray-900 py-2'>
+                                  {business.twitterUrl ?? 'No Twitter handle'}
+                                </p>
+                              )}
+                              {businessForm.formState.errors.twitterUrl && (
+                                <p className='text-sm text-red-600'>
+                                  {
+                                    businessForm.formState.errors.twitterUrl
+                                      .message
+                                  }
+                                </p>
+                              )}
+                            </div>
                           </div>
 
-                          <div className='space-y-2'>
-                            <Label htmlFor='twitterUrl'>Twitter URL</Label>
-                            {isEditingBusiness ? (
-                              <Input
-                                id='twitterUrl'
-                                {...businessForm.register('twitterUrl')}
-                                placeholder='https://twitter.com/yourhandle'
-                              />
-                            ) : (
-                              <p className='text-sm text-gray-900 py-2'>
-                                {business.twitterUrl ?? 'No Twitter handle'}
-                              </p>
-                            )}
-                            {businessForm.formState.errors.twitterUrl && (
-                              <p className='text-sm text-red-600'>
-                                {
-                                  businessForm.formState.errors.twitterUrl
-                                    .message
-                                }
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Save Button */}
-                        {isEditingBusiness && (
-                          <Button
-                            type='submit'
-                            className='bg-shadow-lavender hover:bg-shadow-lavender/90'
-                            disabled={isBusinessLoading}
-                          >
-                            {isBusinessLoading
-                              ? 'Saving...'
-                              : 'Save Business Information'}
-                          </Button>
-                        )}
-                      </form>
+                          {/* Save Button */}
+                          {isEditingBusiness && (
+                            <Button
+                              type='submit'
+                              className='bg-shadow-lavender hover:bg-shadow-lavender/90'
+                              disabled={isBusinessLoading}
+                            >
+                              {isBusinessLoading
+                                ? 'Saving...'
+                                : 'Save Business Information'}
+                            </Button>
+                          )}
+                        </form>
+                      </>
                     ) : (
                       <div className='text-center py-8'>
                         <Building className='w-12 h-12 text-gray-400 mx-auto mb-4' />
