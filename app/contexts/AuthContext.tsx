@@ -137,77 +137,83 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     navigate('/');
   }, [navigate]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      if (!email) {
-        setErrorMessage('Email is missing.'); // this will change the errorMessage, then isAuthenticated, if a user user enter wrong eamil, maybe he will not see the errorMessage
-        return;
-      }
-      if (!password) {
-        setErrorMessage('Password is missing');
-        return;
-      }
-      const response = await zendulgeAxios.post(
-        API_CONFIG.endpoints.auth.login,
-        { email, password }
-      );
-      if (!response?.data) return;
-
-      const { data } = response;
-      const { accessToken } = data.data;
-
-      // Store token
-      localStorage.setItem('accessToken', accessToken);
-
-      // Decode user data from token
-      const userData = decodeJWTTokenToUser(accessToken);
-      if (!userData) {
-        throw new Error('Invalid token received');
-      } else {
-        navigate('/');
-      }
-
-      // Set user state
-      setUserState(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-
-      // Auto-select first business if available
-      if (userData.businesses && userData.businesses.length > 0) {
-        const firstBusiness = userData.businesses[0];
-        setCurrentBusinessState(firstBusiness);
-        localStorage.setItem('currentBusiness', JSON.stringify(firstBusiness));
-        clearErrorMessage();
-      }
-    } catch (error: unknown) {
-      const axiosError = error as AxiosError<ServerErrorResponse>;
-      const data = axiosError.response?.data;
-      // if no data in response, means something is worong
-      if (!data) {
-        setErrorMessage('Something went wrong. Please try again.');
-        return;
-      }
-      // if not activated, shows the problem
-      if (data.message?.includes('Account not activated')) {
-        setErrorMessage(
-          'Account not activated. Please check your email for activation instructions.'
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        if (!email) {
+          setErrorMessage('Email is missing.'); // this will change the errorMessage, then isAuthenticated, if a user user enter wrong eamil, maybe he will not see the errorMessage
+          return;
+        }
+        if (!password) {
+          setErrorMessage('Password is missing');
+          return;
+        }
+        const response = await zendulgeAxios.post(
+          API_CONFIG.endpoints.auth.login,
+          { email, password }
         );
-        return;
+        if (!response?.data) return;
+
+        const { data } = response;
+        const { accessToken } = data.data;
+
+        // Store token
+        localStorage.setItem('accessToken', accessToken);
+
+        // Decode user data from token
+        const userData = decodeJWTTokenToUser(accessToken);
+        if (!userData) {
+          throw new Error('Invalid token received');
+        } else {
+          navigate('/');
+        }
+
+        // Set user state
+        setUserState(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Auto-select first business if available
+        if (userData.businesses && userData.businesses.length > 0) {
+          const firstBusiness = userData.businesses[0];
+          setCurrentBusinessState(firstBusiness);
+          localStorage.setItem(
+            'currentBusiness',
+            JSON.stringify(firstBusiness)
+          );
+          clearErrorMessage();
+        }
+      } catch (error: unknown) {
+        const axiosError = error as AxiosError<ServerErrorResponse>;
+        const data = axiosError.response?.data;
+        // if no data in response, means something is worong
+        if (!data) {
+          setErrorMessage('Something went wrong. Please try again.');
+          return;
+        }
+        // if not activated, shows the problem
+        if (data.message?.includes('Account not activated')) {
+          setErrorMessage(
+            'Account not activated. Please check your email for activation instructions.'
+          );
+          return;
+        }
+        // if multiple error message, just show the first one
+        if (data.statusCode === 422 && data.errors && data.errors.length > 0) {
+          setErrorMessage(data.errors[0].message);
+          return;
+        }
+        // if invalid email or password, shows the case
+        if (data.message.includes('Invalid email or password')) {
+          setErrorMessage('Invalid email or password');
+          return;
+        }
+        setErrorMessage(
+          data.message || 'Something went wrong. Please try again.'
+        );
       }
-      // if multiple error message, just show the first one
-      if (data.statusCode === 422 && data.errors && data.errors.length > 0) {
-        setErrorMessage(data.errors[0].message);
-        return;
-      }
-      // if invalid email or password, shows the case
-      if (data.message.includes('Invalid email or password')) {
-        setErrorMessage('Invalid email or password');
-        return;
-      }
-      setErrorMessage(
-        data.message || 'Something went wrong. Please try again.'
-      );
-    }
-  }, [navigate]);
+    },
+    [navigate]
+  );
 
   const setCurrentBusiness = (business: Business) => {
     setCurrentBusinessState(business);
