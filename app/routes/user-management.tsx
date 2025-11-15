@@ -1,21 +1,62 @@
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
+import { BusinessStatus } from '~/constants/businessStatus';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
+import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
 export default function UserManagementPage() {
   const { user, currentBusiness, isAuthenticated, isLoading } = useAuth();
   const [error] = useState<string | null>(null);
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
+  const [businessLoading, setBusinessLoading] = useState(true);
 
-  if (isLoading) {
+  useEffect(() => {
+    async function loadBusinessInfo() {
+      if (!currentBusiness?.id) {
+        setBusinessLoading(false);
+        return;
+      }
+
+      try {
+        const data = await BusinessService.getBusinessInfo(currentBusiness.id);
+        setBusinessInfo(data);
+      } catch (err) {
+        // Ignore errors for now
+      } finally {
+        setBusinessLoading(false);
+      }
+    }
+
+    loadBusinessInfo();
+  }, [currentBusiness?.id]);
+
+  if (isLoading || businessLoading) {
     return (
       <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
         <div className='text-center'>
           <Loader2 className='w-8 h-8 animate-spin text-shadow-lavender mx-auto mb-4' />
           <p className='text-gray-600'>Loading user management...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Block access if business is disabled
+  if (businessInfo && businessInfo.status === BusinessStatus.DISABLED) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center p-6 max-w-md'>
+          <p className='text-gray-800 text-lg font-semibold mb-2'>
+            ⚠️ Business Disabled
+          </p>
+          <p className='text-gray-600 mb-4'>
+            Your business is currently disabled. Please contact us to reactivate
+            your business.
+          </p>
         </div>
       </div>
     );

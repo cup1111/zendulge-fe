@@ -19,6 +19,7 @@ import { Link } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
+import { BusinessStatus } from '~/constants/businessStatus';
 import { OperatingSiteStatus } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import {
@@ -27,6 +28,7 @@ import {
   mockRecentActivity,
   mockRecentBookings,
 } from '~/lib/mockData';
+import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
 // Types for our data
 interface BusinessStats {
@@ -181,6 +183,7 @@ export default function BusinessDashboard() {
   const [businessStats, setBusinessStats] = useState<BusinessStats | null>(
     null
   );
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
 
   const [operatingSites, setOperatingSites] = useState<OperatingSite[]>([]);
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
@@ -213,6 +216,11 @@ export default function BusinessDashboard() {
         }
 
         const businessIdString = currentBusiness.id;
+
+        // Fetch business info to check active status
+        const businessData =
+          await BusinessService.getBusinessInfo(businessIdString);
+        setBusinessInfo(businessData);
 
         // Fetch operating sites from real backend (REQUIRED)
         const sitesData = await fetchOperatingSites(businessIdString);
@@ -271,6 +279,23 @@ export default function BusinessDashboard() {
     );
   }
 
+  // Block access if business is disabled
+  if (businessInfo && businessInfo.status === BusinessStatus.DISABLED) {
+    return (
+      <div className='min-h-screen bg-gray-50 flex items-center justify-center'>
+        <div className='text-center p-6 max-w-md'>
+          <p className='text-gray-800 text-lg font-semibold mb-2'>
+            ⚠️ Business Disabled
+          </p>
+          <p className='text-gray-600 mb-4'>
+            Your business is currently disabled. Please contact us to reactivate
+            your business.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (operatingSites.length === 0) {
     return (
       <div className='min-h-screen flex items-center justify-center'>
@@ -283,20 +308,47 @@ export default function BusinessDashboard() {
     );
   }
 
+  // Determine status indicator styling
+  const getStatusIndicatorClass = () => {
+    if (!businessInfo || businessInfo.status === BusinessStatus.ACTIVE) {
+      return 'bg-blue-50 border-blue-200';
+    }
+    if (businessInfo.status === BusinessStatus.DISABLED) {
+      return 'bg-gray-50 border-gray-300';
+    }
+    return 'bg-red-50 border-red-200';
+  };
+
   return (
     <div className='min-h-screen bg-gray-50'>
-      {/* Development Mode Indicator */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className='bg-blue-50 border-b border-blue-200 px-4 py-2'>
-          <div className='max-w-7xl mx-auto'>
-            <p className='text-blue-800 text-sm'>
-              <strong>Backend Status:</strong> Operating Sites from real API ✅
-              | Stats, Bookings, Deals, Activity using mock data (endpoints not
-              implemented yet)
+      {/* Business Status & Backend Status Indicator */}
+      <div className={`border-b px-4 py-2 ${getStatusIndicatorClass()}`}>
+        <div className='max-w-7xl mx-auto'>
+          {businessInfo && businessInfo.status === BusinessStatus.PENDING && (
+            <p className='text-red-800 text-sm font-semibold'>
+              ⚠️ <strong>Verification in Progress:</strong> Your business
+              details are being verified. Deals are temporarily hidden from
+              customers until verification is complete. We&apos;ll notify you
+              once verified.
             </p>
-          </div>
+          )}
+          {businessInfo && businessInfo.status === BusinessStatus.DISABLED && (
+            <p className='text-gray-800 text-sm font-semibold'>
+              ⚠️ <strong>Business Disabled:</strong> Your business is currently
+              disabled. Please contact us to reactivate your business.
+            </p>
+          )}
+          {businessInfo &&
+            businessInfo.status === BusinessStatus.ACTIVE &&
+            process.env.NODE_ENV === 'development' && (
+              <p className='text-blue-800 text-sm'>
+                <strong>Backend Status:</strong> Operating Sites from real API
+                ✅ | Stats, Bookings, Deals, Activity using mock data (endpoints
+                not implemented yet)
+              </p>
+            )}
         </div>
-      )}
+      </div>
 
       {/* Header Section */}
       <section className='bg-white border-b border-gray-200'>
