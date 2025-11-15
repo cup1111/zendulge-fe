@@ -179,6 +179,7 @@ export default function UserManagement({
 
   const loadData = useCallback(async () => {
     try {
+      if (!businessId || businessId === '') return;
       setLoading(true);
       setError(null);
 

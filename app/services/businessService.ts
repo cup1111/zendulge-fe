@@ -1,5 +1,6 @@
 import { API_CONFIG } from '../config/api';
 import api from '../config/axios';
+import { BusinessStatus } from '../constants/businessStatus';
 
 // Types for business management
 export interface BusinessInfo {
@@ -29,7 +30,7 @@ export interface BusinessInfo {
     role: string;
   }>;
   customers?: Customer[];
-  isActive: boolean;
+  status: BusinessStatus;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -55,6 +56,7 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data: T;
+  warning?: string;
 }
 
 export interface Customer {
@@ -83,12 +85,15 @@ export class BusinessService {
   static async updateBusinessInfo(
     businessId: string,
     businessData: BusinessUpdateRequest
-  ): Promise<BusinessInfo> {
+  ): Promise<BusinessInfo & { warning?: string }> {
     const response = await api.patch<ApiResponse<BusinessInfo>>(
       `/business/${businessId}`,
       businessData
     );
-    return response.data.data;
+    return {
+      ...response.data.data,
+      warning: response.data.warning,
+    };
   }
 
   /**
