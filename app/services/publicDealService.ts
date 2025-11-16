@@ -19,6 +19,7 @@ export interface PublicDeal {
     basePrice?: number;
     duration?: number;
   };
+  sites?: Array<{ id: string; name: string; address: string }>;
 }
 
 export interface PublicDealsResponse {
@@ -43,6 +44,7 @@ export interface PublicDealsResponse {
       basePrice?: number;
       duration?: number;
     };
+    sites?: Array<{ _id: string; name: string; address: string }>;
   }>;
 }
 
@@ -73,6 +75,11 @@ const mapDeal = (raw: PublicDealsResponse['data'][number]): PublicDeal => {
       basePrice: raw.service.basePrice,
       duration: raw.service.duration,
     },
+    sites: raw.sites?.map(({ _id: siteId, name, address }) => ({
+      id: siteId,
+      name,
+      address,
+    })),
   };
 };
 
@@ -81,10 +88,23 @@ export default class PublicDealService {
     category?: string;
     limit?: number;
     skip?: number;
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
+    q?: string;
+    title?: string;
   }): Promise<PublicDeal[]> {
     const response = await api.get<PublicDealsResponse>('/public/deals', {
       params,
     });
     return response.data.data.map(mapDeal);
+  }
+
+  static async getById(id: string): Promise<PublicDeal> {
+    const response = await api.get<{
+      success: boolean;
+      data: PublicDealsResponse['data'][number];
+    }>(`/public/deals/${id}`);
+    return mapDeal(response.data.data);
   }
 }

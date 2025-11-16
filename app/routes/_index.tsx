@@ -1,5 +1,6 @@
 import { Calendar, MapPin, Percent, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
@@ -17,6 +18,7 @@ import PublicDealService, {
 } from '~/services/publicDealService';
 
 export default function Landing() {
+  const navigate = useNavigate();
   const [location, setLocation] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchRadius, setSearchRadius] = useState(5);
@@ -57,6 +59,8 @@ export default function Landing() {
         category && category.trim().length > 0 ? category : undefined;
       const deals = await PublicDealService.list({
         category: normalizedCategory,
+        q: location && location.trim().length > 0 ? location : undefined,
+        radiusKm: searchRadius,
       });
       setSearchDeals(deals);
     } catch {
@@ -178,9 +182,8 @@ export default function Landing() {
                           <Button
                             size='sm'
                             className='bg-shadow-lavender hover:bg-shadow-lavender/90'
-                            onClick={e => {
-                              e.preventDefault();
-                              e.stopPropagation();
+                            onClick={() => {
+                              navigate(`/deal-details/${d.id}`);
                             }}
                           >
                             View Deal
@@ -419,9 +422,8 @@ export default function Landing() {
                         <Button
                           size='sm'
                           className='bg-shadow-lavender hover:bg-shadow-lavender/90'
-                          onClick={e => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                          onClick={() => {
+                            navigate(`/deal-details/${d.id}`);
                           }}
                         >
                           View Deal
