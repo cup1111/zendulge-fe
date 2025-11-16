@@ -47,9 +47,9 @@ export interface PublicDealsResponse {
 }
 
 const mapDeal = (raw: PublicDealsResponse['data'][number]): PublicDeal => {
-  const { _id: id } = raw as any;
-  const { _id: businessId } = raw.business as any;
-  const { _id: serviceId } = raw.service as any;
+  const { _id: id } = raw;
+  const { _id: businessId } = raw.business;
+  const { _id: serviceId } = raw.service;
   return {
     id,
     title: raw.title,
