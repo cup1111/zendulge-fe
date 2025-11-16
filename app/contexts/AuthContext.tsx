@@ -180,7 +180,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           );
           clearErrorMessage();
         }
-        // login navigate
         if (userData.businesses && userData.businesses.length > 0) {
           navigate('/business-management');
         } else {
