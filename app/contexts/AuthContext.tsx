@@ -179,8 +179,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             JSON.stringify(firstBusiness)
           );
           clearErrorMessage();
-        }
-        if (userData.businesses && userData.businesses.length > 0) {
           navigate('/business-management');
         } else {
           navigate('/');
