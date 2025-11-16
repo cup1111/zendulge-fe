@@ -164,8 +164,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const userData = decodeJWTTokenToUser(accessToken);
         if (!userData) {
           throw new Error('Invalid token received');
-        } else {
-          navigate('/');
         }
 
         // Set user state
@@ -181,6 +179,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             JSON.stringify(firstBusiness)
           );
           clearErrorMessage();
+        }
+        // navigate logic
+        if (userData.businesses && userData.businesses.length > 0) {
+          navigate('/business-management');
         }
       } catch (error: unknown) {
         const axiosError = error as AxiosError<ServerErrorResponse>;
