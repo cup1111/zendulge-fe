@@ -180,6 +180,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           );
           clearErrorMessage();
           navigate('/business-management');
+        } else {
+          navigate('/');
         }
       } catch (error: unknown) {
         const axiosError = error as AxiosError<ServerErrorResponse>;
