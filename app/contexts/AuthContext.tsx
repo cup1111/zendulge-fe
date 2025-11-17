@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
 import type { ReactNode } from 'react';
 import React, {
   createContext,
