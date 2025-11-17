@@ -1,10 +1,17 @@
 import api from '../config/axios';
 
+interface CategoryData {
+  _id: string;
+  name?: string;
+  slug?: string;
+  icon?: string;
+}
+
 export interface Deal {
   id: string;
   title: string;
   description: string;
-  category: string;
+  category: CategoryData;
   price: number;
   originalPrice?: number;
   discount?: number;
@@ -42,7 +49,7 @@ export interface Deal {
 export interface DealCreateRequest {
   title: string;
   description: string;
-  category: string;
+  category: string; // Slug string when creating/updating
   price: number;
   originalPrice?: number;
   duration: number;
@@ -82,22 +89,85 @@ export interface DealStatusUpdateRequest {
 export interface DealApiResponse {
   success: boolean;
   message: string;
-  data: Deal | Deal[];
+  data: RawDealApiResponse | RawDealApiResponse[];
 }
+
+interface RawDealApiResponse {
+  _id?: string;
+  id?: string;
+  title?: string;
+  description?: string;
+  category?: CategoryData | string;
+  price?: number;
+  originalPrice?: number;
+  discount?: number;
+  duration?: number;
+  operatingSite?: Array<{
+    id?: string;
+    _id?: string;
+    name?: string;
+    address?: string;
+  }>;
+  startDate?: string;
+  endDate?: string;
+  maxBookings?: number;
+  currentBookings?: number;
+  status?: 'active' | 'inactive' | 'expired' | 'sold_out';
+  images?: string[];
+  tags?: string[];
+  business?: string;
+  service?: {
+    id?: string;
+    _id?: string;
+    name?: string;
+    category?: string;
+    basePrice?: number;
+    duration?: number;
+  };
+  createdBy?: {
+    id?: string;
+    _id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+// Helper to map deal data, extracting category from populated object
+const mapDealCategory = (deal: RawDealApiResponse): Deal => {
+  // Category is always a populated object from backend
+  const categoryObj: CategoryData =
+    typeof deal.category === 'object' && deal.category && '_id' in deal.category
+      ? (deal.category as CategoryData)
+      : { _id: '', name: '', slug: '', icon: '' };
+  return {
+    ...deal,
+    category: categoryObj,
+  } as Deal;
+};
 
 export class DealService {
   static async getDeals(businessId: string): Promise<Deal[]> {
     const response = await api.get<DealApiResponse>(
       `/business/${businessId}/deals`
     );
-    return response.data.data as Deal[];
+    const deals = Array.isArray(response.data.data)
+      ? response.data.data
+      : [response.data.data];
+    return deals.map(mapDealCategory);
   }
 
   static async getDealById(businessId: string, dealId: string): Promise<Deal> {
     const response = await api.get<DealApiResponse>(
       `/business/${businessId}/deals/${dealId}`
     );
-    return response.data.data as Deal;
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 
   static async createDeal(
@@ -108,7 +178,10 @@ export class DealService {
       `/business/${businessId}/deals`,
       dealData
     );
-    return response.data.data as Deal;
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 
   static async updateDeal(
@@ -120,7 +193,10 @@ export class DealService {
       `/business/${businessId}/deals/${dealId}`,
       dealData
     );
-    return response.data.data as Deal;
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 
   static async deleteDeal(businessId: string, dealId: string): Promise<void> {
@@ -136,7 +212,10 @@ export class DealService {
       `/business/${businessId}/deals/${dealId}/status`,
       statusData
     );
-    return response.data.data as Deal;
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 }
 

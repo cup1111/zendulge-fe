@@ -28,6 +28,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
+import CategoryService, { type Category } from '~/services/categoryService';
 import { DealService } from '~/services/dealService';
 import {
   OperateSiteService,
@@ -107,6 +108,7 @@ export default function DealDialog({
   const { toast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [internalOpen, setInternalOpen] = useState(false);
@@ -202,44 +204,28 @@ export default function DealDialog({
     return formatDate(nextDay);
   }, [formData.startDate, todayString]);
 
-  // Deal categories
-  const dealCategories = [
-    'Cleaning',
-    'Maintenance',
-    'Commercial',
-    'Specialized',
-    'Renovation',
-    'Beauty',
-    'Health',
-    'Fitness',
-    'Education',
-    'Automotive',
-    'Home Improvement',
-    'Pet Care',
-    'Event Planning',
-    'Consulting',
-    'Other',
-  ];
-
-  // Load services and operating sites when dialog opens
+  // Load services, operating sites, and categories when dialog opens
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [servicesData, sitesData] = await Promise.all([
+      const [servicesData, sitesData, categoriesData] = await Promise.all([
         ServiceService.getServices(businessId),
         OperateSiteService.getOperateSites(businessId),
+        CategoryService.list(),
       ]);
 
       setServices(Array.isArray(servicesData) ? servicesData : []);
       setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to load services and operating sites',
+        description: 'Failed to load services, operating sites, and categories',
         variant: 'destructive',
       });
       setServices([]);
       setOperatingSites([]);
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }
@@ -580,9 +566,9 @@ export default function DealDialog({
                     <SelectValue placeholder='Select category' />
                   </SelectTrigger>
                   <SelectContent>
-                    {dealCategories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                    {categories.map(category => (
+                      <SelectItem key={category.id} value={category.slug}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -635,15 +621,29 @@ export default function DealDialog({
                   type='date'
                   value={formData.startDate}
                   onChange={e => {
-                    const updatedAvailability = normalizeAvailability(
-                      e.target.value,
-                      formData.endDate
-                    );
-                    setFormData({
-                      ...formData,
-                      startDate: updatedAvailability.startDate,
-                      endDate: updatedAvailability.endDate,
-                    });
+                    const newStartDate = e.target.value;
+                    const parsedStart = parseDateInput(newStartDate);
+                    const parsedEnd = parseDateInput(formData.endDate);
+
+                    // Only update start date, but ensure end date is still after start date
+                    if (
+                      parsedStart &&
+                      parsedEnd &&
+                      parsedEnd.getTime() <= parsedStart.getTime()
+                    ) {
+                      // If end date is before or equal to new start date, adjust end date
+                      const adjustedEnd = addDays(parsedStart, 1);
+                      setFormData({
+                        ...formData,
+                        startDate: newStartDate,
+                        endDate: formatDate(adjustedEnd),
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        startDate: newStartDate,
+                      });
+                    }
                   }}
                   min={todayString}
                   required
@@ -658,15 +658,29 @@ export default function DealDialog({
                   type='date'
                   value={formData.endDate}
                   onChange={e => {
-                    const updatedAvailability = normalizeAvailability(
-                      formData.startDate,
-                      e.target.value
-                    );
-                    setFormData({
-                      ...formData,
-                      startDate: updatedAvailability.startDate,
-                      endDate: updatedAvailability.endDate,
-                    });
+                    const newEndDate = e.target.value;
+                    const parsedStart = parseDateInput(formData.startDate);
+                    const parsedEnd = parseDateInput(newEndDate);
+
+                    // Only update end date, don't touch start date
+                    // But ensure end date is after start date
+                    if (
+                      parsedStart &&
+                      parsedEnd &&
+                      parsedEnd.getTime() <= parsedStart.getTime()
+                    ) {
+                      // If end date is before or equal to start date, set it to start date + 1 day
+                      const adjustedEnd = addDays(parsedStart, 1);
+                      setFormData({
+                        ...formData,
+                        endDate: formatDate(adjustedEnd),
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        endDate: newEndDate,
+                      });
+                    }
                   }}
                   min={minimumEndDate}
                   required

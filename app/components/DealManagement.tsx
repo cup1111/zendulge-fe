@@ -50,6 +50,7 @@ import {
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
+import CategoryService, { type Category } from '~/services/categoryService';
 import type { Deal, DealCreateRequest } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 import {
@@ -68,6 +69,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
@@ -130,27 +132,13 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     // Anyone who can create deals can duplicate them
     canCreateDeal();
 
-  // Deal categories
-  const dealCategories = [
-    'Education',
-    'Technology',
-    'Home Services',
-    'Automotive',
-    'Entertainment',
-    'Health & Medical',
-    'Business Services',
-    'Travel',
-    'Shopping',
-    'Other',
-  ];
-
   // Filtered and paginated deals
   const filteredDeals = useMemo(() => {
     const filtered = deals.filter(deal => {
       const searchLower = searchTerm.toLowerCase();
       return (
         deal.title?.toLowerCase().includes(searchLower) ||
-        deal.category?.toLowerCase().includes(searchLower) ||
+        (deal.category?.name ?? '').toLowerCase().includes(searchLower) ||
         deal.description?.toLowerCase().includes(searchLower) ||
         deal.operatingSite.some(site =>
           site.name?.toLowerCase().includes(searchLower)
@@ -185,33 +173,45 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     setCurrentPage(prev => Math.min(totalPages, prev + 1));
   };
 
-  const loadDeals = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const [dealsData, servicesData, sitesData] = await Promise.all([
-        DealService.getDeals(businessId),
-        ServiceService.getServices(businessId),
-        OperateSiteService.getOperateSites(businessId),
-      ]);
+  const loadDeals = useCallback(
+    async (resetPage = false) => {
+      try {
+        setIsLoading(true);
+        const [dealsData, servicesData, sitesData, categoriesData] =
+          await Promise.all([
+            DealService.getDeals(businessId),
+            ServiceService.getServices(businessId),
+            OperateSiteService.getOperateSites(businessId),
+            CategoryService.list(),
+          ]);
 
-      // Ensure we have arrays
-      setDeals(Array.isArray(dealsData) ? dealsData : []);
-      setServices(Array.isArray(servicesData) ? servicesData : []);
-      setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load deals',
-        variant: 'destructive',
-      });
-      // Set empty arrays on error
-      setDeals([]);
-      setServices([]);
-      setOperatingSites([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [businessId, toast]);
+        // Ensure we have arrays
+        setDeals(Array.isArray(dealsData) ? dealsData : []);
+        setServices(Array.isArray(servicesData) ? servicesData : []);
+        setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+
+        // Reset to first page after creating a new deal
+        if (resetPage) {
+          setCurrentPage(1);
+        }
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load deals',
+          variant: 'destructive',
+        });
+        // Set empty arrays on error
+        setDeals([]);
+        setServices([]);
+        setOperatingSites([]);
+        setCategories([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [businessId, toast]
+  );
 
   useEffect(() => {
     loadDeals();
@@ -242,7 +242,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     setFormData({
       title: deal.title ?? '',
       description: deal.description ?? '',
-      category: deal.category ?? '',
+      category: deal.category?.slug ?? deal.category?.name ?? '',
       price: deal.price ?? 0,
       duration: deal.duration ?? 60,
       operatingSite: operatingSiteIds,
@@ -458,7 +458,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   Add Deal
                 </Button>
               }
-              onDealCreated={loadDeals}
+              onDealCreated={() => loadDeals(true)}
             />
           )}
         </div>
@@ -522,7 +522,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               <div className='flex items-center justify-between'>
                 <Badge variant='secondary' className='w-fit'>
                   <Tag className='w-3 h-3 mr-1' />
-                  {deal.category ?? 'Uncategorized'}
+                  {deal.category?.name ?? 'Uncategorized'}
                 </Badge>
                 <Badge
                   className={`w-fit ${
@@ -644,7 +644,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   {searchTerm ? 'Add New Deal' : 'Add Your First Deal'}
                 </Button>
               }
-              onDealCreated={loadDeals}
+              onDealCreated={() => loadDeals(true)}
             />
           )}
         </div>
@@ -683,9 +683,9 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                     <SelectValue placeholder='Select category' />
                   </SelectTrigger>
                   <SelectContent>
-                    {dealCategories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                    {categories.map(category => (
+                      <SelectItem key={category.id} value={category.slug}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1022,7 +1022,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
           initialData={{
             title: `Copy of ${dealToDuplicate.title}`,
             description: dealToDuplicate.description,
-            category: dealToDuplicate.category,
+            category: dealToDuplicate.category?.slug ?? '',
             price: dealToDuplicate.price,
             originalPrice: dealToDuplicate.originalPrice,
             duration: dealToDuplicate.duration,

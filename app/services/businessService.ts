@@ -68,7 +68,7 @@ export interface Customer {
   active: boolean;
 }
 
-export class BusinessService {
+class BusinessService {
   /**
    * Get business information for the current user's business
    */
