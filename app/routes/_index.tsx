@@ -1,6 +1,6 @@
-import { Calendar, Heart, MapPin, Percent, Search } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { Calendar, MapPin, Percent, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
@@ -12,125 +12,88 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import {
-  categories,
-  mockDeals,
-  recentBookings,
-  type Deal,
-} from '~/lib/mockData';
-
-// Deal Card Component
-interface DealCardProps {
-  deal: Deal;
-}
-
-const DealCard = ({ deal }: DealCardProps) => (
-  <Link to={`/deal-details/${deal.id}`} className='block'>
-    <div className='bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow'>
-      {/* Deal Image */}
-      <div className='relative h-48 bg-gradient-to-br from-frosted-lilac to-shadow-lavender/20'>
-        <div className='absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold'>
-          -{deal.discountPercentage}%
-        </div>
-        <button
-          type='button'
-          className='absolute top-3 left-3 bg-white/90 hover:bg-white p-2 rounded-full transition-colors'
-        >
-          <Heart className='w-5 h-5 text-gray-600' />
-        </button>
-      </div>
-
-      {/* Deal Content */}
-      <div className='p-4'>
-        <div className='flex items-start justify-between mb-2'>
-          <div className='flex-1'>
-            <h3 className='font-semibold text-gray-900 text-lg mb-1 line-clamp-1'>
-              {deal.serviceName}
-            </h3>
-            <p className='text-sm text-gray-600 mb-1'>{deal.businessName}</p>
-            <p className='text-xs text-gray-500 flex items-center'>
-              <MapPin className='w-3 h-3 mr-1' />
-              {deal.address.split(',')[1] || deal.address}
-            </p>
-          </div>
-        </div>
-
-        <p className='text-sm text-gray-700 line-clamp-2 mb-3'>
-          {deal.description}
-        </p>
-
-        {/* Rating */}
-        {deal.rating && (
-          <div className='flex items-center mb-3'>
-            <span className='text-yellow-500 mr-1'>★</span>
-            <span className='text-sm font-medium text-gray-900'>
-              {deal.rating}
-            </span>
-            <span className='text-sm text-gray-500 ml-1'>
-              ({deal.reviewCount} reviews)
-            </span>
-          </div>
-        )}
-
-        {/* Time & Slots */}
-        <div className='flex items-center text-xs text-gray-600 mb-3'>
-          <span className='bg-gray-100 px-2 py-1 rounded mr-2'>
-            {deal.startTime} - {deal.endTime}
-          </span>
-          <span className='text-green-600 font-medium'>
-            {deal.availableSlots} slots left
-          </span>
-        </div>
-
-        {/* Pricing */}
-        <div className='flex items-end justify-between pt-3 border-t border-gray-100'>
-          <div>
-            <div className='flex items-baseline gap-2'>
-              <span className='text-2xl font-bold text-shadow-lavender'>
-                ${deal.discountedPrice}
-              </span>
-              <span className='text-sm text-gray-500 line-through'>
-                ${deal.originalPrice}
-              </span>
-            </div>
-          </div>
-          <Button
-            size='sm'
-            className='bg-shadow-lavender hover:bg-shadow-lavender/90'
-            onClick={e => {
-              e.preventDefault(); // prevent Link navigation
-              e.stopPropagation();
-            }}
-          >
-            View Deal
-          </Button>
-        </div>
-      </div>
-    </div>
-  </Link>
-);
+import { recentBookings } from '~/lib/mockData';
+import CategoryService, { type Category } from '~/services/categoryService';
+import PublicDealService, {
+  type PublicDeal,
+} from '~/services/publicDealService';
 
 export default function Landing() {
+  const navigate = useNavigate();
   const [location, setLocation] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchRadius, setSearchRadius] = useState(5);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [recommendedDeals, setRecommendedDeals] = useState<PublicDeal[]>([]);
+  const [searchDeals, setSearchDeals] = useState<PublicDeal[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingRecommended, setLoadingRecommended] = useState(false);
+  const [loadingSearch, setLoadingSearch] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [errorRecommended, setErrorRecommended] = useState<string | null>(null);
+  const [errorSearch, setErrorSearch] = useState<string | null>(null);
+  const [errorCategories, setErrorCategories] = useState<string | null>(null);
 
-  // 使用 mock 数据
-  const displayedDeals = (() => {
-    if (!showSearchResults) {
-      return mockDeals.slice(0, 3); // 默认只显示前 3 个
+  // Load recommended deals (top N) and categories on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      // Load categories
+      setLoadingCategories(true);
+      setErrorCategories(null);
+      try {
+        const cats = await CategoryService.list();
+        if (mounted && Array.isArray(cats)) {
+          setCategories(cats);
+        }
+      } catch (error) {
+        if (mounted) {
+          setErrorCategories('Failed to load categories.');
+        }
+      } finally {
+        if (mounted) setLoadingCategories(false);
+      }
+
+      // Load recommended deals
+      setLoadingRecommended(true);
+      setErrorRecommended(null);
+      try {
+        const deals = await PublicDealService.list();
+        if (mounted) setRecommendedDeals(deals);
+      } catch {
+        if (mounted) setErrorRecommended('Failed to load deals.');
+      } finally {
+        if (mounted) setLoadingRecommended(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const fetchSearchDeals = async (category?: string) => {
+    setLoadingSearch(true);
+    setErrorSearch(null);
+    try {
+      const normalizedCategory =
+        category && category.trim().length > 0 ? category : undefined;
+      const deals = await PublicDealService.list({
+        category: normalizedCategory,
+        q: location && location.trim().length > 0 ? location : undefined,
+        radiusKm: searchRadius,
+      });
+      setSearchDeals(deals);
+    } catch {
+      setErrorSearch('Failed to load deals.');
+    } finally {
+      setLoadingSearch(false);
     }
-    if (selectedCategory) {
-      return mockDeals.filter(
-        deal => deal.category.toLowerCase() === selectedCategory.toLowerCase()
-      );
-    }
-    return mockDeals;
-  })();
+  };
 
   const handleFindDeals = () => {
     setShowSearchResults(true);
+    fetchSearchDeals(selectedCategory);
     // 滚动到搜索结果
     setTimeout(() => {
       document
@@ -142,6 +105,7 @@ export default function Landing() {
   const handleAllDeals = () => {
     setSelectedCategory('');
     setShowSearchResults(true);
+    fetchSearchDeals();
     setTimeout(() => {
       document
         .getElementById('search-results-section')
@@ -189,9 +153,66 @@ export default function Landing() {
               </div>
 
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {mockDeals.slice(0, 3).map(deal => (
-                  <DealCard key={deal.id} deal={deal} />
-                ))}
+                {loadingRecommended && (
+                  <div className='col-span-3 text-sm text-gray-600'>
+                    Loading…
+                  </div>
+                )}
+                {errorRecommended && (
+                  <div className='col-span-3 text-sm text-red-600'>
+                    {errorRecommended}
+                  </div>
+                )}
+                {!loadingRecommended &&
+                  !errorRecommended &&
+                  recommendedDeals.map(d => (
+                    <div
+                      key={d.id}
+                      className='bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow'
+                    >
+                      <div className='relative h-40 bg-gradient-to-br from-frosted-lilac to-shadow-lavender/20' />
+                      <div className='p-4'>
+                        <div className='flex items-start justify-between mb-2'>
+                          <div className='flex-1'>
+                            <h3 className='font-semibold text-gray-900 text-lg mb-1 line-clamp-1'>
+                              {d.service?.name ?? d.title}
+                            </h3>
+                            <p className='text-sm text-gray-600 mb-1'>
+                              {d.business?.name ?? 'Business'}
+                            </p>
+                          </div>
+                        </div>
+                        {d.description && (
+                          <p className='text-sm text-gray-700 line-clamp-2 mb-3'>
+                            {d.description}
+                          </p>
+                        )}
+                        <div className='flex items-end justify-between pt-3 border-t border-gray-100'>
+                          <div>
+                            <div className='flex items-baseline gap-2'>
+                              <span className='text-2xl font-bold text-shadow-lavender'>
+                                {d.price != null ? `$${d.price}` : '—'}
+                              </span>
+                              {d.originalPrice != null && (
+                                <span className='text-sm text-gray-500 line-through'>
+                                  ${d.originalPrice}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            size='sm'
+                            className='bg-shadow-lavender hover:bg-shadow-lavender/90'
+                            onClick={() => {
+                              navigate(`/deal-details/${d.id}`);
+                            }}
+                          >
+                            View Deal
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </div>
 
@@ -228,27 +249,57 @@ export default function Landing() {
                   </div>
 
                   <div className='flex flex-wrap gap-2'>
-                    {categories.map(cat => (
-                      <button
-                        type='button'
-                        key={cat.id}
-                        onClick={() => {
-                          setSelectedCategory(cat.id);
-                          setShowSearchResults(true);
-                        }}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                          selectedCategory === cat.id
-                            ? 'bg-shadow-lavender text-white'
-                            : 'bg-white border border-gray-200 text-gray-700 hover:border-shadow-lavender'
-                        }`}
-                      >
-                        <span className='mr-2'>{cat.icon}</span>
-                        {cat.name}
-                        <span className='ml-2 text-xs opacity-75'>
-                          ({cat.count})
-                        </span>
-                      </button>
-                    ))}
+                    {loadingCategories && (
+                      <div className='text-sm text-gray-600'>
+                        Loading categories…
+                      </div>
+                    )}
+                    {errorCategories && (
+                      <div className='text-sm text-red-600'>
+                        {errorCategories}
+                      </div>
+                    )}
+                    {!loadingCategories &&
+                      !errorCategories &&
+                      categories.length > 0 && (
+                        <>
+                          {categories.map(cat => {
+                            if (
+                              !cat ||
+                              typeof cat !== 'object' ||
+                              !cat.id ||
+                              !cat.slug
+                            ) {
+                              return null;
+                            }
+
+                            const icon = String(cat.icon || '');
+                            const name = String(cat.name || 'Unknown');
+                            const slug = String(cat.slug);
+                            const id = String(cat.id);
+
+                            return (
+                              <button
+                                type='button'
+                                key={id}
+                                onClick={() => {
+                                  setSelectedCategory(slug);
+                                  setShowSearchResults(true);
+                                  fetchSearchDeals(slug);
+                                }}
+                                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                  selectedCategory === slug
+                                    ? 'bg-shadow-lavender text-white'
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:border-shadow-lavender'
+                                }`}
+                              >
+                                <span className='mr-2'>{icon}</span>
+                                {name}
+                              </button>
+                            );
+                          })}
+                        </>
+                      )}
                   </div>
                 </div>
 
@@ -368,18 +419,77 @@ export default function Landing() {
             <div className='mb-8'>
               <h2 className='text-2xl font-bold text-gray-900 mb-2'>
                 {selectedCategory
-                  ? `${categories.find(c => c.id === selectedCategory)?.name} Deals`
+                  ? (() => {
+                      const found = Array.isArray(categories)
+                        ? categories.find(c => c && c.slug === selectedCategory)
+                            ?.name
+                        : null;
+                      return found
+                        ? `${found} Deals`
+                        : `${selectedCategory} Deals`;
+                    })()
                   : 'All Deals'}
               </h2>
-              <p className='text-gray-600'>
-                {displayedDeals.length} deals available
-              </p>
+              {loadingSearch && <p className='text-gray-600'>Loading…</p>}
+              {errorSearch && <p className='text-red-600'>{errorSearch}</p>}
+              {!loadingSearch && !errorSearch && (
+                <p className='text-gray-600'>
+                  {searchDeals.length} deals available
+                </p>
+              )}
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {displayedDeals.map(deal => (
-                <DealCard key={deal.id} deal={deal} />
-              ))}
+              {!loadingSearch &&
+                !errorSearch &&
+                searchDeals.map(d => (
+                  <div
+                    key={d.id}
+                    className='bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow'
+                  >
+                    <div className='relative h-40 bg-gradient-to-br from-frosted-lilac to-shadow-lavender/20' />
+                    <div className='p-4'>
+                      <div className='flex items-start justify-between mb-2'>
+                        <div className='flex-1'>
+                          <h3 className='font-semibold text-gray-900 text-lg mb-1 line-clamp-1'>
+                            {d.service?.name ?? d.title}
+                          </h3>
+                          <p className='text-sm text-gray-600 mb-1'>
+                            {d.business?.name ?? 'Business'}
+                          </p>
+                        </div>
+                      </div>
+                      {d.description && (
+                        <p className='text-sm text-gray-700 line-clamp-2 mb-3'>
+                          {d.description}
+                        </p>
+                      )}
+                      <div className='flex items-end justify-between pt-3 border-t border-gray-100'>
+                        <div>
+                          <div className='flex items-baseline gap-2'>
+                            <span className='text-2xl font-bold text-shadow-lavender'>
+                              {d.price != null ? `$${d.price}` : '—'}
+                            </span>
+                            {d.originalPrice != null && (
+                              <span className='text-sm text-gray-500 line-through'>
+                                ${d.originalPrice}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          size='sm'
+                          className='bg-shadow-lavender hover:bg-shadow-lavender/90'
+                          onClick={() => {
+                            navigate(`/deal-details/${d.id}`);
+                          }}
+                        >
+                          View Deal
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         </section>

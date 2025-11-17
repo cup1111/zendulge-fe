@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
-import { BusinessService } from '~/services/businessService';
+import BusinessService from '~/services/businessService';
 
 interface Customer {
   id: string;
