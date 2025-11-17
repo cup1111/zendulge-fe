@@ -298,6 +298,19 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const handleUpdateDeal = async () => {
     if (!editingDeal) return;
 
+    // Validate that deal price is less than base price
+    const selectedService = services.find(s => s.id === formData.service);
+    if (selectedService && selectedService.basePrice > 0) {
+      if (formData.price >= selectedService.basePrice) {
+        toast({
+          title: 'Invalid Price',
+          description: 'Deal price must be less than the service base price',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     try {
       await DealService.updateDeal(businessId, editingDeal.id, {
         ...formData,
@@ -889,23 +902,84 @@ export default function DealManagement({ businessId }: DealManagementProps) {
             </div>
 
             <div>
-              {' '}
-              {/* Single column for price */}
+              {/* Base Price (Read-only) */}
               <div>
+                <Label htmlFor='edit-basePrice'>Service Base Price (AUD)</Label>
+                <Input
+                  id='edit-basePrice'
+                  type='number'
+                  value={
+                    services.find(s => s.id === formData.service)?.basePrice ??
+                    0
+                  }
+                  disabled
+                  readOnly
+                  className='bg-gray-100 cursor-not-allowed'
+                />
+              </div>
+
+              {/* Single column for price */}
+              <div className='mt-4'>
                 <Label htmlFor='edit-price'>Deal Price (AUD)</Label>
                 <Input
                   id='edit-price'
                   type='number'
                   step='0.01'
                   value={formData.price}
-                  onChange={e =>
+                  onChange={e => {
+                    const newPrice = parseFloat(e.target.value) || 0;
+                    const selectedService = services.find(
+                      s => s.id === formData.service
+                    );
+                    const basePrice = selectedService?.basePrice ?? 0;
+
+                    if (
+                      newPrice > 0 &&
+                      basePrice > 0 &&
+                      newPrice >= basePrice
+                    ) {
+                      toast({
+                        title: 'Invalid Price',
+                        description:
+                          'Deal price must be less than the service base price',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+
                     setFormData({
                       ...formData,
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                      price: newPrice,
+                    });
+                  }}
                   min='0'
+                  max={
+                    services.find(s => s.id === formData.service)?.basePrice
+                      ? services.find(s => s.id === formData.service)!
+                          .basePrice - 0.01
+                      : undefined
+                  }
                 />
+                {formData.service &&
+                  (() => {
+                    const selectedService = services.find(
+                      s => s.id === formData.service
+                    );
+                    const basePrice = selectedService?.basePrice ?? 0;
+                    if (
+                      basePrice > 0 &&
+                      formData.price > 0 &&
+                      formData.price >= basePrice
+                    ) {
+                      return (
+                        <p className='text-sm text-red-500 mt-1'>
+                          Deal price must be less than base price ($
+                          {basePrice.toFixed(2)})
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
               </div>
             </div>
 

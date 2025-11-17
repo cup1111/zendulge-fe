@@ -58,7 +58,7 @@ export default function Landing() {
       setLoadingRecommended(true);
       setErrorRecommended(null);
       try {
-        const deals = await PublicDealService.list({ limit: 3 });
+        const deals = await PublicDealService.list();
         if (mounted) setRecommendedDeals(deals);
       } catch {
         if (mounted) setErrorRecommended('Failed to load deals.');
