@@ -390,7 +390,7 @@ export default function DealDialog({
         ) : (
           <form onSubmit={handleSubmit} className='space-y-6'>
             {/* Two Column Layout */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               {/* Deal Title */}
               <div className='md:col-span-2'>
                 <Label htmlFor='title'>Deal Title *</Label>
@@ -611,6 +611,35 @@ export default function DealDialog({
                   max='1440'
                   required
                 />
+              </div>
+
+              {/* Status */}
+              <div>
+                <Label htmlFor='status'>Status *</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={value =>
+                    setFormData({
+                      ...formData,
+                      status: value as
+                        | 'active'
+                        | 'inactive'
+                        | 'expired'
+                        | 'sold_out',
+                    })
+                  }
+                  required
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Select status' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='active'>Active</SelectItem>
+                    <SelectItem value='inactive'>Inactive</SelectItem>
+                    <SelectItem value='expired'>Expired</SelectItem>
+                    <SelectItem value='sold_out'>Sold Out</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Start Date */}
