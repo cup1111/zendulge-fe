@@ -621,15 +621,29 @@ export default function DealDialog({
                   type='date'
                   value={formData.startDate}
                   onChange={e => {
-                    const updatedAvailability = normalizeAvailability(
-                      e.target.value,
-                      formData.endDate
-                    );
-                    setFormData({
-                      ...formData,
-                      startDate: updatedAvailability.startDate,
-                      endDate: updatedAvailability.endDate,
-                    });
+                    const newStartDate = e.target.value;
+                    const parsedStart = parseDateInput(newStartDate);
+                    const parsedEnd = parseDateInput(formData.endDate);
+
+                    // Only update start date, but ensure end date is still after start date
+                    if (
+                      parsedStart &&
+                      parsedEnd &&
+                      parsedEnd.getTime() <= parsedStart.getTime()
+                    ) {
+                      // If end date is before or equal to new start date, adjust end date
+                      const adjustedEnd = addDays(parsedStart, 1);
+                      setFormData({
+                        ...formData,
+                        startDate: newStartDate,
+                        endDate: formatDate(adjustedEnd),
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        startDate: newStartDate,
+                      });
+                    }
                   }}
                   min={todayString}
                   required
@@ -644,15 +658,29 @@ export default function DealDialog({
                   type='date'
                   value={formData.endDate}
                   onChange={e => {
-                    const updatedAvailability = normalizeAvailability(
-                      formData.startDate,
-                      e.target.value
-                    );
-                    setFormData({
-                      ...formData,
-                      startDate: updatedAvailability.startDate,
-                      endDate: updatedAvailability.endDate,
-                    });
+                    const newEndDate = e.target.value;
+                    const parsedStart = parseDateInput(formData.startDate);
+                    const parsedEnd = parseDateInput(newEndDate);
+
+                    // Only update end date, don't touch start date
+                    // But ensure end date is after start date
+                    if (
+                      parsedStart &&
+                      parsedEnd &&
+                      parsedEnd.getTime() <= parsedStart.getTime()
+                    ) {
+                      // If end date is before or equal to start date, set it to start date + 1 day
+                      const adjustedEnd = addDays(parsedStart, 1);
+                      setFormData({
+                        ...formData,
+                        endDate: formatDate(adjustedEnd),
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        endDate: newEndDate,
+                      });
+                    }
                   }}
                   min={minimumEndDate}
                   required
