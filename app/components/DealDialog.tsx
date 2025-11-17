@@ -314,6 +314,19 @@ export default function DealDialog({
       return;
     }
 
+    // Validate that deal price is less than base price
+    const selectedService = services.find(s => s.id === formData.service);
+    if (selectedService && selectedService.basePrice > 0) {
+      if (formData.price >= selectedService.basePrice) {
+        toast({
+          title: 'Invalid Price',
+          description: 'Deal price must be less than the service base price',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
       const dealData = {
@@ -390,7 +403,7 @@ export default function DealDialog({
         ) : (
           <form onSubmit={handleSubmit} className='space-y-6'>
             {/* Two Column Layout */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               {/* Deal Title */}
               <div className='md:col-span-2'>
                 <Label htmlFor='title'>Deal Title *</Label>
@@ -575,6 +588,22 @@ export default function DealDialog({
                 </Select>
               </div>
 
+              {/* Base Price (Read-only) */}
+              <div>
+                <Label htmlFor='basePrice'>Service Base Price (AUD)</Label>
+                <Input
+                  id='basePrice'
+                  type='number'
+                  value={
+                    services.find(s => s.id === formData.service)?.basePrice ??
+                    0
+                  }
+                  disabled
+                  readOnly
+                  className='bg-gray-100 cursor-not-allowed'
+                />
+              </div>
+
               {/* Price */}
               <div>
                 <Label htmlFor='price'>Deal Price (AUD) *</Label>
@@ -583,15 +612,61 @@ export default function DealDialog({
                   type='number'
                   step='0.01'
                   value={formData.price}
-                  onChange={e =>
+                  onChange={e => {
+                    const newPrice = parseFloat(e.target.value) || 0;
+                    const selectedService = services.find(
+                      s => s.id === formData.service
+                    );
+                    const basePrice = selectedService?.basePrice ?? 0;
+
+                    if (
+                      newPrice > 0 &&
+                      basePrice > 0 &&
+                      newPrice >= basePrice
+                    ) {
+                      toast({
+                        title: 'Invalid Price',
+                        description:
+                          'Deal price must be less than the service base price',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+
                     setFormData({
                       ...formData,
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                      price: newPrice,
+                    });
+                  }}
                   min='0'
+                  max={
+                    services.find(s => s.id === formData.service)?.basePrice
+                      ? services.find(s => s.id === formData.service)!
+                          .basePrice - 0.01
+                      : undefined
+                  }
                   required
                 />
+                {formData.service &&
+                  (() => {
+                    const selectedService = services.find(
+                      s => s.id === formData.service
+                    );
+                    const basePrice = selectedService?.basePrice ?? 0;
+                    if (
+                      basePrice > 0 &&
+                      formData.price > 0 &&
+                      formData.price >= basePrice
+                    ) {
+                      return (
+                        <p className='text-sm text-red-500 mt-1'>
+                          Deal price must be less than base price ($
+                          {basePrice.toFixed(2)})
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
               </div>
 
               {/* Duration */}
@@ -611,6 +686,35 @@ export default function DealDialog({
                   max='1440'
                   required
                 />
+              </div>
+
+              {/* Status */}
+              <div>
+                <Label htmlFor='status'>Status *</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={value =>
+                    setFormData({
+                      ...formData,
+                      status: value as
+                        | 'active'
+                        | 'inactive'
+                        | 'expired'
+                        | 'sold_out',
+                    })
+                  }
+                  required
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Select status' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='active'>Active</SelectItem>
+                    <SelectItem value='inactive'>Inactive</SelectItem>
+                    <SelectItem value='expired'>Expired</SelectItem>
+                    <SelectItem value='sold_out'>Sold Out</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Start Date */}

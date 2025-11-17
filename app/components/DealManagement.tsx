@@ -239,10 +239,49 @@ export default function DealManagement({ businessId }: DealManagementProps) {
       .map(site => site.id)
       .filter(id => id);
 
+    // Extract category slug - must use slug for Select component
+    // The deal.category should be a CategoryData object with slug property
+    let categorySlug = '';
+    if (
+      deal.category &&
+      typeof deal.category === 'object' &&
+      deal.category !== null
+    ) {
+      // Direct slug access
+      categorySlug = deal.category.slug ?? '';
+
+      // If slug is missing from category object, try to find by name or ID
+      if (!categorySlug && categories.length > 0) {
+        const categoryName = deal.category.name;
+        // eslint-disable-next-line no-underscore-dangle
+        const categoryId = deal.category._id ?? '';
+
+        // Try to find matching category by name
+        if (categoryName) {
+          const matchingCategory = categories.find(
+            cat => cat.name === categoryName
+          );
+          if (matchingCategory) {
+            categorySlug = matchingCategory.slug;
+          }
+        }
+
+        // If still not found, try by ID
+        if (!categorySlug && categoryId) {
+          const matchingCategory = categories.find(
+            cat => cat.id === String(categoryId)
+          );
+          if (matchingCategory) {
+            categorySlug = matchingCategory.slug;
+          }
+        }
+      }
+    }
+
     setFormData({
       title: deal.title ?? '',
       description: deal.description ?? '',
-      category: deal.category?.slug ?? deal.category?.name ?? '',
+      category: categorySlug,
       price: deal.price ?? 0,
       duration: deal.duration ?? 60,
       operatingSite: operatingSiteIds,
@@ -258,6 +297,19 @@ export default function DealManagement({ businessId }: DealManagementProps) {
 
   const handleUpdateDeal = async () => {
     if (!editingDeal) return;
+
+    // Validate that deal price is less than base price
+    const selectedService = services.find(s => s.id === formData.service);
+    if (selectedService && selectedService.basePrice > 0) {
+      if (formData.price >= selectedService.basePrice) {
+        toast({
+          title: 'Invalid Price',
+          description: 'Deal price must be less than the service base price',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
 
     try {
       await DealService.updateDeal(businessId, editingDeal.id, {
@@ -674,7 +726,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               <div>
                 <Label htmlFor='edit-category'>Category</Label>
                 <Select
-                  value={formData.category}
+                  value={formData.category || ''}
                   onValueChange={value =>
                     setFormData({ ...formData, category: value })
                   }
@@ -850,23 +902,84 @@ export default function DealManagement({ businessId }: DealManagementProps) {
             </div>
 
             <div>
-              {' '}
-              {/* Single column for price */}
+              {/* Base Price (Read-only) */}
               <div>
+                <Label htmlFor='edit-basePrice'>Service Base Price (AUD)</Label>
+                <Input
+                  id='edit-basePrice'
+                  type='number'
+                  value={
+                    services.find(s => s.id === formData.service)?.basePrice ??
+                    0
+                  }
+                  disabled
+                  readOnly
+                  className='bg-gray-100 cursor-not-allowed'
+                />
+              </div>
+
+              {/* Single column for price */}
+              <div className='mt-4'>
                 <Label htmlFor='edit-price'>Deal Price (AUD)</Label>
                 <Input
                   id='edit-price'
                   type='number'
                   step='0.01'
                   value={formData.price}
-                  onChange={e =>
+                  onChange={e => {
+                    const newPrice = parseFloat(e.target.value) || 0;
+                    const selectedService = services.find(
+                      s => s.id === formData.service
+                    );
+                    const basePrice = selectedService?.basePrice ?? 0;
+
+                    if (
+                      newPrice > 0 &&
+                      basePrice > 0 &&
+                      newPrice >= basePrice
+                    ) {
+                      toast({
+                        title: 'Invalid Price',
+                        description:
+                          'Deal price must be less than the service base price',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+
                     setFormData({
                       ...formData,
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
+                      price: newPrice,
+                    });
+                  }}
                   min='0'
+                  max={
+                    services.find(s => s.id === formData.service)?.basePrice
+                      ? services.find(s => s.id === formData.service)!
+                          .basePrice - 0.01
+                      : undefined
+                  }
                 />
+                {formData.service &&
+                  (() => {
+                    const selectedService = services.find(
+                      s => s.id === formData.service
+                    );
+                    const basePrice = selectedService?.basePrice ?? 0;
+                    if (
+                      basePrice > 0 &&
+                      formData.price > 0 &&
+                      formData.price >= basePrice
+                    ) {
+                      return (
+                        <p className='text-sm text-red-500 mt-1'>
+                          Deal price must be less than base price ($
+                          {basePrice.toFixed(2)})
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
               </div>
             </div>
 

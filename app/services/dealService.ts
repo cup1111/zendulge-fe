@@ -92,12 +92,21 @@ export interface DealApiResponse {
   data: RawDealApiResponse | RawDealApiResponse[];
 }
 
+interface RawCategoryApiResponse {
+  // eslint-disable-next-line no-underscore-dangle
+  _id?: string;
+  id?: string;
+  name?: string;
+  slug?: string;
+  icon?: string;
+}
+
 interface RawDealApiResponse {
   _id?: string;
   id?: string;
   title?: string;
   description?: string;
-  category?: CategoryData | string;
+  category?: RawCategoryApiResponse | string;
   price?: number;
   originalPrice?: number;
   discount?: number;
@@ -138,11 +147,24 @@ interface RawDealApiResponse {
 
 // Helper to map deal data, extracting category from populated object
 const mapDealCategory = (deal: RawDealApiResponse): Deal => {
-  // Category is always a populated object from backend
-  const categoryObj: CategoryData =
-    typeof deal.category === 'object' && deal.category && '_id' in deal.category
-      ? (deal.category as CategoryData)
-      : { _id: '', name: '', slug: '', icon: '' };
+  // Category is always a populated object from backend with _id, name, slug, icon
+  let categoryObj: CategoryData = { _id: '', name: '', slug: '', icon: '' };
+
+  if (
+    deal.category &&
+    typeof deal.category === 'object' &&
+    deal.category !== null
+  ) {
+    const rawCategory = deal.category as RawCategoryApiResponse;
+    categoryObj = {
+      // eslint-disable-next-line no-underscore-dangle
+      _id: rawCategory._id ?? rawCategory.id ?? '',
+      name: rawCategory.name ?? '',
+      slug: rawCategory.slug ?? '',
+      icon: rawCategory.icon ?? '',
+    };
+  }
+
   return {
     ...deal,
     category: categoryObj,
