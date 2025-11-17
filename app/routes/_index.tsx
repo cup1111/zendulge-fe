@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-import { categories, recentBookings } from '~/lib/mockData';
+import { recentBookings } from '~/lib/mockData';
+import CategoryService, { type Category } from '~/services/categoryService';
 import PublicDealService, {
   type PublicDeal,
 } from '~/services/publicDealService';
@@ -25,15 +26,31 @@ export default function Landing() {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [recommendedDeals, setRecommendedDeals] = useState<PublicDeal[]>([]);
   const [searchDeals, setSearchDeals] = useState<PublicDeal[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loadingRecommended, setLoadingRecommended] = useState(false);
   const [loadingSearch, setLoadingSearch] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const [errorRecommended, setErrorRecommended] = useState<string | null>(null);
   const [errorSearch, setErrorSearch] = useState<string | null>(null);
+  const [errorCategories, setErrorCategories] = useState<string | null>(null);
 
-  // Load recommended deals (top N) on mount
+  // Load recommended deals (top N) and categories on mount
   useEffect(() => {
     let mounted = true;
     const load = async () => {
+      // Load categories
+      setLoadingCategories(true);
+      setErrorCategories(null);
+      try {
+        const cats = await CategoryService.list();
+        if (mounted) setCategories(cats);
+      } catch {
+        if (mounted) setErrorCategories('Failed to load categories.');
+      } finally {
+        if (mounted) setLoadingCategories(false);
+      }
+
+      // Load recommended deals
       setLoadingRecommended(true);
       setErrorRecommended(null);
       try {
@@ -154,7 +171,7 @@ export default function Landing() {
                         <div className='flex items-start justify-between mb-2'>
                           <div className='flex-1'>
                             <h3 className='font-semibold text-gray-900 text-lg mb-1 line-clamp-1'>
-                              {d.service?.name || d.title}
+                              {d.service?.name ?? d.title}
                             </h3>
                             <p className='text-sm text-gray-600 mb-1'>
                               {d.business?.name ?? 'Business'}
@@ -228,28 +245,37 @@ export default function Landing() {
                   </div>
 
                   <div className='flex flex-wrap gap-2'>
-                    {categories.map(cat => (
-                      <button
-                        type='button'
-                        key={cat.id}
-                        onClick={() => {
-                          setSelectedCategory(cat.id);
-                          setShowSearchResults(true);
-                          fetchSearchDeals(cat.id);
-                        }}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                          selectedCategory === cat.id
-                            ? 'bg-shadow-lavender text-white'
-                            : 'bg-white border border-gray-200 text-gray-700 hover:border-shadow-lavender'
-                        }`}
-                      >
-                        <span className='mr-2'>{cat.icon}</span>
-                        {cat.name}
-                        <span className='ml-2 text-xs opacity-75'>
-                          ({cat.count})
-                        </span>
-                      </button>
-                    ))}
+                    {loadingCategories && (
+                      <div className='text-sm text-gray-600'>
+                        Loading categories…
+                      </div>
+                    )}
+                    {errorCategories && (
+                      <div className='text-sm text-red-600'>
+                        {errorCategories}
+                      </div>
+                    )}
+                    {!loadingCategories &&
+                      !errorCategories &&
+                      categories.map(cat => (
+                        <button
+                          type='button'
+                          key={cat.id}
+                          onClick={() => {
+                            setSelectedCategory(cat.slug);
+                            setShowSearchResults(true);
+                            fetchSearchDeals(cat.slug);
+                          }}
+                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                            selectedCategory === cat.slug
+                              ? 'bg-shadow-lavender text-white'
+                              : 'bg-white border border-gray-200 text-gray-700 hover:border-shadow-lavender'
+                          }`}
+                        >
+                          <span className='mr-2'>{cat.icon}</span>
+                          {cat.name}
+                        </button>
+                      ))}
                   </div>
                 </div>
 
@@ -369,7 +395,7 @@ export default function Landing() {
             <div className='mb-8'>
               <h2 className='text-2xl font-bold text-gray-900 mb-2'>
                 {selectedCategory
-                  ? `${categories.find(c => c.id === selectedCategory)?.name} Deals`
+                  ? `${categories.find(c => c.slug === selectedCategory)?.name ?? selectedCategory} Deals`
                   : 'All Deals'}
               </h2>
               {loadingSearch && <p className='text-gray-600'>Loading…</p>}
@@ -394,7 +420,7 @@ export default function Landing() {
                       <div className='flex items-start justify-between mb-2'>
                         <div className='flex-1'>
                           <h3 className='font-semibold text-gray-900 text-lg mb-1 line-clamp-1'>
-                            {d.service?.name || d.title}
+                            {d.service?.name ?? d.title}
                           </h3>
                           <p className='text-sm text-gray-600 mb-1'>
                             {d.business?.name ?? 'Business'}
