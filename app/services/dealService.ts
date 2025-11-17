@@ -89,7 +89,7 @@ export interface DealStatusUpdateRequest {
 export interface DealApiResponse {
   success: boolean;
   message: string;
-  data: Deal | Deal[];
+  data: RawDealApiResponse | RawDealApiResponse[];
 }
 
 interface RawDealApiResponse {
@@ -140,7 +140,9 @@ interface RawDealApiResponse {
 const mapDealCategory = (deal: RawDealApiResponse): Deal => {
   // Category is always a populated object from backend
   const categoryObj: CategoryData =
-    (typeof deal.category === 'object' && deal.category) || {};
+    typeof deal.category === 'object' && deal.category && '_id' in deal.category
+      ? (deal.category as CategoryData)
+      : { _id: '', name: '', slug: '', icon: '' };
   return {
     ...deal,
     category: categoryObj,
@@ -162,7 +164,10 @@ export class DealService {
     const response = await api.get<DealApiResponse>(
       `/business/${businessId}/deals/${dealId}`
     );
-    return mapDealCategory(response.data.data);
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 
   static async createDeal(
@@ -173,7 +178,10 @@ export class DealService {
       `/business/${businessId}/deals`,
       dealData
     );
-    return mapDealCategory(response.data.data);
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 
   static async updateDeal(
@@ -185,7 +193,10 @@ export class DealService {
       `/business/${businessId}/deals/${dealId}`,
       dealData
     );
-    return mapDealCategory(response.data.data);
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 
   static async deleteDeal(businessId: string, dealId: string): Promise<void> {
@@ -201,7 +212,10 @@ export class DealService {
       `/business/${businessId}/deals/${dealId}/status`,
       statusData
     );
-    return mapDealCategory(response.data.data);
+    const data = Array.isArray(response.data.data)
+      ? response.data.data[0]
+      : response.data.data;
+    return mapDealCategory(data);
   }
 }
 
