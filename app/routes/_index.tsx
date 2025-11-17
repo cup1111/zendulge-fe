@@ -43,9 +43,13 @@ export default function Landing() {
       setErrorCategories(null);
       try {
         const cats = await CategoryService.list();
-        if (mounted) setCategories(cats);
-      } catch {
-        if (mounted) setErrorCategories('Failed to load categories.');
+        if (mounted && Array.isArray(cats)) {
+          setCategories(cats);
+        }
+      } catch (error) {
+        if (mounted) {
+          setErrorCategories('Failed to load categories.');
+        }
       } finally {
         if (mounted) setLoadingCategories(false);
       }
@@ -257,25 +261,45 @@ export default function Landing() {
                     )}
                     {!loadingCategories &&
                       !errorCategories &&
-                      categories.map(cat => (
-                        <button
-                          type='button'
-                          key={cat.id}
-                          onClick={() => {
-                            setSelectedCategory(cat.slug);
-                            setShowSearchResults(true);
-                            fetchSearchDeals(cat.slug);
-                          }}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            selectedCategory === cat.slug
-                              ? 'bg-shadow-lavender text-white'
-                              : 'bg-white border border-gray-200 text-gray-700 hover:border-shadow-lavender'
-                          }`}
-                        >
-                          <span className='mr-2'>{cat.icon}</span>
-                          {cat.name}
-                        </button>
-                      ))}
+                      categories.length > 0 && (
+                        <>
+                          {categories.map(cat => {
+                            if (
+                              !cat ||
+                              typeof cat !== 'object' ||
+                              !cat.id ||
+                              !cat.slug
+                            ) {
+                              return null;
+                            }
+
+                            const icon = String(cat.icon || '');
+                            const name = String(cat.name || 'Unknown');
+                            const slug = String(cat.slug);
+                            const id = String(cat.id);
+
+                            return (
+                              <button
+                                type='button'
+                                key={id}
+                                onClick={() => {
+                                  setSelectedCategory(slug);
+                                  setShowSearchResults(true);
+                                  fetchSearchDeals(slug);
+                                }}
+                                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                                  selectedCategory === slug
+                                    ? 'bg-shadow-lavender text-white'
+                                    : 'bg-white border border-gray-200 text-gray-700 hover:border-shadow-lavender'
+                                }`}
+                              >
+                                <span className='mr-2'>{icon}</span>
+                                {name}
+                              </button>
+                            );
+                          })}
+                        </>
+                      )}
                   </div>
                 </div>
 
@@ -395,7 +419,15 @@ export default function Landing() {
             <div className='mb-8'>
               <h2 className='text-2xl font-bold text-gray-900 mb-2'>
                 {selectedCategory
-                  ? `${categories.find(c => c.slug === selectedCategory)?.name ?? selectedCategory} Deals`
+                  ? (() => {
+                      const found = Array.isArray(categories)
+                        ? categories.find(c => c && c.slug === selectedCategory)
+                            ?.name
+                        : null;
+                      return found
+                        ? `${found} Deals`
+                        : `${selectedCategory} Deals`;
+                    })()
                   : 'All Deals'}
               </h2>
               {loadingSearch && <p className='text-gray-600'>Loading…</p>}

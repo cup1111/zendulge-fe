@@ -28,6 +28,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
+import CategoryService, { type Category } from '~/services/categoryService';
 import { DealService } from '~/services/dealService';
 import {
   OperateSiteService,
@@ -107,6 +108,7 @@ export default function DealDialog({
   const { toast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [internalOpen, setInternalOpen] = useState(false);
@@ -202,44 +204,28 @@ export default function DealDialog({
     return formatDate(nextDay);
   }, [formData.startDate, todayString]);
 
-  // Deal categories
-  const dealCategories = [
-    'Cleaning',
-    'Maintenance',
-    'Commercial',
-    'Specialized',
-    'Renovation',
-    'Beauty',
-    'Health',
-    'Fitness',
-    'Education',
-    'Automotive',
-    'Home Improvement',
-    'Pet Care',
-    'Event Planning',
-    'Consulting',
-    'Other',
-  ];
-
-  // Load services and operating sites when dialog opens
+  // Load services, operating sites, and categories when dialog opens
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [servicesData, sitesData] = await Promise.all([
+      const [servicesData, sitesData, categoriesData] = await Promise.all([
         ServiceService.getServices(businessId),
         OperateSiteService.getOperateSites(businessId),
+        CategoryService.list(),
       ]);
 
       setServices(Array.isArray(servicesData) ? servicesData : []);
       setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
+      setCategories(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to load services and operating sites',
+        description: 'Failed to load services, operating sites, and categories',
         variant: 'destructive',
       });
       setServices([]);
       setOperatingSites([]);
+      setCategories([]);
     } finally {
       setIsLoading(false);
     }
@@ -580,9 +566,9 @@ export default function DealDialog({
                     <SelectValue placeholder='Select category' />
                   </SelectTrigger>
                   <SelectContent>
-                    {dealCategories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
+                    {categories.map(category => (
+                      <SelectItem key={category.id} value={category.slug}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

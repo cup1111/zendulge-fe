@@ -23,25 +23,62 @@ export interface CategoryApiResponse {
 }
 
 const mapCategory = (raw: RawCategoryApiResponse): Category => {
+  // eslint-disable-next-line no-underscore-dangle
+  const rawId = raw?._id;
+  if (!raw || typeof raw !== 'object' || !rawId) {
+    throw new Error('Invalid category data received from API');
+  }
+  // eslint-disable-next-line no-underscore-dangle
   const { _id: id } = raw;
   return {
-    id,
-    name: raw.name,
-    slug: raw.slug,
-    icon: raw.icon,
-    isActive: raw.isActive,
+    id: String(id),
+    name: String(raw.name || ''),
+    slug: String(raw.slug || ''),
+    icon: String(raw.icon || ''),
+    isActive: Boolean(raw.isActive),
   };
 };
 
 export default class CategoryService {
   static async list(includeInactive = false): Promise<Category[]> {
-    const response = await api.get<CategoryApiResponse>('/public/categories', {
-      params: { includeInactive },
-    });
-    const categories = Array.isArray(response.data.data)
-      ? response.data.data
-      : [response.data.data];
-    return categories.map(mapCategory);
+    try {
+      const response = await api.get<CategoryApiResponse>(
+        '/public/categories',
+        {
+          params: { includeInactive },
+        }
+      );
+
+      if (!response?.data?.data) {
+        return [];
+      }
+
+      // Ensure we have an array
+      const rawCategories = Array.isArray(response.data.data)
+        ? response.data.data
+        : [response.data.data];
+
+      return rawCategories
+        .filter(
+          (cat): cat is RawCategoryApiResponse =>
+            cat != null &&
+            typeof cat === 'object' &&
+            '_id' in cat &&
+            'name' in cat &&
+            'slug' in cat &&
+            'icon' in cat
+        )
+        .map(raw => {
+          try {
+            return mapCategory(raw);
+          } catch {
+            return null;
+          }
+        })
+        .filter((cat): cat is Category => cat != null);
+    } catch {
+      return [];
+    }
   }
 
   static async getById(id: string): Promise<Category> {
