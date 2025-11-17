@@ -33,12 +33,71 @@ export default function Landing() {
   const [errorRecommended, setErrorRecommended] = useState<string | null>(null);
   const [errorSearch, setErrorSearch] = useState<string | null>(null);
   const [errorCategories, setErrorCategories] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
-  // Load recommended deals (top N) and categories on mount
+  // Get user's geolocation
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLocationError(null);
+      },
+      error => {
+        // Don't show error if user denies permission - it's optional
+        if (error.code !== error.PERMISSION_DENIED) {
+          setLocationError('Unable to retrieve your location.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }, []);
+
+  // Load recommended deals when userLocation changes (or on initial mount)
+  useEffect(() => {
+    let mounted = true;
+    setLoadingRecommended(true);
+    setErrorRecommended(null);
+
+    const loadDeals = async () => {
+      try {
+        const deals = await PublicDealService.list({
+          latitude: userLocation?.latitude,
+          longitude: userLocation?.longitude,
+        });
+        if (mounted) setRecommendedDeals(deals);
+      } catch {
+        if (mounted) setErrorRecommended('Failed to load deals.');
+      } finally {
+        if (mounted) setLoadingRecommended(false);
+      }
+    };
+
+    loadDeals();
+    return () => {
+      mounted = false;
+    };
+  }, [userLocation]);
+
+  // Load categories on mount
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      // Load categories
       setLoadingCategories(true);
       setErrorCategories(null);
       try {
@@ -52,18 +111,6 @@ export default function Landing() {
         }
       } finally {
         if (mounted) setLoadingCategories(false);
-      }
-
-      // Load recommended deals
-      setLoadingRecommended(true);
-      setErrorRecommended(null);
-      try {
-        const deals = await PublicDealService.list();
-        if (mounted) setRecommendedDeals(deals);
-      } catch {
-        if (mounted) setErrorRecommended('Failed to load deals.');
-      } finally {
-        if (mounted) setLoadingRecommended(false);
       }
     };
     load();
@@ -81,6 +128,8 @@ export default function Landing() {
       const deals = await PublicDealService.list({
         category: normalizedCategory,
         q: location && location.trim().length > 0 ? location : undefined,
+        latitude: userLocation?.latitude,
+        longitude: userLocation?.longitude,
         radiusKm: searchRadius,
       });
       setSearchDeals(deals);
@@ -112,6 +161,10 @@ export default function Landing() {
         ?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
+
+  if (locationError) {
+    return <p className='text-red-600'>{locationError}</p>;
+  }
 
   return (
     <div className='min-h-screen'>
