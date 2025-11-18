@@ -51,11 +51,18 @@ export default function ImageInput({
         />
       )}
       {logoUrl && imageUrl ? (
-        <img
-          src={imageUrl}
-          alt='Logo'
-          className='w-20 h-20 object-cover rounded-lg'
-        />
+        <button
+          type='button'
+          onClick={() => {
+            inputRef.current?.click();
+          }}
+        >
+          <img
+            src={imageUrl}
+            alt='Logo'
+            className='w-20 h-20 object-cover rounded-lg'
+          />
+        </button>
       ) : (
         <Button
           size='sm'
