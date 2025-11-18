@@ -28,7 +28,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
-import type { Deal } from '~/services/dealService';
+import type { Deal, DealCreateRequest } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 import {
   OperateSiteService,
@@ -569,6 +569,7 @@ export default function DealDialog({
           price: 0,
           originalPrice: undefined,
           duration: 60,
+          sections: 1,
           operatingSite: [],
           allDay: false,
           startDate: defaultSchedule.startDate,

@@ -105,6 +105,41 @@
   const dealData: DealData = { ... };
   ```
 
+#### TypeScript Compilation Checks
+- **MANDATORY**: Always check for TypeScript compilation errors before committing
+- **MANDATORY**: Run `tsc` or `yarn tsc` to verify no TypeScript errors
+- **ALWAYS** import all types/interfaces you use (e.g., `DealCreateRequest`, `DealUpdateRequest`)
+- **ALWAYS** include all required properties when initializing/resetting form state
+- **ALWAYS** ensure form state matches the expected interface/type structure
+- **VERIFY** all required fields are present when setting formData:
+  - Check if interface has required fields (e.g., `sections: number`)
+  - Ensure all required fields are included in formData initialization/reset
+  - Match formData structure exactly to the type definition
+- Example:
+  ```typescript
+  // ❌ BAD - Missing required property
+  setFormData({
+    title: '',
+    duration: 60,
+    // sections is missing but required in DealCreateRequest
+  });
+  
+  // ✅ GOOD - All required properties included
+  setFormData({
+    title: '',
+    duration: 60,
+    sections: 1, // Required property included
+    // ... other required fields
+  });
+  
+  // ❌ BAD - Type not imported
+  const dealData: DealCreateRequest = { ... }; // DealCreateRequest not imported
+  
+  // ✅ GOOD - Type properly imported
+  import type { DealCreateRequest } from '~/services/dealService';
+  const dealData: DealCreateRequest = { ... };
+  ```
+
 ### Code Quality Standards
 
 #### Clean Code - Early Returns

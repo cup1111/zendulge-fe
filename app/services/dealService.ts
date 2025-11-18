@@ -88,7 +88,7 @@ export interface DealUpdateRequest {
   price?: number;
   originalPrice?: number;
   duration?: number;
-  section?: number;
+  sections?: number;
   operatingSite?: string[];
   allDay?: boolean;
   startDate?: string;
