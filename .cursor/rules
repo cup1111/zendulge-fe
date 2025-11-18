@@ -28,6 +28,15 @@
 - **ALWAYS** check lint status after making changes
 - **ALWAYS** run `yarn lint:fix` again after fixes to verify all errors are resolved
 
+### TypeScript Compilation - MANDATORY BEFORE COMMITS
+- **MANDATORY**: Run `yarn tsc` or `tsc` to verify no TypeScript compilation errors
+- **MANDATORY**: Fix ALL TypeScript errors before marking code as complete - ZERO ERRORS ALLOWED
+- **NEVER** commit code with TypeScript compilation errors
+- **ALWAYS** import all types/interfaces you use (e.g., `DealCreateRequest`, `DealUpdateRequest`)
+- **ALWAYS** include all required properties when initializing/resetting form state (e.g., `sections: number`)
+- **ALWAYS** verify form state matches the expected interface/type structure
+- **ALWAYS** run `yarn tsc` again after fixes to verify all errors are resolved
+
 ### Common ESLint Rules to Follow
 
 #### Nullish Coalescing (`??` vs `||`)
