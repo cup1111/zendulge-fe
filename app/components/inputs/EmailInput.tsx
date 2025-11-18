@@ -65,10 +65,10 @@ export default function EmailInput({
       {showValidationDetails && (
         <div className='space-y-2'>
           {shouldShowError && (
-            <div className='text-xs text-red-600'>
+            <span className='text-xs text-red-600'>
               <XCircle className='w-3 h-3 inline mr-1' />
               Please enter a valid email address
-            </div>
+            </span>
           )}
         </div>
       )}

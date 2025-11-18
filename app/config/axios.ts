@@ -11,9 +11,7 @@ const getAuthToken = (): string | null =>
 const zendulgeAxiosInstance = axios.create({
   baseURL: API_CONFIG.FULL_URL,
   timeout: 30000, // 30 seconds timeout
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: {},
 });
 
 // Request interceptor to add authentication token

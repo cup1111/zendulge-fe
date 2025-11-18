@@ -149,6 +149,11 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
+      logo: {
+        isRequired: false,
+        value: '',
+        defaultValue: '',
+      },
       email: {
         isRequired: true,
         value: '',

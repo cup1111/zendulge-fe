@@ -7,6 +7,8 @@ import AddressInput from '~/components/inputs/AddressInput';
 import EmailInput from '~/components/inputs/EmailInput';
 import PhoneInput from '~/components/inputs/PhoneInput';
 
+import ImageInput from '../inputs/ImageInput';
+
 const WELLNESS_CATEGORIES = [
   'Massage',
   'Yoga',
@@ -163,6 +165,21 @@ export default function BusinessRegistrationFlow({
                   />
                 </label>
                 {error.businessName && renderErrorMessage(error.businessName)}
+              </div>
+              <div>
+                <span className='block text-sm font-medium text-gray-700 mb-2'>
+                  Business Logo
+                </span>
+                <ImageInput
+                  onChange={value => {
+                    onInputChange('logo', value);
+                  }}
+                  onUploadError={err => {
+                    setError({ ...error, ...{ logo: err.message } });
+                  }}
+                  logoUrl={businessRegistrationFormData.logo.value}
+                />
+                {error.logo && renderErrorMessage(error.logo)}
               </div>
               <div>
                 <label
