@@ -21,8 +21,16 @@ export interface Deal {
     name: string;
     address: string;
   }>;
+  allDay: boolean;
   startDate: string;
-  endDate: string;
+  endDate?: string;
+  recurrenceType:
+    | 'none'
+    | 'daily'
+    | 'weekly'
+    | 'weekdays'
+    | 'monthly'
+    | 'annually';
   maxBookings?: number;
   currentBookings: number;
   status: 'active' | 'inactive' | 'expired' | 'sold_out';
@@ -49,13 +57,22 @@ export interface Deal {
 export interface DealCreateRequest {
   title: string;
   description: string;
-  category: string; // Slug string when creating/updating
   price: number;
   originalPrice?: number;
   duration: number;
   operatingSite: string[];
+  allDay: boolean;
   startDate: string;
-  endDate: string;
+  startTime?: string;
+  endDate?: string;
+  endTime?: string;
+  recurrenceType:
+    | 'none'
+    | 'daily'
+    | 'weekly'
+    | 'weekdays'
+    | 'monthly'
+    | 'annually';
   maxBookings?: number;
   currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
@@ -67,13 +84,22 @@ export interface DealCreateRequest {
 export interface DealUpdateRequest {
   title?: string;
   description?: string;
-  category?: string;
   price?: number;
   originalPrice?: number;
   duration?: number;
   operatingSite?: string[];
+  allDay?: boolean;
   startDate?: string;
+  startTime?: string;
   endDate?: string;
+  endTime?: string;
+  recurrenceType?:
+    | 'none'
+    | 'daily'
+    | 'weekly'
+    | 'weekdays'
+    | 'monthly'
+    | 'annually';
   maxBookings?: number;
   currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
@@ -117,8 +143,16 @@ interface RawDealApiResponse {
     name?: string;
     address?: string;
   }>;
+  allDay?: boolean;
   startDate?: string;
   endDate?: string;
+  recurrenceType?:
+    | 'none'
+    | 'daily'
+    | 'weekly'
+    | 'weekdays'
+    | 'monthly'
+    | 'annually';
   maxBookings?: number;
   currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
@@ -145,9 +179,7 @@ interface RawDealApiResponse {
   [key: string]: unknown;
 }
 
-// Helper to map deal data, extracting category from populated object
 const mapDealCategory = (deal: RawDealApiResponse): Deal => {
-  // Category is always a populated object from backend with _id, name, slug, icon
   let categoryObj: CategoryData = { _id: '', name: '', slug: '', icon: '' };
 
   if (
@@ -162,6 +194,13 @@ const mapDealCategory = (deal: RawDealApiResponse): Deal => {
       name: rawCategory.name ?? '',
       slug: rawCategory.slug ?? '',
       icon: rawCategory.icon ?? '',
+    };
+  } else if (deal.service?.category) {
+    categoryObj = {
+      _id: '',
+      name: deal.service.category,
+      slug: deal.service.category,
+      icon: '',
     };
   }
 

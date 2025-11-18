@@ -1,0 +1,299 @@
+<!--
+  ⚠️ CRITICAL: READ THIS FILE FIRST BEFORE ANY CODE CHANGES ⚠️
+  This file contains all development rules and patterns for this codebase.
+  Cursor AI should automatically include this in context, but ALWAYS verify
+  these rules are being followed before making changes.
+  
+  If you're an AI assistant, you MUST:
+  1. Read this entire file before starting any task
+  2. Reference these rules while coding
+  3. Follow ALL patterns listed here
+  4. **MANDATORY**: Run `yarn lint:fix` EVERY TIME after making code changes - NO EXCEPTIONS
+  5. **MANDATORY**: FIX ALL LINTING ERRORS before marking code complete - ZERO ERRORS ALLOWED
+  6. **VERIFY**: Run `yarn lint:fix` again after fixes to confirm all errors are resolved
+-->
+
+# Cursor AI Development Rules - Frontend
+
+## 🚨 CRITICAL RULES - ALWAYS FOLLOW
+
+### ESLint - MANDATORY BEFORE COMMITS
+- **MANDATORY**: Run `yarn lint:fix` or `npm run lint:fix` EVERY TIME after making code changes
+- **MANDATORY**: Run `yarn lint:fix` BEFORE completing any task - THIS IS NOT OPTIONAL
+- **MANDATORY**: Fix ALL linting errors before marking code as complete - ZERO ERRORS ALLOWED
+- **MANDATORY**: Fix ALL linting warnings before marking code as complete (unless explicitly approved)
+- **NEVER** commit code with linting errors
+- **NEVER** ignore linting errors without explicit approval
+- **NEVER** mark code as complete if there are any linting errors
+- **ALWAYS** check lint status after making changes
+- **ALWAYS** run `yarn lint:fix` again after fixes to verify all errors are resolved
+
+### Common ESLint Rules to Follow
+
+#### Nullish Coalescing (`??` vs `||`)
+- **ALWAYS** use `??` instead of `||` for default values
+- Example: `const value = formData.startTime ?? '09:00'` ✅
+- **NOT**: `const value = formData.startTime || '09:00'` ❌
+
+#### Nested Ternary Expressions
+- **NEVER USE** nested ternary expressions - ALWAYS AVOID THEM
+- **ALWAYS USE** if-else blocks or immediately invoked function expressions (IIFE) instead
+- **MANDATORY**: When you see nested ternaries in code, refactor them immediately
+- Example:
+  ```typescript
+  // ❌ BAD - NEVER DO THIS
+  const value = condition1 ? value1 : condition2 ? value2 : value3;
+  const endTime = isAllDay ? undefined : formData.startTime ? calculateEndTime(...) : undefined;
+  
+  // ✅ GOOD - Use IIFE with early returns
+  const endTime = (() => {
+    if (isAllDay) return undefined;
+    if (!formData.startTime) return undefined;
+    return calculateEndTime(formData.startTime, formData.duration);
+  })();
+  
+  // ✅ ALSO GOOD - Use if-else block
+  let value: string | undefined;
+  if (condition1) {
+    value = value1;
+  } else if (condition2) {
+    value = value2;
+  } else {
+    value = value3;
+  }
+  
+  // ✅ ALSO GOOD - Simple IIFE pattern
+  const value = (() => {
+    if (condition1) return value1;
+    if (condition2) return value2;
+    return value3;
+  })();
+  ```
+
+#### No Unused Variables
+- **NEVER** leave unused variables/functions
+- **REMOVE** unused code immediately
+- If you need to keep something for future use, prefix with `_` (e.g., `_unusedFunction`)
+
+#### No Non-Null Assertions
+- **AVOID** non-null assertions (`!`)
+- **USE** optional chaining (`?.`) and null checks instead
+- Example:
+  ```typescript
+  // ❌ BAD
+  const price = service!.basePrice;
+  
+  // ✅ GOOD
+  const service = services.find(s => s.id === formData.service);
+  const price = service?.basePrice;
+  ```
+
+#### TypeScript Any
+- **AVOID** `any` type
+- **USE** proper types, interfaces, or `unknown` if needed
+- Example:
+  ```typescript
+  // ❌ BAD
+  const dealData: any = { ... };
+  
+  // ✅ GOOD
+  interface DealData {
+    title: string;
+    description: string;
+    // ... other fields
+  }
+  const dealData: DealData = { ... };
+  ```
+
+### Code Quality Standards
+
+#### Clean Code - Early Returns
+- **USE EARLY RETURNS** as much as possible to reduce nesting and improve readability
+- **AVOID** deep nesting - use guard clauses and early exits
+- **PREFER** early returns over nested if-else blocks
+- Example:
+  ```typescript
+  // ❌ BAD - Deep nesting
+  function processData(data: Data) {
+    if (data) {
+      if (data.isValid) {
+        if (data.value) {
+          // actual logic here
+          return result;
+        }
+      }
+    }
+    return null;
+  }
+  
+  // ✅ GOOD - Early returns
+  function processData(data: Data) {
+    if (!data) return null;
+    if (!data.isValid) return null;
+    if (!data.value) return null;
+    
+    // actual logic here
+    return result;
+  }
+  
+  // ✅ ALSO GOOD - Validation function
+  function validateAndProcess(data: Data) {
+    if (!data || !data.isValid || !data.value) {
+      return null;
+    }
+    
+    // actual logic here
+    return result;
+  }
+  ```
+
+#### TypeScript
+- Use proper types for all variables
+- Use interfaces for object shapes
+- Use enums for constants
+- Prefer type-only imports: `import type { SomeType } from 'module'`
+
+#### React Patterns
+- Use functional components
+- Use hooks properly (don't violate rules of hooks)
+- Handle dependencies in `useEffect` and `useCallback` correctly
+- Avoid `dangerouslySetInnerHTML` unless absolutely necessary
+
+#### Component Organization
+- Keep components focused and single-purpose
+- Extract reusable logic into custom hooks
+- Use proper prop types/interfaces
+- **MERGE EDIT AND CREATE UI** - When working with the same model (e.g., Deal, Service, User), use a SINGLE component for both create and edit operations
+- **AVOID CODE DUPLICATION** - Do not create separate components for create and edit if they share the same form structure
+- **USE PROPS TO HANDLE MODES** - Use `initialData` or `mode` prop to differentiate between create and edit
+- Example:
+  ```typescript
+  // ✅ GOOD - Single component for create and edit
+  interface DealDialogProps {
+    initialData?: Deal; // undefined = create mode, defined = edit mode
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    onSuccess?: () => void;
+  }
+  
+  function DealDialog({ initialData, open, onOpenChange, onSuccess }: DealDialogProps) {
+    const isEditMode = !!initialData;
+    // ... form logic that works for both create and edit
+  }
+  
+  // ❌ BAD - Separate components
+  function CreateDealDialog() { /* ... */ }
+  function EditDealDialog() { /* ... */ } // Duplicates most of CreateDealDialog
+  ```
+
+### Frontend-Specific Patterns
+
+#### Component Reusability - Create/Edit Pattern
+- **Single Form Component Pattern**: When creating/edit forms for the same model, use ONE component that handles both modes
+- Use `initialData?: ModelType` prop to detect edit mode (undefined = create, defined = edit)
+- Share form validation logic between create and edit
+- Share form state management between create and edit
+- Only submit different API endpoints based on mode, not duplicate entire components
+- Example pattern:
+  ```typescript
+  // ✅ GOOD - Reusable dialog component
+  <DealDialog
+    initialData={editingDeal} // undefined for create, Deal object for edit
+    open={isDialogOpen}
+    onOpenChange={setIsDialogOpen}
+    onSuccess={handleSuccess}
+  />
+  
+  // Usage in list component:
+  // Create: <DealDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
+  // Edit: <DealDialog initialData={selectedDeal} open={isEditOpen} onOpenChange={setIsEditOpen} />
+  ```
+
+#### Form Handling
+- Always validate input before submission
+- Handle loading and error states
+- Provide user feedback (toasts, error messages)
+- Use controlled components
+
+#### API Integration
+- Use proper TypeScript interfaces for API responses
+- Handle errors gracefully
+- Show loading states during API calls
+- Validate data before sending to API
+
+#### State Management
+- Use React hooks (`useState`, `useEffect`, `useCallback`, `useMemo`)
+- Avoid unnecessary re-renders
+- Keep state as local as possible
+- Use context for shared state
+
+### Common Mistakes to Avoid
+
+#### Linting Errors
+- ❌ Using `||` instead of `??` for default values
+- ❌ **NEVER** creating nested ternary expressions - ALWAYS refactor them
+- ❌ Leaving unused variables/functions
+- ❌ Using non-null assertions (`!`)
+- ❌ Using `any` type unnecessarily
+- ❌ Not handling React hook dependencies correctly
+- ❌ Using nested ternaries even if it seems "simpler" - USE IIFE or if-else instead
+
+#### Code Quality
+- ❌ Not handling loading/error states
+- ❌ Not validating form input
+- ❌ Mixing business logic with UI components
+- ❌ Not using proper TypeScript types
+- ❌ Hardcoding values that should be configurable
+- ❌ Deep nesting instead of early returns
+- ❌ Not using guard clauses for validation
+- ❌ Creating separate components for create and edit when they can share the same form
+- ❌ Duplicating form code between create and edit dialogs
+
+### Workflow for Code Changes
+
+1. **Make changes** to code
+2. **MANDATORY**: Run `yarn lint:fix` or `npm run lint:fix` - THIS IS NOT OPTIONAL
+3. **Fix ALL errors** - NO EXCEPTIONS - ALL ERRORS MUST BE FIXED BEFORE COMPLETION
+4. **VERIFY fixes**: Run `yarn lint:fix` AGAIN to confirm NO errors remain
+5. **Test functionality**: Ensure code still works
+6. **NEVER mark complete** until ALL linting errors are resolved - ZERO ERRORS REQUIRED
+7. **ALWAYS** run lint:fix after making ANY code changes
+
+### When Making Changes
+
+1. **ALWAYS** check lint status after making changes
+2. **ALWAYS** fix linting errors before considering code complete
+3. **NEVER** skip linting checks
+4. **ALWAYS** verify the fix doesn't break functionality
+5. Update this file if you discover new patterns or rules
+
+### ESLint Commands
+
+```bash
+# Check for linting errors
+yarn lint
+
+# Fix auto-fixable errors
+yarn lint:fix
+
+# Type check (if available)
+yarn type-check
+```
+
+### File Locations
+- Components: `app/components/`
+- Services: `app/services/`
+- Routes: `app/routes/`
+- Types: `app/types/`
+- Hooks: `app/hooks/`
+- Utils: `app/lib/`
+- Config: `app/config/`
+
+---
+
+**Last Updated**: After fixing all linting errors in DealDialog and DealManagement components
+**Key Principle**: NO LINTING ERRORS ARE ALLOWED - Fix them all before marking code complete
+
+### Critical Reminder
+⚠️ **IF YOU SEE LINTING ERRORS, FIX THEM IMMEDIATELY. DO NOT PROCEED UNTIL ALL ERRORS ARE RESOLVED.** ⚠️
+

@@ -50,7 +50,6 @@ import {
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
-import CategoryService, { type Category } from '~/services/categoryService';
 import type { Deal, DealCreateRequest } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 import {
@@ -69,7 +68,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
@@ -85,14 +83,14 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [formData, setFormData] = useState<DealCreateRequest>({
     title: '',
     description: '',
-    category: '',
     price: 0,
     duration: 60,
     operatingSite: [],
+    allDay: false,
     startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0],
+    startTime: '09:00',
+    endTime: '10:00', // Calculated from startTime + duration (60 minutes default)
+    recurrenceType: 'none' as const,
     maxBookings: undefined,
     status: 'active',
     tags: [],
@@ -138,7 +136,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
       const searchLower = searchTerm.toLowerCase();
       return (
         deal.title?.toLowerCase().includes(searchLower) ||
-        (deal.category?.name ?? '').toLowerCase().includes(searchLower) ||
+        (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
         deal.description?.toLowerCase().includes(searchLower) ||
         deal.operatingSite.some(site =>
           site.name?.toLowerCase().includes(searchLower)
@@ -177,19 +175,15 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     async (resetPage = false) => {
       try {
         setIsLoading(true);
-        const [dealsData, servicesData, sitesData, categoriesData] =
-          await Promise.all([
-            DealService.getDeals(businessId),
-            ServiceService.getServices(businessId),
-            OperateSiteService.getOperateSites(businessId),
-            CategoryService.list(),
-          ]);
+        const [dealsData, servicesData, sitesData] = await Promise.all([
+          DealService.getDeals(businessId),
+          ServiceService.getServices(businessId),
+          OperateSiteService.getOperateSites(businessId),
+        ]);
 
-        // Ensure we have arrays
         setDeals(Array.isArray(dealsData) ? dealsData : []);
         setServices(Array.isArray(servicesData) ? servicesData : []);
         setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
 
         // Reset to first page after creating a new deal
         if (resetPage) {
@@ -205,7 +199,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
         setDeals([]);
         setServices([]);
         setOperatingSites([]);
-        setCategories([]);
       } finally {
         setIsLoading(false);
       }
@@ -217,20 +210,38 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     loadDeals();
   }, [businessId, loadDeals]);
 
-  const toIsoUtc = (value: string) =>
-    value.includes('T') ? value : `${value}T00:00:00.000Z`;
+  const toIsoUtc = (value: string, timeString?: string) => {
+    if (timeString) {
+      return `${value}T${timeString}:00.000Z`;
+    }
+    return value.includes('T') ? value : `${value}T00:00:00.000Z`;
+  };
 
   function toDateInputValue(value?: string) {
     return value ? value.split('T')[0] : new Date().toISOString().split('T')[0];
   }
 
-  function toEndDateInputValue(value?: string) {
-    return value
-      ? value.split('T')[0]
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0];
-  }
+  const toTimeInputValue = (dateString: string) => {
+    if (!dateString) return '09:00';
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '09:00';
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  const calculateEndTime = (
+    startTime: string,
+    durationMinutes: number
+  ): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startDate = new Date();
+    startDate.setHours(hours, minutes, 0, 0);
+    const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+    const endHours = endDate.getHours().toString().padStart(2, '0');
+    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
+    return `${endHours}:${endMinutes}`;
+  };
 
   const openEditDialog = (deal: Deal) => {
     setEditingDeal(deal);
@@ -239,54 +250,29 @@ export default function DealManagement({ businessId }: DealManagementProps) {
       .map(site => site.id)
       .filter(id => id);
 
-    // Extract category slug - must use slug for Select component
-    // The deal.category should be a CategoryData object with slug property
-    let categorySlug = '';
-    if (
-      deal.category &&
-      typeof deal.category === 'object' &&
-      deal.category !== null
-    ) {
-      // Direct slug access
-      categorySlug = deal.category.slug ?? '';
-
-      // If slug is missing from category object, try to find by name or ID
-      if (!categorySlug && categories.length > 0) {
-        const categoryName = deal.category.name;
-        // eslint-disable-next-line no-underscore-dangle
-        const categoryId = deal.category._id ?? '';
-
-        // Try to find matching category by name
-        if (categoryName) {
-          const matchingCategory = categories.find(
-            cat => cat.name === categoryName
-          );
-          if (matchingCategory) {
-            categorySlug = matchingCategory.slug;
-          }
-        }
-
-        // If still not found, try by ID
-        if (!categorySlug && categoryId) {
-          const matchingCategory = categories.find(
-            cat => cat.id === String(categoryId)
-          );
-          if (matchingCategory) {
-            categorySlug = matchingCategory.slug;
-          }
-        }
-      }
-    }
-
     setFormData({
       title: deal.title ?? '',
       description: deal.description ?? '',
-      category: categorySlug,
       price: deal.price ?? 0,
+      originalPrice: deal.originalPrice,
       duration: deal.duration ?? 60,
       operatingSite: operatingSiteIds,
+      allDay: deal.allDay ?? false,
       startDate: toDateInputValue(deal.startDate),
-      endDate: toEndDateInputValue(deal.endDate),
+      startTime: deal.allDay ? undefined : toTimeInputValue(deal.startDate),
+      endTime: (() => {
+        if (deal.allDay) {
+          return undefined;
+        }
+        if (deal.startDate && deal.duration) {
+          return calculateEndTime(
+            toTimeInputValue(deal.startDate),
+            deal.duration ?? 60
+          );
+        }
+        return undefined;
+      })(),
+      recurrenceType: deal.recurrenceType ?? 'none',
       maxBookings: deal.maxBookings,
       status: deal.status ?? 'active',
       tags: deal.tags ?? [],
@@ -312,11 +298,57 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     }
 
     try {
-      await DealService.updateDeal(businessId, editingDeal.id, {
-        ...formData,
-        startDate: toIsoUtc(formData.startDate),
-        endDate: toIsoUtc(formData.endDate),
-      });
+      // Build datetime strings
+      let startDateTimeStr: string;
+      if (formData.allDay) {
+        startDateTimeStr = toIsoUtc(formData.startDate);
+      } else {
+        startDateTimeStr = toIsoUtc(
+          formData.startDate,
+          formData.startTime ?? '09:00'
+        );
+      }
+
+      // Calculate end datetime from start + duration
+      let endDateTimeStr: string | undefined;
+      if (!formData.allDay && formData.startTime) {
+        // Calculate end time from start time + duration
+        const startDate = new Date(formData.startDate);
+        const [hours, minutes] = formData.startTime.split(':').map(Number);
+        startDate.setHours(hours, minutes, 0, 0);
+        const endDate = new Date(
+          startDate.getTime() + formData.duration * 60 * 1000
+        );
+        const endDateStr = endDate.toISOString().split('T')[0];
+        const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+        endDateTimeStr = toIsoUtc(endDateStr, endTimeStr);
+      } else if (formData.allDay) {
+        // For all day, end date is start date + 30 days
+        const startDate = new Date(formData.startDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 30);
+        endDateTimeStr = toIsoUtc(endDate.toISOString().split('T')[0]);
+      }
+
+      // Build update data object with only the fields we want to send
+      const updateData: any = {
+        title: formData.title,
+        description: formData.description,
+        price: formData.price,
+        originalPrice: formData.originalPrice ?? undefined,
+        duration: formData.duration,
+        operatingSite: formData.operatingSite,
+        allDay: formData.allDay,
+        startDate: startDateTimeStr,
+        endDate: endDateTimeStr,
+        recurrenceType: formData.recurrenceType,
+        maxBookings: formData.maxBookings,
+        status: formData.status,
+        tags: formData.tags,
+        service: formData.service,
+      };
+
+      await DealService.updateDeal(businessId, editingDeal.id, updateData);
       toast({
         title: 'Success',
         description: 'Deal updated successfully',
@@ -574,7 +606,9 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               <div className='flex items-center justify-between'>
                 <Badge variant='secondary' className='w-fit'>
                   <Tag className='w-3 h-3 mr-1' />
-                  {deal.category?.name ?? 'Uncategorized'}
+                  {deal.category?.name ??
+                    deal.service?.category ??
+                    'Uncategorized'}
                 </Badge>
                 <Badge
                   className={`w-fit ${
@@ -648,8 +682,35 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               <div className='flex items-center text-sm text-gray-600'>
                 <Calendar className='w-4 h-4 mr-2 flex-shrink-0' />
                 <span className='font-medium'>
-                  {formatDate(deal.startDate ?? '')} -{' '}
-                  {formatDate(deal.endDate ?? '')}
+                  {(() => {
+                    if (!deal.startDate) return '—';
+                    const startDate = new Date(deal.startDate);
+                    let display = formatDate(deal.startDate);
+                    if (!deal.allDay) {
+                      const timeStr = startDate.toLocaleTimeString('en-AU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      });
+                      display += ` ${timeStr}`;
+                    }
+                    if (deal.recurrenceType !== 'none') {
+                      display += ` (${deal.recurrenceType})`;
+                    }
+                    if (deal.endDate) {
+                      const endDate = new Date(deal.endDate);
+                      display += ` - ${formatDate(deal.endDate)}`;
+                      if (!deal.allDay) {
+                        const endTimeStr = endDate.toLocaleTimeString('en-AU', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        });
+                        display += ` ${endTimeStr}`;
+                      }
+                    }
+                    return display;
+                  })()}
                 </span>
               </div>
               {deal.createdBy && (
@@ -722,26 +783,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   }
                   placeholder='e.g., Spring Cleaning Special'
                 />
-              </div>
-              <div>
-                <Label htmlFor='edit-category'>Category</Label>
-                <Select
-                  value={formData.category || ''}
-                  onValueChange={value =>
-                    setFormData({ ...formData, category: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select category' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.slug}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
 
@@ -953,12 +994,14 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                     });
                   }}
                   min='0'
-                  max={
-                    services.find(s => s.id === formData.service)?.basePrice
-                      ? services.find(s => s.id === formData.service)!
-                          .basePrice - 0.01
-                      : undefined
-                  }
+                  max={(() => {
+                    const service = services.find(
+                      s => s.id === formData.service
+                    );
+                    return service?.basePrice
+                      ? service.basePrice - 0.01
+                      : undefined;
+                  })()}
                 />
                 {formData.service &&
                   (() => {
@@ -992,12 +1035,18 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   id='edit-duration'
                   type='number'
                   value={formData.duration}
-                  onChange={e =>
+                  onChange={e => {
+                    const newDuration = parseInt(e.target.value, 10) || 0;
                     setFormData({
                       ...formData,
-                      duration: parseInt(e.target.value, 10) || 0,
-                    })
-                  }
+                      duration: newDuration,
+                      // Recalculate endTime when duration changes
+                      endTime:
+                        !formData.allDay && formData.startTime
+                          ? calculateEndTime(formData.startTime, newDuration)
+                          : formData.endTime,
+                    });
+                  }}
                   min='1'
                   max='1440'
                 />
@@ -1018,40 +1067,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                 />
               </div>
             </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-startDate'>Start Date</Label>
-                <Input
-                  id='edit-startDate'
-                  type='date'
-                  value={formData.startDate}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      startDate: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor='edit-endDate'>End Date</Label>
-                <Input
-                  id='edit-endDate'
-                  type='date'
-                  value={formData.endDate}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      endDate: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
             <div>
               {' '}
               {/* Full width for description */}
@@ -1066,6 +1081,159 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                 rows={3}
               />
             </div>
+            <hr style={{ margin: '40px 0 10px 0' }} />
+            <div className='space-y-4'>
+              <h2>
+                <b>Date and Time</b>
+              </h2>
+              {/* All Day - full width row */}
+              <div>
+                <div className='flex items-center space-x-2 justify-start'>
+                  <input
+                    type='checkbox'
+                    id='edit-allDay'
+                    checked={formData.allDay}
+                    onChange={e => {
+                      const isAllDay = e.target.checked;
+                      setFormData({
+                        ...formData,
+                        allDay: isAllDay,
+                        // When switching to all day, clear times
+                        startTime: isAllDay
+                          ? undefined
+                          : (formData.startTime ?? '09:00'),
+                        endTime: (() => {
+                          if (isAllDay) return undefined;
+                          if (!formData.startTime) return undefined;
+                          return calculateEndTime(
+                            formData.startTime,
+                            formData.duration
+                          );
+                        })(),
+                      });
+                    }}
+                    className='h-4 w-4'
+                  />
+                  <Label htmlFor='edit-allDay' className='cursor-pointer'>
+                    All Day (whole business day)
+                  </Label>
+                </div>
+              </div>
+
+              {/* Recurrence Type - full width row */}
+              <div>
+                <Label htmlFor='edit-recurrenceType'>Recurrence Type</Label>
+                <Select
+                  value={formData.recurrenceType}
+                  onValueChange={value => {
+                    setFormData({
+                      ...formData,
+                      recurrenceType: value as
+                        | 'none'
+                        | 'daily'
+                        | 'weekly'
+                        | 'weekdays'
+                        | 'monthly'
+                        | 'annually',
+                    });
+                  }}
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Select recurrence type' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='none'>Does not repeat</SelectItem>
+                    <SelectItem value='daily'>Daily</SelectItem>
+                    <SelectItem value='weekly'>Weekly</SelectItem>
+                    <SelectItem value='weekdays'>
+                      Every weekday (Monday to Friday)
+                    </SelectItem>
+                    <SelectItem value='monthly'>Monthly</SelectItem>
+                    <SelectItem value='annually'>Annually</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Start Date, Start Time, End Time in same row - only show when NOT all day */}
+              {!formData.allDay && (
+                <div className='grid grid-cols-3 gap-4'>
+                  <div>
+                    <Label htmlFor='edit-startDate'>Start Date</Label>
+                    <Input
+                      id='edit-startDate'
+                      type='date'
+                      value={formData.startDate}
+                      onChange={e =>
+                        setFormData({
+                          ...formData,
+                          startDate: e.target.value,
+                          endTime: formData.startTime
+                            ? calculateEndTime(
+                                formData.startTime,
+                                formData.duration
+                              )
+                            : formData.endTime,
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='edit-startTime'>Start Time</Label>
+                    <Input
+                      id='edit-startTime'
+                      type='time'
+                      value={formData.startTime ?? '09:00'}
+                      onChange={e => {
+                        const newStartTime = e.target.value;
+                        setFormData({
+                          ...formData,
+                          startTime: newStartTime,
+                          endTime: calculateEndTime(
+                            newStartTime,
+                            formData.duration
+                          ),
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='edit-endTime'>End Time</Label>
+                    <Input
+                      id='edit-endTime'
+                      type='time'
+                      value={
+                        formData.endTime ??
+                        calculateEndTime(
+                          formData.startTime ?? '09:00',
+                          formData.duration
+                        )
+                      }
+                      readOnly
+                      className='bg-gray-100 cursor-not-allowed'
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Start Date only - show when all day is checked */}
+              {formData.allDay && (
+                <div>
+                  <Label htmlFor='edit-startDate'>Start Date</Label>
+                  <Input
+                    id='edit-startDate'
+                    type='date'
+                    value={formData.startDate}
+                    onChange={e =>
+                      setFormData({
+                        ...formData,
+                        startDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              )}
+            </div>
+
             <div className='flex justify-end space-x-2'>
               <Button
                 variant='outline'
@@ -1135,13 +1303,14 @@ export default function DealManagement({ businessId }: DealManagementProps) {
           initialData={{
             title: `Copy of ${dealToDuplicate.title}`,
             description: dealToDuplicate.description,
-            category: dealToDuplicate.category?.slug ?? '',
             price: dealToDuplicate.price,
             originalPrice: dealToDuplicate.originalPrice,
             duration: dealToDuplicate.duration,
             operatingSite: dealToDuplicate.operatingSite.map(site => site.id),
+            allDay: dealToDuplicate.allDay,
             startDate: dealToDuplicate.startDate,
             endDate: dealToDuplicate.endDate,
+            recurrenceType: dealToDuplicate.recurrenceType,
             maxBookings: dealToDuplicate.maxBookings,
             status: 'active', // Always start duplicated deals as active
             tags: dealToDuplicate.tags,
