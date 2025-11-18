@@ -180,7 +180,9 @@ export default function DealDetailsPage() {
                 <div className='grid grid-cols-2 gap-4'>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Tag className='w-4 h-4 mr-2' />
-                    <span>{deal.category ?? '—'}</span>
+                    <span>
+                      {deal.category ?? deal.service?.category ?? '—'}
+                    </span>
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>
                     <Users className='w-4 h-4 mr-2' />
@@ -189,10 +191,9 @@ export default function DealDetailsPage() {
                   <div className='flex items-center text-sm text-gray-600'>
                     <Calendar className='w-4 h-4 mr-2' />
                     <span>
-                      Valid until{' '}
-                      {deal.endDate
-                        ? new Date(deal.endDate).toLocaleDateString()
-                        : '—'}
+                      {deal.recurrenceType === 'none'
+                        ? `Valid on ${deal.startDate ? new Date(deal.startDate).toLocaleDateString() : '—'}`
+                        : `Recurring: ${deal.recurrenceType}${deal.endDate ? ` until ${new Date(deal.endDate).toLocaleDateString()}` : ''}`}
                     </span>
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>

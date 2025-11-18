@@ -1,6 +1,5 @@
 import {
   Calendar,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -19,28 +18,12 @@ import DealDialog from '~/components/DealDialog';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Checkbox } from '~/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '~/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
-import { Textarea } from '~/components/ui/textarea';
 import {
   Tooltip,
   TooltipContent,
@@ -50,14 +33,8 @@ import {
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
-import CategoryService, { type Category } from '~/services/categoryService';
-import type { Deal, DealCreateRequest } from '~/services/dealService';
+import type { Deal } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
-import {
-  OperateSiteService,
-  type OperateSite,
-} from '~/services/operateSiteService';
-import { ServiceService, type Service } from '~/services/serviceService';
 
 interface DealManagementProps {
   businessId: string;
@@ -67,11 +44,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
@@ -82,24 +55,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [formData, setFormData] = useState<DealCreateRequest>({
-    title: '',
-    description: '',
-    category: '',
-    price: 0,
-    duration: 60,
-    operatingSite: [],
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .split('T')[0],
-    maxBookings: undefined,
-    status: 'active',
-    tags: [],
-    service: '',
-  });
-  const [operatingSitePopoverOpen, setOperatingSitePopoverOpen] =
-    useState(false);
 
   // Helper functions for role-based access control
   const isOwner = user?.role?.slug === BusinessUserRole.Owner;
@@ -138,7 +93,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
       const searchLower = searchTerm.toLowerCase();
       return (
         deal.title?.toLowerCase().includes(searchLower) ||
-        (deal.category?.name ?? '').toLowerCase().includes(searchLower) ||
+        (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
         deal.description?.toLowerCase().includes(searchLower) ||
         deal.operatingSite.some(site =>
           site.name?.toLowerCase().includes(searchLower)
@@ -177,19 +132,9 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     async (resetPage = false) => {
       try {
         setIsLoading(true);
-        const [dealsData, servicesData, sitesData, categoriesData] =
-          await Promise.all([
-            DealService.getDeals(businessId),
-            ServiceService.getServices(businessId),
-            OperateSiteService.getOperateSites(businessId),
-            CategoryService.list(),
-          ]);
+        const dealsData = await DealService.getDeals(businessId);
 
-        // Ensure we have arrays
         setDeals(Array.isArray(dealsData) ? dealsData : []);
-        setServices(Array.isArray(servicesData) ? servicesData : []);
-        setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
 
         // Reset to first page after creating a new deal
         if (resetPage) {
@@ -203,9 +148,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
         });
         // Set empty arrays on error
         setDeals([]);
-        setServices([]);
-        setOperatingSites([]);
-        setCategories([]);
       } finally {
         setIsLoading(false);
       }
@@ -217,120 +159,13 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     loadDeals();
   }, [businessId, loadDeals]);
 
-  const toIsoUtc = (value: string) =>
-    value.includes('T') ? value : `${value}T00:00:00.000Z`;
-
-  function toDateInputValue(value?: string) {
-    return value ? value.split('T')[0] : new Date().toISOString().split('T')[0];
-  }
-
-  function toEndDateInputValue(value?: string) {
-    return value
-      ? value.split('T')[0]
-      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0];
-  }
-
   const openEditDialog = (deal: Deal) => {
     setEditingDeal(deal);
-    // Extract operating site IDs from the array
-    const operatingSiteIds: string[] = deal.operatingSite
-      .map(site => site.id)
-      .filter(id => id);
-
-    // Extract category slug - must use slug for Select component
-    // The deal.category should be a CategoryData object with slug property
-    let categorySlug = '';
-    if (
-      deal.category &&
-      typeof deal.category === 'object' &&
-      deal.category !== null
-    ) {
-      // Direct slug access
-      categorySlug = deal.category.slug ?? '';
-
-      // If slug is missing from category object, try to find by name or ID
-      if (!categorySlug && categories.length > 0) {
-        const categoryName = deal.category.name;
-        // eslint-disable-next-line no-underscore-dangle
-        const categoryId = deal.category._id ?? '';
-
-        // Try to find matching category by name
-        if (categoryName) {
-          const matchingCategory = categories.find(
-            cat => cat.name === categoryName
-          );
-          if (matchingCategory) {
-            categorySlug = matchingCategory.slug;
-          }
-        }
-
-        // If still not found, try by ID
-        if (!categorySlug && categoryId) {
-          const matchingCategory = categories.find(
-            cat => cat.id === String(categoryId)
-          );
-          if (matchingCategory) {
-            categorySlug = matchingCategory.slug;
-          }
-        }
-      }
-    }
-
-    setFormData({
-      title: deal.title ?? '',
-      description: deal.description ?? '',
-      category: categorySlug,
-      price: deal.price ?? 0,
-      duration: deal.duration ?? 60,
-      operatingSite: operatingSiteIds,
-      startDate: toDateInputValue(deal.startDate),
-      endDate: toEndDateInputValue(deal.endDate),
-      maxBookings: deal.maxBookings,
-      status: deal.status ?? 'active',
-      tags: deal.tags ?? [],
-      service: deal.service?.id ?? '',
-    });
-    setIsEditDialogOpen(true);
   };
 
-  const handleUpdateDeal = async () => {
-    if (!editingDeal) return;
-
-    // Validate that deal price is less than base price
-    const selectedService = services.find(s => s.id === formData.service);
-    if (selectedService && selectedService.basePrice > 0) {
-      if (formData.price >= selectedService.basePrice) {
-        toast({
-          title: 'Invalid Price',
-          description: 'Deal price must be less than the service base price',
-          variant: 'destructive',
-        });
-        return;
-      }
-    }
-
-    try {
-      await DealService.updateDeal(businessId, editingDeal.id, {
-        ...formData,
-        startDate: toIsoUtc(formData.startDate),
-        endDate: toIsoUtc(formData.endDate),
-      });
-      toast({
-        title: 'Success',
-        description: 'Deal updated successfully',
-      });
-      setIsEditDialogOpen(false);
-      setEditingDeal(null);
-      await loadDeals();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update deal',
-        variant: 'destructive',
-      });
-    }
+  const handleEditSuccess = async () => {
+    setEditingDeal(null);
+    await loadDeals();
   };
 
   const openDeleteDialog = (deal: Deal) => {
@@ -510,7 +345,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   Add Deal
                 </Button>
               }
-              onDealCreated={() => loadDeals(true)}
+              onSuccess={() => loadDeals(true)}
             />
           )}
         </div>
@@ -574,7 +409,9 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               <div className='flex items-center justify-between'>
                 <Badge variant='secondary' className='w-fit'>
                   <Tag className='w-3 h-3 mr-1' />
-                  {deal.category?.name ?? 'Uncategorized'}
+                  {deal.category?.name ??
+                    deal.service?.category ??
+                    'Uncategorized'}
                 </Badge>
                 <Badge
                   className={`w-fit ${
@@ -648,8 +485,35 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               <div className='flex items-center text-sm text-gray-600'>
                 <Calendar className='w-4 h-4 mr-2 flex-shrink-0' />
                 <span className='font-medium'>
-                  {formatDate(deal.startDate ?? '')} -{' '}
-                  {formatDate(deal.endDate ?? '')}
+                  {(() => {
+                    if (!deal.startDate) return '—';
+                    const startDate = new Date(deal.startDate);
+                    let display = formatDate(deal.startDate);
+                    if (!deal.allDay) {
+                      const timeStr = startDate.toLocaleTimeString('en-AU', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false,
+                      });
+                      display += ` ${timeStr}`;
+                    }
+                    if (deal.recurrenceType !== 'none') {
+                      display += ` (${deal.recurrenceType})`;
+                    }
+                    if (deal.endDate) {
+                      const endDate = new Date(deal.endDate);
+                      display += ` - ${formatDate(deal.endDate)}`;
+                      if (!deal.allDay) {
+                        const endTimeStr = endDate.toLocaleTimeString('en-AU', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: false,
+                        });
+                        display += ` ${endTimeStr}`;
+                      }
+                    }
+                    return display;
+                  })()}
                 </span>
               </div>
               {deal.createdBy && (
@@ -696,394 +560,27 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   {searchTerm ? 'Add New Deal' : 'Add Your First Deal'}
                 </Button>
               }
-              onDealCreated={() => loadDeals(true)}
+              onSuccess={() => loadDeals(true)}
             />
           )}
         </div>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className='max-w-md'>
-          <DialogHeader>
-            <DialogTitle>Edit Deal</DialogTitle>
-          </DialogHeader>
-          <div className='space-y-4'>
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-title'>Deal Title</Label>
-                <Input
-                  id='edit-title'
-                  value={formData.title}
-                  onChange={e =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  placeholder='e.g., Spring Cleaning Special'
-                />
-              </div>
-              <div>
-                <Label htmlFor='edit-category'>Category</Label>
-                <Select
-                  value={formData.category || ''}
-                  onValueChange={value =>
-                    setFormData({ ...formData, category: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select category' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category.id} value={category.slug}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-service'>Service</Label>
-                <Select
-                  value={formData.service}
-                  onValueChange={value => {
-                    const selectedService = services.find(s => s.id === value);
-                    setFormData({
-                      ...formData,
-                      service: value,
-                      duration: selectedService?.duration ?? formData.duration,
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select service' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.isArray(services) &&
-                      services.map(service => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name ?? 'Unknown Service'} -{' '}
-                          {formatPrice(service.basePrice ?? 0)}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor='edit-operatingSite'>Operating Sites</Label>
-                <Popover
-                  open={operatingSitePopoverOpen}
-                  onOpenChange={setOperatingSitePopoverOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className='w-full justify-between text-left font-normal'
-                      disabled={operatingSites.length === 0}
-                    >
-                      <span className='truncate'>
-                        {(() => {
-                          if (formData.operatingSite.length === 0) {
-                            return 'Select operating sites';
-                          }
-                          if (formData.operatingSite.length === 1) {
-                            const siteName =
-                              operatingSites.find(
-                                s => s.id === formData.operatingSite[0]
-                              )?.name ?? '1 site selected';
-                            return siteName;
-                          }
-                          return `${formData.operatingSite.length} sites selected`;
-                        })()}
-                      </span>
-                      <ChevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-full p-0' align='start'>
-                    <div className='max-h-60 overflow-auto p-2'>
-                      {Array.isArray(operatingSites) &&
-                        operatingSites.map(site => (
-                          <div
-                            key={site.id}
-                            role='button'
-                            tabIndex={0}
-                            className='flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer'
-                            onClick={() => {
-                              const isSelected =
-                                formData.operatingSite.includes(site.id);
-                              if (isSelected) {
-                                setFormData({
-                                  ...formData,
-                                  operatingSite: formData.operatingSite.filter(
-                                    id => id !== site.id
-                                  ),
-                                });
-                              } else {
-                                setFormData({
-                                  ...formData,
-                                  operatingSite: [
-                                    ...formData.operatingSite,
-                                    site.id,
-                                  ],
-                                });
-                              }
-                            }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                const isSelected =
-                                  formData.operatingSite.includes(site.id);
-                                if (isSelected) {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite:
-                                      formData.operatingSite.filter(
-                                        id => id !== site.id
-                                      ),
-                                  });
-                                } else {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite: [
-                                      ...formData.operatingSite,
-                                      site.id,
-                                    ],
-                                  });
-                                }
-                              }
-                            }}
-                          >
-                            <Checkbox
-                              checked={formData.operatingSite.includes(site.id)}
-                              onCheckedChange={checked => {
-                                if (checked) {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite: [
-                                      ...formData.operatingSite,
-                                      site.id,
-                                    ],
-                                  });
-                                } else {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite:
-                                      formData.operatingSite.filter(
-                                        id => id !== site.id
-                                      ),
-                                  });
-                                }
-                              }}
-                            />
-                            <Label
-                              className='flex-1 cursor-pointer font-normal'
-                              onClick={e => e.stopPropagation()}
-                            >
-                              {site.name ?? 'Unknown Site'}
-                            </Label>
-                          </div>
-                        ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                {formData.operatingSite.length === 0 && (
-                  <p className='text-sm text-red-500 mt-1'>
-                    At least one operating site is required
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              {/* Base Price (Read-only) */}
-              <div>
-                <Label htmlFor='edit-basePrice'>Service Base Price (AUD)</Label>
-                <Input
-                  id='edit-basePrice'
-                  type='number'
-                  value={
-                    services.find(s => s.id === formData.service)?.basePrice ??
-                    0
-                  }
-                  disabled
-                  readOnly
-                  className='bg-gray-100 cursor-not-allowed'
-                />
-              </div>
-
-              {/* Single column for price */}
-              <div className='mt-4'>
-                <Label htmlFor='edit-price'>Deal Price (AUD)</Label>
-                <Input
-                  id='edit-price'
-                  type='number'
-                  step='0.01'
-                  value={formData.price}
-                  onChange={e => {
-                    const newPrice = parseFloat(e.target.value) || 0;
-                    const selectedService = services.find(
-                      s => s.id === formData.service
-                    );
-                    const basePrice = selectedService?.basePrice ?? 0;
-
-                    if (
-                      newPrice > 0 &&
-                      basePrice > 0 &&
-                      newPrice >= basePrice
-                    ) {
-                      toast({
-                        title: 'Invalid Price',
-                        description:
-                          'Deal price must be less than the service base price',
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
-
-                    setFormData({
-                      ...formData,
-                      price: newPrice,
-                    });
-                  }}
-                  min='0'
-                  max={
-                    services.find(s => s.id === formData.service)?.basePrice
-                      ? services.find(s => s.id === formData.service)!
-                          .basePrice - 0.01
-                      : undefined
-                  }
-                />
-                {formData.service &&
-                  (() => {
-                    const selectedService = services.find(
-                      s => s.id === formData.service
-                    );
-                    const basePrice = selectedService?.basePrice ?? 0;
-                    if (
-                      basePrice > 0 &&
-                      formData.price > 0 &&
-                      formData.price >= basePrice
-                    ) {
-                      return (
-                        <p className='text-sm text-red-500 mt-1'>
-                          Deal price must be less than base price ($
-                          {basePrice.toFixed(2)})
-                        </p>
-                      );
-                    }
-                    return null;
-                  })()}
-              </div>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-duration'>Duration (minutes)</Label>
-                <Input
-                  id='edit-duration'
-                  type='number'
-                  value={formData.duration}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      duration: parseInt(e.target.value, 10) || 0,
-                    })
-                  }
-                  min='1'
-                  max='1440'
-                />
-              </div>
-              <div>
-                <Label htmlFor='edit-maxBookings'>Max Bookings</Label>
-                <Input
-                  id='edit-maxBookings'
-                  type='number'
-                  value={formData.maxBookings ?? ''}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      maxBookings: parseInt(e.target.value, 10) || undefined,
-                    })
-                  }
-                  min='1'
-                />
-              </div>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-startDate'>Start Date</Label>
-                <Input
-                  id='edit-startDate'
-                  type='date'
-                  value={formData.startDate}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      startDate: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor='edit-endDate'>End Date</Label>
-                <Input
-                  id='edit-endDate'
-                  type='date'
-                  value={formData.endDate}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      endDate: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-            <div>
-              {' '}
-              {/* Full width for description */}
-              <Label htmlFor='edit-description'>Description</Label>
-              <Textarea
-                id='edit-description'
-                value={formData.description}
-                onChange={e =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Deal description...'
-                rows={3}
-              />
-            </div>
-            <div className='flex justify-end space-x-2'>
-              <Button
-                variant='outline'
-                onClick={() => setIsEditDialogOpen(false)}
-                className='cursor-pointer'
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleUpdateDeal}
-                className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
-              >
-                Update Deal
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Edit Dialog - Now using DealDialog component */}
+      {editingDeal && (
+        <DealDialog
+          businessId={businessId}
+          initialData={editingDeal}
+          dealId={editingDeal.id}
+          open={!!editingDeal}
+          onOpenChange={open => {
+            if (!open) {
+              setEditingDeal(null);
+            }
+          }}
+          onSuccess={handleEditSuccess}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -1127,26 +624,12 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               setDealToDuplicate(null);
             }
           }}
-          onDealCreated={() => {
+          onSuccess={() => {
             loadDeals();
             setIsDuplicateDialogOpen(false);
             setDealToDuplicate(null);
           }}
-          initialData={{
-            title: `Copy of ${dealToDuplicate.title}`,
-            description: dealToDuplicate.description,
-            category: dealToDuplicate.category?.slug ?? '',
-            price: dealToDuplicate.price,
-            originalPrice: dealToDuplicate.originalPrice,
-            duration: dealToDuplicate.duration,
-            operatingSite: dealToDuplicate.operatingSite.map(site => site.id),
-            startDate: dealToDuplicate.startDate,
-            endDate: dealToDuplicate.endDate,
-            maxBookings: dealToDuplicate.maxBookings,
-            status: 'active', // Always start duplicated deals as active
-            tags: dealToDuplicate.tags,
-            service: dealToDuplicate.service.id,
-          }}
+          initialData={dealToDuplicate}
         />
       )}
 
