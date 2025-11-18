@@ -8,8 +8,16 @@ export interface PublicDeal {
   price?: number;
   originalPrice?: number;
   duration?: number;
+  allDay?: boolean;
   startDate?: string;
   endDate?: string;
+  recurrenceType?:
+    | 'none'
+    | 'daily'
+    | 'weekly'
+    | 'weekdays'
+    | 'monthly'
+    | 'annually';
   discount?: number;
   business: { id: string; name: string; status: string };
   service: {
@@ -33,8 +41,16 @@ export interface PublicDealsResponse {
     price?: number;
     originalPrice?: number;
     duration?: number;
+    allDay?: boolean;
     startDate?: string;
     endDate?: string;
+    recurrenceType?:
+      | 'none'
+      | 'daily'
+      | 'weekly'
+      | 'weekdays'
+      | 'monthly'
+      | 'annually';
     discount?: number;
     business: { _id: string; name: string; status: string };
     service: {
@@ -60,8 +76,10 @@ const mapDeal = (raw: PublicDealsResponse['data'][number]): PublicDeal => {
     price: raw.price,
     originalPrice: raw.originalPrice,
     duration: raw.duration,
+    allDay: raw.allDay,
     startDate: raw.startDate,
     endDate: raw.endDate,
+    recurrenceType: raw.recurrenceType,
     discount: raw.discount,
     business: {
       id: businessId,
