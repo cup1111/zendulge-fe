@@ -295,3 +295,8 @@ Before each push, comprehensive quality checks are performed:
 ---
 
 Built with ❤️ using React Router, TypeScript, and TailwindCSS.
+
+### License
+© 2025 Zendulge. All Rights Reserved.
+
+Unauthorized copying of this file is strictly prohibited.
