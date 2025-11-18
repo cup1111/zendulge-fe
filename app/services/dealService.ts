@@ -16,6 +16,7 @@ export interface Deal {
   originalPrice?: number;
   discount?: number;
   duration: number;
+  sections: number;
   operatingSite: Array<{
     id: string;
     name: string;
@@ -60,12 +61,12 @@ export interface DealCreateRequest {
   price: number;
   originalPrice?: number;
   duration: number;
+  sections: number;
   operatingSite: string[];
   allDay: boolean;
   startDate: string;
   startTime?: string;
   endDate?: string;
-  endTime?: string;
   recurrenceType:
     | 'none'
     | 'daily'
@@ -87,12 +88,12 @@ export interface DealUpdateRequest {
   price?: number;
   originalPrice?: number;
   duration?: number;
+  section?: number;
   operatingSite?: string[];
   allDay?: boolean;
   startDate?: string;
   startTime?: string;
   endDate?: string;
-  endTime?: string;
   recurrenceType?:
     | 'none'
     | 'daily'

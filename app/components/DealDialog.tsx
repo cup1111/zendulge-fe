@@ -28,6 +28,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
+import type { Deal } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 import {
   OperateSiteService,
@@ -38,29 +39,9 @@ import { ServiceService, type Service } from '~/services/serviceService';
 interface DealDialogProps {
   businessId: string;
   trigger?: React.ReactNode;
-  onDealCreated?: () => void;
-  initialData?: {
-    title?: string;
-    description?: string;
-    price?: number;
-    originalPrice?: number;
-    duration?: number;
-    operatingSite?: string[];
-    allDay?: boolean;
-    startDate?: string;
-    endDate?: string;
-    recurrenceType?:
-      | 'none'
-      | 'daily'
-      | 'weekly'
-      | 'weekdays'
-      | 'monthly'
-      | 'annually';
-    maxBookings?: number;
-    status?: 'active' | 'inactive' | 'expired' | 'sold_out';
-    tags?: string[];
-    service?: string;
-  };
+  onSuccess?: () => void;
+  initialData?: Deal; // Full Deal object for edit mode, undefined for create mode
+  dealId?: string; // Deal ID for edit mode, undefined for create mode
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
@@ -79,12 +60,14 @@ const formatTime = (date: Date) => {
 
 const calculateEndTime = (
   startTime: string,
-  durationMinutes: number
+  durationMinutes: number,
+  sections: number = 1
 ): string => {
   const [hours, minutes] = startTime.split(':').map(Number);
   const startDate = new Date();
   startDate.setHours(hours, minutes, 0, 0);
-  const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
+  const totalMinutes = durationMinutes * sections;
+  const endDate = new Date(startDate.getTime() + totalMinutes * 60 * 1000);
   return formatTime(endDate);
 };
 
@@ -122,8 +105,9 @@ const toIsoUtcString = (value: string) =>
 export default function DealDialog({
   businessId,
   trigger,
-  onDealCreated,
+  onSuccess,
   initialData,
+  dealId,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
 }: DealDialogProps) {
@@ -142,7 +126,12 @@ export default function DealDialog({
     useState(false);
 
   const normalizeAvailability = useCallback(
-    (startInput?: string, durationMinutes?: number, allDay?: boolean) => {
+    (
+      startInput?: string,
+      durationMinutes?: number,
+      allDay?: boolean,
+      sections?: number
+    ) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -165,12 +154,13 @@ export default function DealDialog({
       }
 
       const duration = durationMinutes ?? 60;
+      const sectionsValue = sections ?? 1;
       const startTimeStr = allDay ? undefined : formatTime(start);
       let endTimeStr: string | undefined;
       if (allDay) {
         endTimeStr = undefined;
       } else if (startTimeStr) {
-        endTimeStr = calculateEndTime(startTimeStr, duration);
+        endTimeStr = calculateEndTime(startTimeStr, duration, sectionsValue);
       } else {
         endTimeStr = '10:00';
       }
@@ -181,7 +171,8 @@ export default function DealDialog({
         const endDateTime = new Date(start);
         const [hours, minutes] = startTimeStr.split(':').map(Number);
         endDateTime.setHours(hours, minutes, 0, 0);
-        endDateTime.setTime(endDateTime.getTime() + duration * 60 * 1000);
+        const totalMinutes = duration * sectionsValue;
+        endDateTime.setTime(endDateTime.getTime() + totalMinutes * 60 * 1000);
 
         // If end time is next day, use next day as endDate, otherwise same as startDate
         if (endDateTime.toDateString() !== start.toDateString()) {
@@ -216,10 +207,12 @@ export default function DealDialog({
 
   const getInitialSchedule = useCallback(() => {
     const allDay = initialData?.allDay ?? false;
+    const sections = initialData?.sections ?? 1;
     const normalizedAvailability = normalizeAvailability(
       initialData?.startDate,
       initialData?.duration,
-      allDay
+      allDay,
+      sections
     );
 
     return {
@@ -230,25 +223,88 @@ export default function DealDialog({
     };
   }, [initialData, normalizeAvailability]);
 
+  const isEditMode = !!initialData && !!dealId;
+
+  // Helper to extract operating site IDs from Deal object
+  const getOperatingSiteIds = (deal?: Deal): string[] => {
+    if (!deal) return [];
+    if (!deal.operatingSite) return [];
+    return deal.operatingSite.map(site => site.id ?? site).filter(Boolean);
+  };
+
+  // Helper to extract service ID from Deal object
+  const getServiceId = (deal?: Deal): string => {
+    if (!deal) return '';
+    if (typeof deal.service === 'string') return deal.service;
+    return deal.service?.id ?? '';
+  };
+
+  // Helper to convert Deal startDate to time input value
+  const toTimeInputValue = (dateString: string) => {
+    if (!dateString) return '09:00';
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return '09:00';
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  // Helper to calculate end time from start date, duration, and sections
+  const calculateEndTimeFromDeal = (
+    startDate: string,
+    duration: number,
+    sections: number = 1
+  ): string | undefined => {
+    if (!startDate || !duration) return undefined;
+    const date = new Date(startDate);
+    if (Number.isNaN(date.getTime())) return undefined;
+    const totalMinutes = duration * sections;
+    const endDate = new Date(date.getTime() + totalMinutes * 60 * 1000);
+    const hours = endDate.getHours().toString().padStart(2, '0');
+    const minutes = endDate.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   const [formData, setFormData] = useState(() => {
     const initialSchedule = getInitialSchedule();
+    const operatingSiteIds = getOperatingSiteIds(initialData);
+    const serviceId = getServiceId(initialData);
+    const sections = initialData?.sections ?? 1;
+    const endTime =
+      initialData && !initialData.allDay
+        ? calculateEndTimeFromDeal(
+            initialData.startDate,
+            initialData.duration,
+            sections
+          )
+        : initialSchedule.endTime;
+
     return {
       title: initialData?.title ?? '',
       description: initialData?.description ?? '',
       price: initialData?.price ?? 0,
       originalPrice: initialData?.originalPrice,
       duration: initialData?.duration ?? 60,
-      operatingSite: initialData?.operatingSite ?? [],
+      sections: initialData?.sections ?? 1,
+      operatingSite: operatingSiteIds,
       allDay: initialSchedule.allDay,
       startDate: initialSchedule.startDate,
-      startTime: initialSchedule.startTime,
+      startTime: (() => {
+        if (initialData?.allDay) {
+          return undefined;
+        }
+        if (initialData) {
+          return toTimeInputValue(initialData.startDate);
+        }
+        return initialSchedule.startTime;
+      })(),
       endDate: initialSchedule.endDate,
-      endTime: initialSchedule.endTime,
+      endTime,
       recurrenceType: initialSchedule.recurrenceType,
-      maxBookings: initialSchedule.maxBookings,
+      maxBookings: initialData?.maxBookings ?? undefined,
       status: initialData?.status ?? ('active' as const),
       tags: initialData?.tags ?? [],
-      service: initialData?.service ?? '',
+      service: serviceId,
     };
   });
 
@@ -287,27 +343,41 @@ export default function DealDialog({
     }
   }, [isOpen, loadData]);
 
-  // Update formData when initialData changes (for duplicating deals)
+  // Update formData when initialData changes (for editing deals)
   useEffect(() => {
     if (initialData && isOpen) {
       const schedule = getInitialSchedule();
+      const operatingSiteIds = getOperatingSiteIds(initialData);
+      const serviceId = getServiceId(initialData);
+      const sections = initialData?.sections ?? 1;
+      const endTime = !initialData.allDay
+        ? calculateEndTimeFromDeal(
+            initialData.startDate,
+            initialData.duration,
+            sections
+          )
+        : undefined;
+
       setFormData({
         title: initialData.title ?? '',
         description: initialData.description ?? '',
         price: initialData.price ?? 0,
         originalPrice: initialData.originalPrice,
         duration: initialData.duration ?? 60,
-        operatingSite: initialData.operatingSite ?? [],
+        sections: initialData?.sections ?? 1,
+        operatingSite: operatingSiteIds,
         allDay: schedule.allDay,
         startDate: schedule.startDate,
-        startTime: schedule.startTime,
+        startTime: initialData.allDay
+          ? undefined
+          : toTimeInputValue(initialData.startDate),
         endDate: schedule.endDate,
-        endTime: schedule.endTime,
+        endTime,
         recurrenceType: schedule.recurrenceType,
         maxBookings: schedule.maxBookings,
         status: initialData.status ?? ('active' as const),
         tags: initialData.tags ?? [],
-        service: initialData.service ?? '',
+        service: serviceId,
       });
     }
   }, [initialData, isOpen, getInitialSchedule]);
@@ -316,13 +386,14 @@ export default function DealDialog({
     setIsOpen(open);
     if (!open && !initialData) {
       // Reset form when dialog closes (unless we have initialData)
-      const defaultSchedule = normalizeAvailability(undefined, 60, false);
+      const defaultSchedule = normalizeAvailability(undefined, 60, false, 1);
       setFormData({
         title: '',
         description: '',
         price: 0,
         originalPrice: undefined,
         duration: 60,
+        sections: 1,
         operatingSite: [],
         allDay: false,
         startDate: defaultSchedule.startDate,
@@ -389,7 +460,9 @@ export default function DealDialog({
     if (!formData.allDay && formData.startTime) {
       const startTimeMinutes = formData.startTime.split(':').map(Number);
       const totalMinutes =
-        startTimeMinutes[0] * 60 + startTimeMinutes[1] + formData.duration;
+        startTimeMinutes[0] * 60 +
+        startTimeMinutes[1] +
+        formData.duration * formData.sections;
       endDateTime = new Date(startDateTime);
       endDateTime.setHours(
         Math.floor(totalMinutes / 60) % 24,
@@ -451,12 +524,13 @@ export default function DealDialog({
         }
       }
 
-      const dealData: any = {
+      const dealData: DealCreateRequest = {
         title: formData.title,
         description: formData.description,
         price: formData.price,
         originalPrice: formData.originalPrice,
         duration: formData.duration,
+        sections: formData.allDay ? 1 : formData.sections,
         operatingSite: formData.operatingSite,
         allDay: formData.allDay,
         startDate: startDateTimeStr,
@@ -471,14 +545,23 @@ export default function DealDialog({
       if (!formData.allDay) {
         // Times are already included in startDate and endDate as datetime strings
       }
-      await DealService.createDeal(businessId, dealData);
-      toast({
-        title: 'Success',
-        description: 'Deal created successfully!',
-      });
+      // Handle create vs edit mode
+      if (isEditMode && dealId) {
+        await DealService.updateDeal(businessId, dealId, dealData);
+        toast({
+          title: 'Success',
+          description: 'Deal updated successfully!',
+        });
+      } else {
+        await DealService.createDeal(businessId, dealData);
+        toast({
+          title: 'Success',
+          description: 'Deal created successfully!',
+        });
+      }
 
-      // Reset form (unless we have initialData, then keep it for potential re-duplication)
-      if (!initialData) {
+      // Reset form (unless we have initialData in edit mode, then keep it)
+      if (!isEditMode) {
         const defaultSchedule = normalizeAvailability();
         setFormData({
           title: '',
@@ -501,11 +584,13 @@ export default function DealDialog({
       }
 
       setIsOpen(false);
-      onDealCreated?.();
+      onSuccess?.();
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to create deal',
+        description: isEditMode
+          ? 'Failed to update deal'
+          : 'Failed to create deal',
         variant: 'destructive',
       });
     } finally {
@@ -528,9 +613,7 @@ export default function DealDialog({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>
-            {initialData ? 'Duplicate Deal' : 'Create New Deal'}
-          </DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Deal' : 'Create Deal'}</DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
@@ -788,31 +871,6 @@ export default function DealDialog({
                   })()}
               </div>
 
-              {/* Duration */}
-              <div>
-                <Label htmlFor='duration'>Duration (minutes) *</Label>
-                <Input
-                  id='duration'
-                  type='number'
-                  value={formData.duration}
-                  onChange={e => {
-                    const newDuration = parseInt(e.target.value, 10) || 0;
-                    setFormData({
-                      ...formData,
-                      duration: newDuration,
-                      // Recalculate endTime when duration changes
-                      endTime:
-                        !formData.allDay && formData.startTime
-                          ? calculateEndTime(formData.startTime, newDuration)
-                          : formData.endTime,
-                    });
-                  }}
-                  min='1'
-                  max='1440'
-                  required
-                />
-              </div>
-
               {/* Status */}
               <div>
                 <Label htmlFor='status'>Status *</Label>
@@ -842,6 +900,128 @@ export default function DealDialog({
                 </Select>
               </div>
 
+              {/* Max Bookings - Full Width */}
+              <div>
+                <Label htmlFor='maxBookings'>Max Bookings</Label>
+                <Input
+                  id='maxBookings'
+                  type='number'
+                  value={formData.maxBookings ?? ''}
+                  onChange={e => {
+                    const { value } = e.target;
+                    setFormData({
+                      ...formData,
+                      maxBookings:
+                        value === ''
+                          ? undefined
+                          : parseInt(value, 10) || undefined,
+                    });
+                  }}
+                  min='1'
+                  placeholder='Optional - leave blank for unlimited'
+                />
+              </div>
+
+              {/* Description - Full Width */}
+              <div className='md:col-span-2'>
+                <Label htmlFor='description'>Description *</Label>
+                <Textarea
+                  id='description'
+                  value={formData.description}
+                  onChange={e =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder='Describe your deal...'
+                  rows={4}
+                  required
+                />
+              </div>
+
+              {/* Tags - Full Width */}
+              <div className='md:col-span-2'>
+                <Label htmlFor='tags'>Tags (comma-separated)</Label>
+                <Input
+                  id='tags'
+                  value={formData.tags.join(', ')}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      tags: e.target.value
+                        .split(',')
+                        .map(tag => tag.trim())
+                        .filter(tag => tag),
+                    })
+                  }
+                  placeholder='e.g., spring, cleaning, special'
+                />
+              </div>
+
+              {/* Horizontal rule */}
+              <hr className='col-span-full mt-6 border-t border-gray-300' />
+              <div className='col-span-full'>
+                <h1>
+                  <b>Time and Date</b>
+                </h1>
+              </div>
+              {/* Duration and Sections */}
+              <div>
+                <Label htmlFor='duration'>Duration (minutes) *</Label>
+                <Input
+                  id='duration'
+                  type='number'
+                  value={formData.duration}
+                  onChange={e => {
+                    const newDuration = parseInt(e.target.value, 10) || 0;
+                    setFormData({
+                      ...formData,
+                      duration: newDuration,
+                      // Recalculate endTime when duration changes
+                      endTime:
+                        !formData.allDay && formData.startTime
+                          ? calculateEndTime(
+                              formData.startTime,
+                              newDuration,
+                              formData.sections
+                            )
+                          : formData.endTime,
+                    });
+                  }}
+                  min='1'
+                  max='1440'
+                  required
+                />
+              </div>
+
+              {/* Sections - only show when NOT all day */}
+              {!formData.allDay && (
+                <div>
+                  <Label htmlFor='sections'>Sections *</Label>
+                  <Input
+                    id='sections'
+                    type='number'
+                    value={formData.sections}
+                    onChange={e => {
+                      const newSections = parseInt(e.target.value, 10) || 1;
+                      setFormData({
+                        ...formData,
+                        sections: newSections,
+                        // Recalculate endTime when sections changes
+                        endTime:
+                          !formData.allDay && formData.startTime
+                            ? calculateEndTime(
+                                formData.startTime,
+                                formData.duration,
+                                newSections
+                              )
+                            : formData.endTime,
+                      });
+                    }}
+                    min='1'
+                    required
+                  />
+                </div>
+              )}
+
               {/* Schedule section - full width wrapper */}
               <div className='col-span-full space-y-4'>
                 {/* All Day - full width row */}
@@ -865,7 +1045,8 @@ export default function DealDialog({
                             if (!formData.startTime) return undefined;
                             return calculateEndTime(
                               formData.startTime,
-                              formData.duration
+                              formData.duration,
+                              formData.sections
                             );
                           })(),
                         });
@@ -878,66 +1059,69 @@ export default function DealDialog({
                   </div>
                 </div>
 
-                {/* Recurrence Type - full width row */}
-                <div>
-                  <Label htmlFor='recurrenceType'>Recurrence Type *</Label>
-                  <Select
-                    value={formData.recurrenceType}
-                    onValueChange={value => {
-                      setFormData({
-                        ...formData,
-                        recurrenceType: value as
-                          | 'none'
-                          | 'daily'
-                          | 'weekly'
-                          | 'weekdays'
-                          | 'monthly'
-                          | 'annually',
-                      });
-                    }}
-                    required
-                  >
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Select recurrence type' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='none'>Does not repeat</SelectItem>
-                      <SelectItem value='daily'>Daily</SelectItem>
-                      <SelectItem value='weekly'>Weekly</SelectItem>
-                      <SelectItem value='weekdays'>
-                        Every weekday (Monday to Friday)
-                      </SelectItem>
-                      <SelectItem value='monthly'>Monthly</SelectItem>
-                      <SelectItem value='annually'>Annually</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Start Date and Recurrence Type in same row */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                  <div>
+                    <Label htmlFor='startDate'>Start Date *</Label>
+                    <Input
+                      id='startDate'
+                      type='date'
+                      value={formData.startDate}
+                      onChange={e => {
+                        setFormData({
+                          ...formData,
+                          startDate: e.target.value,
+                          endTime: formData.startTime
+                            ? calculateEndTime(
+                                formData.startTime,
+                                formData.duration,
+                                formData.sections
+                              )
+                            : formData.endTime,
+                        });
+                      }}
+                      min={todayString}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='recurrenceType'>Recurrence Type *</Label>
+                    <Select
+                      value={formData.recurrenceType}
+                      onValueChange={value => {
+                        setFormData({
+                          ...formData,
+                          recurrenceType: value as
+                            | 'none'
+                            | 'daily'
+                            | 'weekly'
+                            | 'weekdays'
+                            | 'monthly'
+                            | 'annually',
+                        });
+                      }}
+                      required
+                    >
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select recurrence type' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='none'>Does not repeat</SelectItem>
+                        <SelectItem value='daily'>Daily</SelectItem>
+                        <SelectItem value='weekly'>Weekly</SelectItem>
+                        <SelectItem value='weekdays'>
+                          Every weekday (Monday to Friday)
+                        </SelectItem>
+                        <SelectItem value='monthly'>Monthly</SelectItem>
+                        <SelectItem value='annually'>Annually</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Start Date, Start Time, End Time in same row - only show when NOT all day */}
+                {/* Start Time, End Time in same row - only show when NOT all day */}
                 {!formData.allDay && (
-                  <div className='grid grid-cols-3 gap-4'>
-                    <div>
-                      <Label htmlFor='startDate'>Start Date *</Label>
-                      <Input
-                        id='startDate'
-                        type='date'
-                        value={formData.startDate}
-                        onChange={e => {
-                          setFormData({
-                            ...formData,
-                            startDate: e.target.value,
-                            endTime: formData.startTime
-                              ? calculateEndTime(
-                                  formData.startTime,
-                                  formData.duration
-                                )
-                              : formData.endTime,
-                          });
-                        }}
-                        min={todayString}
-                        required
-                      />
-                    </div>
+                  <div className='grid grid-cols-2 gap-4'>
                     <div>
                       <Label htmlFor='startTime'>Start Time *</Label>
                       <Input
@@ -951,7 +1135,8 @@ export default function DealDialog({
                             startTime: newStartTime,
                             endTime: calculateEndTime(
                               newStartTime,
-                              formData.duration
+                              formData.duration,
+                              formData.sections
                             ),
                           });
                         }}
@@ -976,61 +1161,7 @@ export default function DealDialog({
                     </div>
                   </div>
                 )}
-
-                {/* Start Date only - show when all day is checked */}
-                {formData.allDay && (
-                  <div>
-                    <Label htmlFor='startDate'>Start Date *</Label>
-                    <Input
-                      id='startDate'
-                      type='date'
-                      value={formData.startDate}
-                      onChange={e => {
-                        setFormData({
-                          ...formData,
-                          startDate: e.target.value,
-                        });
-                      }}
-                      min={todayString}
-                      required
-                    />
-                  </div>
-                )}
               </div>
-            </div>
-
-            {/* Description - Full Width */}
-            <div>
-              <Label htmlFor='description'>Description *</Label>
-              <Textarea
-                id='description'
-                value={formData.description}
-                onChange={e =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Describe your deal...'
-                rows={4}
-                required
-              />
-            </div>
-
-            {/* Tags */}
-            <div>
-              <Label htmlFor='tags'>Tags (comma-separated)</Label>
-              <Input
-                id='tags'
-                value={formData.tags.join(', ')}
-                onChange={e =>
-                  setFormData({
-                    ...formData,
-                    tags: e.target.value
-                      .split(',')
-                      .map(tag => tag.trim())
-                      .filter(tag => tag),
-                  })
-                }
-                placeholder='e.g., spring, cleaning, special'
-              />
             </div>
 
             {/* Submit Button */}
@@ -1056,7 +1187,7 @@ export default function DealDialog({
                 ) : (
                   <>
                     <Plus className='w-4 h-4 mr-2' />
-                    Create Deal
+                    {isEditMode ? 'Update Deal' : 'Create Deal'}
                   </>
                 )}
               </Button>

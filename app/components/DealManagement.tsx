@@ -1,6 +1,5 @@
 import {
   Calendar,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
@@ -19,28 +18,12 @@ import DealDialog from '~/components/DealDialog';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { Checkbox } from '~/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '~/components/ui/popover';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '~/components/ui/select';
-import { Textarea } from '~/components/ui/textarea';
 import {
   Tooltip,
   TooltipContent,
@@ -50,13 +33,8 @@ import {
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/AuthContext';
 import { useToast } from '~/hooks/use-toast';
-import type { Deal, DealCreateRequest } from '~/services/dealService';
+import type { Deal } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
-import {
-  OperateSiteService,
-  type OperateSite,
-} from '~/services/operateSiteService';
-import { ServiceService, type Service } from '~/services/serviceService';
 
 interface DealManagementProps {
   businessId: string;
@@ -66,10 +44,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
@@ -80,24 +55,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [formData, setFormData] = useState<DealCreateRequest>({
-    title: '',
-    description: '',
-    price: 0,
-    duration: 60,
-    operatingSite: [],
-    allDay: false,
-    startDate: new Date().toISOString().split('T')[0],
-    startTime: '09:00',
-    endTime: '10:00', // Calculated from startTime + duration (60 minutes default)
-    recurrenceType: 'none' as const,
-    maxBookings: undefined,
-    status: 'active',
-    tags: [],
-    service: '',
-  });
-  const [operatingSitePopoverOpen, setOperatingSitePopoverOpen] =
-    useState(false);
 
   // Helper functions for role-based access control
   const isOwner = user?.role?.slug === BusinessUserRole.Owner;
@@ -175,15 +132,9 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     async (resetPage = false) => {
       try {
         setIsLoading(true);
-        const [dealsData, servicesData, sitesData] = await Promise.all([
-          DealService.getDeals(businessId),
-          ServiceService.getServices(businessId),
-          OperateSiteService.getOperateSites(businessId),
-        ]);
+        const dealsData = await DealService.getDeals(businessId);
 
         setDeals(Array.isArray(dealsData) ? dealsData : []);
-        setServices(Array.isArray(servicesData) ? servicesData : []);
-        setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
 
         // Reset to first page after creating a new deal
         if (resetPage) {
@@ -197,8 +148,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
         });
         // Set empty arrays on error
         setDeals([]);
-        setServices([]);
-        setOperatingSites([]);
       } finally {
         setIsLoading(false);
       }
@@ -210,159 +159,13 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     loadDeals();
   }, [businessId, loadDeals]);
 
-  const toIsoUtc = (value: string, timeString?: string) => {
-    if (timeString) {
-      return `${value}T${timeString}:00.000Z`;
-    }
-    return value.includes('T') ? value : `${value}T00:00:00.000Z`;
-  };
-
-  function toDateInputValue(value?: string) {
-    return value ? value.split('T')[0] : new Date().toISOString().split('T')[0];
-  }
-
-  const toTimeInputValue = (dateString: string) => {
-    if (!dateString) return '09:00';
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return '09:00';
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
-
-  const calculateEndTime = (
-    startTime: string,
-    durationMinutes: number
-  ): string => {
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(hours, minutes, 0, 0);
-    const endDate = new Date(startDate.getTime() + durationMinutes * 60 * 1000);
-    const endHours = endDate.getHours().toString().padStart(2, '0');
-    const endMinutes = endDate.getMinutes().toString().padStart(2, '0');
-    return `${endHours}:${endMinutes}`;
-  };
-
   const openEditDialog = (deal: Deal) => {
     setEditingDeal(deal);
-    // Extract operating site IDs from the array
-    const operatingSiteIds: string[] = deal.operatingSite
-      .map(site => site.id)
-      .filter(id => id);
-
-    setFormData({
-      title: deal.title ?? '',
-      description: deal.description ?? '',
-      price: deal.price ?? 0,
-      originalPrice: deal.originalPrice,
-      duration: deal.duration ?? 60,
-      operatingSite: operatingSiteIds,
-      allDay: deal.allDay ?? false,
-      startDate: toDateInputValue(deal.startDate),
-      startTime: deal.allDay ? undefined : toTimeInputValue(deal.startDate),
-      endTime: (() => {
-        if (deal.allDay) {
-          return undefined;
-        }
-        if (deal.startDate && deal.duration) {
-          return calculateEndTime(
-            toTimeInputValue(deal.startDate),
-            deal.duration ?? 60
-          );
-        }
-        return undefined;
-      })(),
-      recurrenceType: deal.recurrenceType ?? 'none',
-      maxBookings: deal.maxBookings,
-      status: deal.status ?? 'active',
-      tags: deal.tags ?? [],
-      service: deal.service?.id ?? '',
-    });
-    setIsEditDialogOpen(true);
   };
 
-  const handleUpdateDeal = async () => {
-    if (!editingDeal) return;
-
-    // Validate that deal price is less than base price
-    const selectedService = services.find(s => s.id === formData.service);
-    if (selectedService && selectedService.basePrice > 0) {
-      if (formData.price >= selectedService.basePrice) {
-        toast({
-          title: 'Invalid Price',
-          description: 'Deal price must be less than the service base price',
-          variant: 'destructive',
-        });
-        return;
-      }
-    }
-
-    try {
-      // Build datetime strings
-      let startDateTimeStr: string;
-      if (formData.allDay) {
-        startDateTimeStr = toIsoUtc(formData.startDate);
-      } else {
-        startDateTimeStr = toIsoUtc(
-          formData.startDate,
-          formData.startTime ?? '09:00'
-        );
-      }
-
-      // Calculate end datetime from start + duration
-      let endDateTimeStr: string | undefined;
-      if (!formData.allDay && formData.startTime) {
-        // Calculate end time from start time + duration
-        const startDate = new Date(formData.startDate);
-        const [hours, minutes] = formData.startTime.split(':').map(Number);
-        startDate.setHours(hours, minutes, 0, 0);
-        const endDate = new Date(
-          startDate.getTime() + formData.duration * 60 * 1000
-        );
-        const endDateStr = endDate.toISOString().split('T')[0];
-        const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-        endDateTimeStr = toIsoUtc(endDateStr, endTimeStr);
-      } else if (formData.allDay) {
-        // For all day, end date is start date + 30 days
-        const startDate = new Date(formData.startDate);
-        const endDate = new Date(startDate);
-        endDate.setDate(endDate.getDate() + 30);
-        endDateTimeStr = toIsoUtc(endDate.toISOString().split('T')[0]);
-      }
-
-      // Build update data object with only the fields we want to send
-      const updateData: any = {
-        title: formData.title,
-        description: formData.description,
-        price: formData.price,
-        originalPrice: formData.originalPrice ?? undefined,
-        duration: formData.duration,
-        operatingSite: formData.operatingSite,
-        allDay: formData.allDay,
-        startDate: startDateTimeStr,
-        endDate: endDateTimeStr,
-        recurrenceType: formData.recurrenceType,
-        maxBookings: formData.maxBookings,
-        status: formData.status,
-        tags: formData.tags,
-        service: formData.service,
-      };
-
-      await DealService.updateDeal(businessId, editingDeal.id, updateData);
-      toast({
-        title: 'Success',
-        description: 'Deal updated successfully',
-      });
-      setIsEditDialogOpen(false);
-      setEditingDeal(null);
-      await loadDeals();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update deal',
-        variant: 'destructive',
-      });
-    }
+  const handleEditSuccess = async () => {
+    setEditingDeal(null);
+    await loadDeals();
   };
 
   const openDeleteDialog = (deal: Deal) => {
@@ -542,7 +345,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   Add Deal
                 </Button>
               }
-              onDealCreated={() => loadDeals(true)}
+              onSuccess={() => loadDeals(true)}
             />
           )}
         </div>
@@ -757,501 +560,27 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                   {searchTerm ? 'Add New Deal' : 'Add Your First Deal'}
                 </Button>
               }
-              onDealCreated={() => loadDeals(true)}
+              onSuccess={() => loadDeals(true)}
             />
           )}
         </div>
       )}
 
-      {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className='max-w-md'>
-          <DialogHeader>
-            <DialogTitle>Edit Deal</DialogTitle>
-          </DialogHeader>
-          <div className='space-y-4'>
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-title'>Deal Title</Label>
-                <Input
-                  id='edit-title'
-                  value={formData.title}
-                  onChange={e =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  placeholder='e.g., Spring Cleaning Special'
-                />
-              </div>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-service'>Service</Label>
-                <Select
-                  value={formData.service}
-                  onValueChange={value => {
-                    const selectedService = services.find(s => s.id === value);
-                    setFormData({
-                      ...formData,
-                      service: value,
-                      duration: selectedService?.duration ?? formData.duration,
-                    });
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select service' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.isArray(services) &&
-                      services.map(service => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name ?? 'Unknown Service'} -{' '}
-                          {formatPrice(service.basePrice ?? 0)}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor='edit-operatingSite'>Operating Sites</Label>
-                <Popover
-                  open={operatingSitePopoverOpen}
-                  onOpenChange={setOperatingSitePopoverOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <Button
-                      type='button'
-                      variant='outline'
-                      className='w-full justify-between text-left font-normal'
-                      disabled={operatingSites.length === 0}
-                    >
-                      <span className='truncate'>
-                        {(() => {
-                          if (formData.operatingSite.length === 0) {
-                            return 'Select operating sites';
-                          }
-                          if (formData.operatingSite.length === 1) {
-                            const siteName =
-                              operatingSites.find(
-                                s => s.id === formData.operatingSite[0]
-                              )?.name ?? '1 site selected';
-                            return siteName;
-                          }
-                          return `${formData.operatingSite.length} sites selected`;
-                        })()}
-                      </span>
-                      <ChevronDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className='w-full p-0' align='start'>
-                    <div className='max-h-60 overflow-auto p-2'>
-                      {Array.isArray(operatingSites) &&
-                        operatingSites.map(site => (
-                          <div
-                            key={site.id}
-                            role='button'
-                            tabIndex={0}
-                            className='flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer'
-                            onClick={() => {
-                              const isSelected =
-                                formData.operatingSite.includes(site.id);
-                              if (isSelected) {
-                                setFormData({
-                                  ...formData,
-                                  operatingSite: formData.operatingSite.filter(
-                                    id => id !== site.id
-                                  ),
-                                });
-                              } else {
-                                setFormData({
-                                  ...formData,
-                                  operatingSite: [
-                                    ...formData.operatingSite,
-                                    site.id,
-                                  ],
-                                });
-                              }
-                            }}
-                            onKeyDown={e => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                const isSelected =
-                                  formData.operatingSite.includes(site.id);
-                                if (isSelected) {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite:
-                                      formData.operatingSite.filter(
-                                        id => id !== site.id
-                                      ),
-                                  });
-                                } else {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite: [
-                                      ...formData.operatingSite,
-                                      site.id,
-                                    ],
-                                  });
-                                }
-                              }
-                            }}
-                          >
-                            <Checkbox
-                              checked={formData.operatingSite.includes(site.id)}
-                              onCheckedChange={checked => {
-                                if (checked) {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite: [
-                                      ...formData.operatingSite,
-                                      site.id,
-                                    ],
-                                  });
-                                } else {
-                                  setFormData({
-                                    ...formData,
-                                    operatingSite:
-                                      formData.operatingSite.filter(
-                                        id => id !== site.id
-                                      ),
-                                  });
-                                }
-                              }}
-                            />
-                            <Label
-                              className='flex-1 cursor-pointer font-normal'
-                              onClick={e => e.stopPropagation()}
-                            >
-                              {site.name ?? 'Unknown Site'}
-                            </Label>
-                          </div>
-                        ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                {formData.operatingSite.length === 0 && (
-                  <p className='text-sm text-red-500 mt-1'>
-                    At least one operating site is required
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              {/* Base Price (Read-only) */}
-              <div>
-                <Label htmlFor='edit-basePrice'>Service Base Price (AUD)</Label>
-                <Input
-                  id='edit-basePrice'
-                  type='number'
-                  value={
-                    services.find(s => s.id === formData.service)?.basePrice ??
-                    0
-                  }
-                  disabled
-                  readOnly
-                  className='bg-gray-100 cursor-not-allowed'
-                />
-              </div>
-
-              {/* Single column for price */}
-              <div className='mt-4'>
-                <Label htmlFor='edit-price'>Deal Price (AUD)</Label>
-                <Input
-                  id='edit-price'
-                  type='number'
-                  step='0.01'
-                  value={formData.price}
-                  onChange={e => {
-                    const newPrice = parseFloat(e.target.value) || 0;
-                    const selectedService = services.find(
-                      s => s.id === formData.service
-                    );
-                    const basePrice = selectedService?.basePrice ?? 0;
-
-                    if (
-                      newPrice > 0 &&
-                      basePrice > 0 &&
-                      newPrice >= basePrice
-                    ) {
-                      toast({
-                        title: 'Invalid Price',
-                        description:
-                          'Deal price must be less than the service base price',
-                        variant: 'destructive',
-                      });
-                      return;
-                    }
-
-                    setFormData({
-                      ...formData,
-                      price: newPrice,
-                    });
-                  }}
-                  min='0'
-                  max={(() => {
-                    const service = services.find(
-                      s => s.id === formData.service
-                    );
-                    return service?.basePrice
-                      ? service.basePrice - 0.01
-                      : undefined;
-                  })()}
-                />
-                {formData.service &&
-                  (() => {
-                    const selectedService = services.find(
-                      s => s.id === formData.service
-                    );
-                    const basePrice = selectedService?.basePrice ?? 0;
-                    if (
-                      basePrice > 0 &&
-                      formData.price > 0 &&
-                      formData.price >= basePrice
-                    ) {
-                      return (
-                        <p className='text-sm text-red-500 mt-1'>
-                          Deal price must be less than base price ($
-                          {basePrice.toFixed(2)})
-                        </p>
-                      );
-                    }
-                    return null;
-                  })()}
-              </div>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              {' '}
-              {/* Two columns */}
-              <div>
-                <Label htmlFor='edit-duration'>Duration (minutes)</Label>
-                <Input
-                  id='edit-duration'
-                  type='number'
-                  value={formData.duration}
-                  onChange={e => {
-                    const newDuration = parseInt(e.target.value, 10) || 0;
-                    setFormData({
-                      ...formData,
-                      duration: newDuration,
-                      // Recalculate endTime when duration changes
-                      endTime:
-                        !formData.allDay && formData.startTime
-                          ? calculateEndTime(formData.startTime, newDuration)
-                          : formData.endTime,
-                    });
-                  }}
-                  min='1'
-                  max='1440'
-                />
-              </div>
-              <div>
-                <Label htmlFor='edit-maxBookings'>Max Bookings</Label>
-                <Input
-                  id='edit-maxBookings'
-                  type='number'
-                  value={formData.maxBookings ?? ''}
-                  onChange={e =>
-                    setFormData({
-                      ...formData,
-                      maxBookings: parseInt(e.target.value, 10) || undefined,
-                    })
-                  }
-                  min='1'
-                />
-              </div>
-            </div>
-            <div>
-              {' '}
-              {/* Full width for description */}
-              <Label htmlFor='edit-description'>Description</Label>
-              <Textarea
-                id='edit-description'
-                value={formData.description}
-                onChange={e =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder='Deal description...'
-                rows={3}
-              />
-            </div>
-            <hr style={{ margin: '40px 0 10px 0' }} />
-            <div className='space-y-4'>
-              <h2>
-                <b>Date and Time</b>
-              </h2>
-              {/* All Day - full width row */}
-              <div>
-                <div className='flex items-center space-x-2 justify-start'>
-                  <input
-                    type='checkbox'
-                    id='edit-allDay'
-                    checked={formData.allDay}
-                    onChange={e => {
-                      const isAllDay = e.target.checked;
-                      setFormData({
-                        ...formData,
-                        allDay: isAllDay,
-                        // When switching to all day, clear times
-                        startTime: isAllDay
-                          ? undefined
-                          : (formData.startTime ?? '09:00'),
-                        endTime: (() => {
-                          if (isAllDay) return undefined;
-                          if (!formData.startTime) return undefined;
-                          return calculateEndTime(
-                            formData.startTime,
-                            formData.duration
-                          );
-                        })(),
-                      });
-                    }}
-                    className='h-4 w-4'
-                  />
-                  <Label htmlFor='edit-allDay' className='cursor-pointer'>
-                    All Day (whole business day)
-                  </Label>
-                </div>
-              </div>
-
-              {/* Recurrence Type - full width row */}
-              <div>
-                <Label htmlFor='edit-recurrenceType'>Recurrence Type</Label>
-                <Select
-                  value={formData.recurrenceType}
-                  onValueChange={value => {
-                    setFormData({
-                      ...formData,
-                      recurrenceType: value as
-                        | 'none'
-                        | 'daily'
-                        | 'weekly'
-                        | 'weekdays'
-                        | 'monthly'
-                        | 'annually',
-                    });
-                  }}
-                >
-                  <SelectTrigger className='w-full'>
-                    <SelectValue placeholder='Select recurrence type' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='none'>Does not repeat</SelectItem>
-                    <SelectItem value='daily'>Daily</SelectItem>
-                    <SelectItem value='weekly'>Weekly</SelectItem>
-                    <SelectItem value='weekdays'>
-                      Every weekday (Monday to Friday)
-                    </SelectItem>
-                    <SelectItem value='monthly'>Monthly</SelectItem>
-                    <SelectItem value='annually'>Annually</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Start Date, Start Time, End Time in same row - only show when NOT all day */}
-              {!formData.allDay && (
-                <div className='grid grid-cols-3 gap-4'>
-                  <div>
-                    <Label htmlFor='edit-startDate'>Start Date</Label>
-                    <Input
-                      id='edit-startDate'
-                      type='date'
-                      value={formData.startDate}
-                      onChange={e =>
-                        setFormData({
-                          ...formData,
-                          startDate: e.target.value,
-                          endTime: formData.startTime
-                            ? calculateEndTime(
-                                formData.startTime,
-                                formData.duration
-                              )
-                            : formData.endTime,
-                        })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor='edit-startTime'>Start Time</Label>
-                    <Input
-                      id='edit-startTime'
-                      type='time'
-                      value={formData.startTime ?? '09:00'}
-                      onChange={e => {
-                        const newStartTime = e.target.value;
-                        setFormData({
-                          ...formData,
-                          startTime: newStartTime,
-                          endTime: calculateEndTime(
-                            newStartTime,
-                            formData.duration
-                          ),
-                        });
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor='edit-endTime'>End Time</Label>
-                    <Input
-                      id='edit-endTime'
-                      type='time'
-                      value={
-                        formData.endTime ??
-                        calculateEndTime(
-                          formData.startTime ?? '09:00',
-                          formData.duration
-                        )
-                      }
-                      readOnly
-                      className='bg-gray-100 cursor-not-allowed'
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Start Date only - show when all day is checked */}
-              {formData.allDay && (
-                <div>
-                  <Label htmlFor='edit-startDate'>Start Date</Label>
-                  <Input
-                    id='edit-startDate'
-                    type='date'
-                    value={formData.startDate}
-                    onChange={e =>
-                      setFormData({
-                        ...formData,
-                        startDate: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className='flex justify-end space-x-2'>
-              <Button
-                variant='outline'
-                onClick={() => setIsEditDialogOpen(false)}
-                className='cursor-pointer'
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleUpdateDeal}
-                className='bg-shadow-lavender hover:bg-shadow-lavender/90 cursor-pointer'
-              >
-                Update Deal
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Edit Dialog - Now using DealDialog component */}
+      {editingDeal && (
+        <DealDialog
+          businessId={businessId}
+          initialData={editingDeal}
+          dealId={editingDeal.id}
+          open={!!editingDeal}
+          onOpenChange={open => {
+            if (!open) {
+              setEditingDeal(null);
+            }
+          }}
+          onSuccess={handleEditSuccess}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -1295,27 +624,12 @@ export default function DealManagement({ businessId }: DealManagementProps) {
               setDealToDuplicate(null);
             }
           }}
-          onDealCreated={() => {
+          onSuccess={() => {
             loadDeals();
             setIsDuplicateDialogOpen(false);
             setDealToDuplicate(null);
           }}
-          initialData={{
-            title: `Copy of ${dealToDuplicate.title}`,
-            description: dealToDuplicate.description,
-            price: dealToDuplicate.price,
-            originalPrice: dealToDuplicate.originalPrice,
-            duration: dealToDuplicate.duration,
-            operatingSite: dealToDuplicate.operatingSite.map(site => site.id),
-            allDay: dealToDuplicate.allDay,
-            startDate: dealToDuplicate.startDate,
-            endDate: dealToDuplicate.endDate,
-            recurrenceType: dealToDuplicate.recurrenceType,
-            maxBookings: dealToDuplicate.maxBookings,
-            status: 'active', // Always start duplicated deals as active
-            tags: dealToDuplicate.tags,
-            service: dealToDuplicate.service.id,
-          }}
+          initialData={dealToDuplicate}
         />
       )}
 

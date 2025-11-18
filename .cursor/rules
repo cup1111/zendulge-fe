@@ -150,7 +150,10 @@
 #### TypeScript
 - Use proper types for all variables
 - Use interfaces for object shapes
-- Use enums for constants
+- **USE ENUMS WHENEVER POSSIBLE** - Prefer enums over string literal unions when values are fixed constants
+- Use enums for constants, status values, and fixed sets of string values
+- When you see `'value1' | 'value2' | 'value3'` consider creating an enum if these are fixed constants
+- Example: Instead of `type Status = 'active' | 'inactive'`, prefer `enum Status { ACTIVE = 'active', INACTIVE = 'inactive' }`
 - Prefer type-only imports: `import type { SomeType } from 'module'`
 
 #### React Patterns
@@ -228,6 +231,11 @@
 - Use context for shared state
 
 ### Common Mistakes to Avoid
+
+#### TypeScript Patterns
+- ❌ Using string literal unions (`'active' | 'inactive'`) when an enum would be better
+- ❌ Not using enums for fixed sets of constants
+- ✅ **ALWAYS** prefer enums for status fields, types, and fixed constants
 
 #### Linting Errors
 - ❌ Using `||` instead of `??` for default values
