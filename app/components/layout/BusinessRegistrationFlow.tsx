@@ -172,14 +172,14 @@ export default function BusinessRegistrationFlow({
                 </span>
                 <ImageInput
                   onChange={value => {
-                    onInputChange('logo', value);
+                    onInputChange('companyLogo', value);
                   }}
                   onUploadError={err => {
-                    setError({ ...error, ...{ logo: err.message } });
+                    setError({ ...error, ...{ companyLogo: err.message } });
                   }}
-                  logoUrl={businessRegistrationFormData.logo.value}
+                  logoUrl={businessRegistrationFormData.companyLogo.value}
                 />
-                {error.logo && renderErrorMessage(error.logo)}
+                {error.companyLogo && renderErrorMessage(error.companyLogo)}
               </div>
               <div>
                 <label

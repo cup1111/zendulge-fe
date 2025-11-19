@@ -149,7 +149,7 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      logo: {
+      companyLogo: {
         isRequired: false,
         value: '',
         defaultValue: '',

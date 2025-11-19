@@ -28,7 +28,12 @@ export default function ImageInput({
       try {
         const response = await zendulgeAxios.post(
           API_CONFIG.endpoints.business.uploadImage,
-          fileFormData
+          fileFormData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
         );
         onChange(response.data.data.presignedUrl);
         setImageUrl(URL.createObjectURL(imageFile));
@@ -56,12 +61,16 @@ export default function ImageInput({
           onClick={() => {
             inputRef.current?.click();
           }}
+          className='relative group cursor-pointer'
         >
           <img
             src={imageUrl}
             alt='Logo'
             className='w-20 h-20 object-cover rounded-lg'
           />
+          <div className='absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 rounded-lg transition'>
+            change
+          </div>
         </button>
       ) : (
         <Button
