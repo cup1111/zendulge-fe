@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios';
 import { useRef, useState } from 'react';
 
 import { API_CONFIG } from '~/config/api';
@@ -7,7 +8,7 @@ import { Button } from '../ui/button';
 
 interface ImageInputProps {
   onChange: (value: string) => void;
-  onUploadError: (value: any) => void;
+  onUploadError: (error: Error | AxiosError) => void;
   logoUrl: string;
 }
 
@@ -37,8 +38,14 @@ export default function ImageInput({
         );
         onChange(response.data.data.presignedUrl);
         setImageUrl(URL.createObjectURL(imageFile));
-      } catch (error: any) {
-        onUploadError(error);
+      } catch (error: unknown) {
+        // Type guard to ensure error is an Error or AxiosError
+        if (error instanceof Error) {
+          onUploadError(error);
+        } else {
+          // Fallback for unexpected error types
+          onUploadError(new Error('An unknown error occurred during upload'));
+        }
       } finally {
         setIsLoadingImage(false);
       }
