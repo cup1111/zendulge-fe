@@ -500,18 +500,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                     if (deal.recurrenceType !== 'none') {
                       display += ` (${deal.recurrenceType})`;
                     }
-                    if (deal.endDate) {
-                      const endDate = new Date(deal.endDate);
-                      display += ` - ${formatDate(deal.endDate)}`;
-                      if (!deal.allDay) {
-                        const endTimeStr = endDate.toLocaleTimeString('en-AU', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: false,
-                        });
-                        display += ` ${endTimeStr}`;
-                      }
-                    }
                     return display;
                   })()}
                 </span>

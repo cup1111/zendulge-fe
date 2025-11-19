@@ -71,12 +71,6 @@ const calculateEndTime = (
   return formatTime(endDate);
 };
 
-const addDays = (date: Date, days: number) => {
-  const updated = new Date(date);
-  updated.setDate(updated.getDate() + days);
-  return updated;
-};
-
 const parseDateInput = (value?: string | Date) => {
   if (!value) {
     return undefined;
@@ -165,40 +159,11 @@ export default function DealDialog({
         endTimeStr = '10:00';
       }
 
-      // For endDate, calculate based on if the end time crosses midnight
-      let endDate: Date | undefined;
-      if (!allDay && startTimeStr) {
-        const endDateTime = new Date(start);
-        const [hours, minutes] = startTimeStr.split(':').map(Number);
-        endDateTime.setHours(hours, minutes, 0, 0);
-        const totalMinutes = duration * sectionsValue;
-        endDateTime.setTime(endDateTime.getTime() + totalMinutes * 60 * 1000);
-
-        // If end time is next day, use next day as endDate, otherwise same as startDate
-        if (endDateTime.toDateString() !== start.toDateString()) {
-          endDate = endDateTime;
-        } else {
-          endDate = new Date(start);
-        }
-      } else if (allDay) {
-        // For all day, default to 30 days from start
-        endDate = addDays(start, 30);
-        endDate.setHours(23, 59, 59, 999);
-      }
-
-      let formattedEndDate: string | undefined;
-      if (endDate) {
-        formattedEndDate = allDay
-          ? formatDate(endDate)
-          : endDate.toISOString().split('T')[0];
-      }
-
       return {
         startDate: allDay
           ? formatDate(start)
           : start.toISOString().split('T')[0],
         startTime: startTimeStr,
-        endDate: formattedEndDate,
         endTime: endTimeStr,
       };
     },
@@ -298,7 +263,6 @@ export default function DealDialog({
         }
         return initialSchedule.startTime;
       })(),
-      endDate: initialSchedule.endDate,
       endTime,
       recurrenceType: initialSchedule.recurrenceType,
       maxBookings: initialData?.maxBookings ?? undefined,
@@ -371,7 +335,6 @@ export default function DealDialog({
         startTime: initialData.allDay
           ? undefined
           : toTimeInputValue(initialData.startDate),
-        endDate: schedule.endDate,
         endTime,
         recurrenceType: schedule.recurrenceType,
         maxBookings: schedule.maxBookings,
@@ -398,7 +361,6 @@ export default function DealDialog({
         allDay: false,
         startDate: defaultSchedule.startDate,
         startTime: defaultSchedule.startTime,
-        endDate: defaultSchedule.endDate,
         endTime: defaultSchedule.endTime,
         recurrenceType: 'none',
         maxBookings: undefined,
@@ -455,38 +417,6 @@ export default function DealDialog({
       return;
     }
 
-    // Calculate end datetime from start datetime + duration
-    let endDateTime: Date | undefined;
-    if (!formData.allDay && formData.startTime) {
-      const startTimeMinutes = formData.startTime.split(':').map(Number);
-      const totalMinutes =
-        startTimeMinutes[0] * 60 +
-        startTimeMinutes[1] +
-        formData.duration * formData.sections;
-      endDateTime = new Date(startDateTime);
-      endDateTime.setHours(
-        Math.floor(totalMinutes / 60) % 24,
-        totalMinutes % 60,
-        0,
-        0
-      );
-
-      // If end time is on next day, add a day
-      if (endDateTime.getTime() <= startDateTime.getTime()) {
-        endDateTime.setDate(endDateTime.getDate() + 1);
-      }
-    } else if (formData.allDay) {
-      // For all day, end date is start date + 30 days
-      endDateTime = addDays(startDateTime, 30);
-      endDateTime.setHours(23, 59, 59, 999);
-    }
-
-    // Validation: end must be after start (already handled by calculation, but check anyway)
-    if (endDateTime && endDateTime.getTime() <= startDateTime.getTime()) {
-      showValidationError('End time must be after start time.');
-      return;
-    }
-
     // Validate that deal price is less than base price
     const selectedService = services.find(s => s.id === formData.service);
     if (selectedService && selectedService.basePrice > 0) {
@@ -512,18 +442,6 @@ export default function DealDialog({
         startDateTimeStr = `${startDate}T${startTime}:00.000Z`;
       }
 
-      // Calculate end datetime from start + duration
-      let endDateTimeStr: string | undefined;
-      if (endDateTime) {
-        if (formData.allDay) {
-          endDateTimeStr = `${endDateTime.toISOString().split('T')[0]}T23:59:59.999Z`;
-        } else {
-          const endDate = endDateTime.toISOString().split('T')[0];
-          const endTime = formatTime(endDateTime);
-          endDateTimeStr = `${endDate}T${endTime}:00.000Z`;
-        }
-      }
-
       const dealData: DealCreateRequest = {
         title: formData.title,
         description: formData.description,
@@ -534,17 +452,12 @@ export default function DealDialog({
         operatingSite: formData.operatingSite,
         allDay: formData.allDay,
         startDate: startDateTimeStr,
-        endDate: endDateTimeStr,
         recurrenceType: formData.recurrenceType,
         maxBookings: formData.maxBookings ?? undefined,
         status: formData.status,
         tags: formData.tags,
         service: formData.service,
       };
-      // Only include time fields if NOT all day
-      if (!formData.allDay) {
-        // Times are already included in startDate and endDate as datetime strings
-      }
       // Handle create vs edit mode
       if (isEditMode && dealId) {
         await DealService.updateDeal(businessId, dealId, dealData);
@@ -574,7 +487,6 @@ export default function DealDialog({
           allDay: false,
           startDate: defaultSchedule.startDate,
           startTime: defaultSchedule.startTime,
-          endDate: defaultSchedule.endDate,
           endTime: defaultSchedule.endTime,
           recurrenceType: 'none',
           maxBookings: undefined,

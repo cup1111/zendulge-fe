@@ -1,5 +1,14 @@
 import api from '~/config/axios';
 
+export interface TimeSlot {
+  date: string; // ISO date string (YYYY-MM-DD)
+  dateTime: string; // ISO datetime string for the start of the slot
+  startTime: string; // HH:MM format
+  endTime: string; // HH:MM format
+  available: boolean;
+  siteId?: string; // Operating site ID if multiple sites
+}
+
 export interface PublicDeal {
   id: string;
   title: string;
@@ -10,7 +19,6 @@ export interface PublicDeal {
   duration?: number;
   allDay?: boolean;
   startDate?: string;
-  endDate?: string;
   recurrenceType?:
     | 'none'
     | 'daily'
@@ -28,6 +36,7 @@ export interface PublicDeal {
     duration?: number;
   };
   sites?: Array<{ id: string; name: string; address: string }>;
+  availableTimeSlots?: TimeSlot[];
 }
 
 export interface PublicDealsResponse {
@@ -43,7 +52,6 @@ export interface PublicDealsResponse {
     duration?: number;
     allDay?: boolean;
     startDate?: string;
-    endDate?: string;
     recurrenceType?:
       | 'none'
       | 'daily'
@@ -61,6 +69,14 @@ export interface PublicDealsResponse {
       duration?: number;
     };
     sites?: Array<{ _id: string; name: string; address: string }>;
+    availableTimeSlots?: Array<{
+      date: string;
+      dateTime: string;
+      startTime: string;
+      endTime: string;
+      available: boolean;
+      siteId?: string;
+    }>;
   }>;
 }
 
@@ -78,7 +94,6 @@ const mapDeal = (raw: PublicDealsResponse['data'][number]): PublicDeal => {
     duration: raw.duration,
     allDay: raw.allDay,
     startDate: raw.startDate,
-    endDate: raw.endDate,
     recurrenceType: raw.recurrenceType,
     discount: raw.discount,
     business: {
@@ -98,6 +113,7 @@ const mapDeal = (raw: PublicDealsResponse['data'][number]): PublicDeal => {
       name,
       address,
     })),
+    availableTimeSlots: raw.availableTimeSlots,
   };
 };
 
