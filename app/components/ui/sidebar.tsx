@@ -20,8 +20,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
-import { useIsMobile } from '~/hooks/use-mobile';
+import { useIsMobile } from '~/hooks/useMobile';
 import { combineClasses } from '~/lib/utils';
+
+import {
+  SidebarContext,
+  type SidebarContextProps,
+  useSidebar,
+} from './sidebar-hooks';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -29,27 +35,6 @@ const SIDEBAR_WIDTH = '16rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
-
-type SidebarContextProps = {
-  state: 'expanded' | 'collapsed';
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  openMobile: boolean;
-  setOpenMobile: (open: boolean) => void;
-  isMobile: boolean;
-  toggleSidebar: () => void;
-};
-
-const SidebarContext = React.createContext<SidebarContextProps | null>(null);
-
-function useSidebar() {
-  const context = React.useContext(SidebarContext);
-  if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider.');
-  }
-
-  return context;
-}
 
 const SidebarProvider = ({
   defaultOpen = true,
@@ -767,5 +752,4 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  useSidebar,
 };

@@ -26,8 +26,8 @@ import {
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
 import { BusinessUserRole } from '~/constants/enums';
-import { useAuth } from '~/contexts/AuthContext';
-import { useToast } from '~/hooks/use-toast';
+import { useAuth } from '~/hooks/useAuth';
+import { useToast } from '~/hooks/useToast';
 import type { Deal, DealCreateRequest } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 import {

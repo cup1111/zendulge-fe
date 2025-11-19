@@ -6,7 +6,7 @@ import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/hooks/useAuth';
 
 import EmailInput from '../components/inputs/EmailInput';
 import PasswordInput from '../components/inputs/PasswordInput';

@@ -1,12 +1,6 @@
 import type { AxiosError } from 'axios';
 import type { ReactNode } from 'react';
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import { API_CONFIG } from '~/config/api';
@@ -14,12 +8,14 @@ import zendulgeAxios from '~/config/axios';
 
 import type { BusinessUserRole } from '../constants/enums';
 
-interface Business {
+import { AuthContext, type AuthContextType } from './AuthContext';
+
+export interface Business {
   id: string;
   name: string;
 }
 
-interface User {
+export interface User {
   id: string;
   email: string;
   firstName?: string;
@@ -29,20 +25,6 @@ interface User {
   role?: { slug: BusinessUserRole; name: string; id: string };
   businesses: Business[];
 }
-
-interface AuthContextType {
-  user: User | null;
-  currentBusiness: Business | null;
-  businesses: Business[];
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  setCurrentBusiness: (business: Business) => void;
-  logout: () => void;
-  errorMessage: string | null;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -216,10 +198,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     [navigate]
   );
 
-  const setCurrentBusiness = (business: Business) => {
+  const setCurrentBusiness = useCallback((business: Business) => {
     setCurrentBusinessState(business);
     localStorage.setItem('currentBusiness', JSON.stringify(business));
-  };
+  }, []);
 
   // Check for existing authentication on init
   useEffect(() => {
@@ -268,7 +250,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     initAuth();
   }, [logout]);
 
-  const value: AuthContextType = React.useMemo(
+  const value = React.useMemo<AuthContextType>(
     () => ({
       user,
       currentBusiness,
@@ -293,22 +275,3 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    // Return default values instead of throwing error to handle edge cases
-    return {
-      user: null,
-      currentBusiness: null,
-      businesses: [],
-      isAuthenticated: false,
-      isLoading: false,
-      login: async () => {},
-      setCurrentBusiness: () => {},
-      logout: () => {},
-      errorMessage: null,
-    };
-  }
-  return context;
-}

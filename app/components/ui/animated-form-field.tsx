@@ -8,8 +8,8 @@ import {
 
 import { AnimatedFormMessage } from '~/components/ui/animated-form-message';
 import { AnimatedInput } from '~/components/ui/animated-input';
-import { FormItem, FormLabel, FormControl } from '~/components/ui/form';
-import { useAnimatedValidation } from '~/hooks/use-animated-validation';
+import { FormControl, FormItem, FormLabel } from '~/components/ui/form';
+import { useAnimatedValidation } from '~/hooks/useAnimatedValidation';
 import { combineClasses } from '~/lib/utils';
 
 interface AnimatedFormFieldProps<

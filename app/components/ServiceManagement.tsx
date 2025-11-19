@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
-import { useToast } from '~/hooks/use-toast';
+import { useToast } from '~/hooks/useToast';
 import type {
   Service,
   ServiceCreateRequest,
@@ -41,7 +41,7 @@ import type {
 import { ServiceService } from '~/services/serviceService';
 
 import { BusinessUserRole } from '../constants/enums';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 type ApiError = {
   response?: {
