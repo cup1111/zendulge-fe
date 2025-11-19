@@ -24,7 +24,6 @@ export interface Deal {
   }>;
   allDay: boolean;
   startDate: string;
-  endDate?: string;
   recurrenceType:
     | 'none'
     | 'daily'
@@ -66,7 +65,6 @@ export interface DealCreateRequest {
   allDay: boolean;
   startDate: string;
   startTime?: string;
-  endDate?: string;
   recurrenceType:
     | 'none'
     | 'daily'
@@ -93,7 +91,6 @@ export interface DealUpdateRequest {
   allDay?: boolean;
   startDate?: string;
   startTime?: string;
-  endDate?: string;
   recurrenceType?:
     | 'none'
     | 'daily'
@@ -146,7 +143,6 @@ interface RawDealApiResponse {
   }>;
   allDay?: boolean;
   startDate?: string;
-  endDate?: string;
   recurrenceType?:
     | 'none'
     | 'daily'
