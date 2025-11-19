@@ -22,7 +22,6 @@ export const links: LinksFunction = () => [
     href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap',
   },
 ];
-
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Clean up any browser extension attributes that cause hydration mismatches
