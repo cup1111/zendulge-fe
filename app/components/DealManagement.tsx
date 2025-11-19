@@ -32,7 +32,7 @@ import {
 } from '~/components/ui/tooltip';
 import { BusinessUserRole } from '~/constants/enums';
 import { useAuth } from '~/contexts/useAuth';
-import { useToast } from '~/hooks/use-toast';
+import { useToast } from '~/hooks/useToast';
 import type { Deal } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 

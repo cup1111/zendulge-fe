@@ -53,7 +53,7 @@ import {
 } from '~/lib/mockData';
 import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
-import { useToast } from '../hooks/use-toast';
+import { useToast } from '../hooks/useToast';
 
 // 表单验证 Schema
 const profileSchema = z.object({
