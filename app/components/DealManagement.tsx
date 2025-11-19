@@ -31,8 +31,8 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip';
 import { BusinessUserRole } from '~/constants/enums';
-import { useAuth } from '~/contexts/AuthContext';
-import { useToast } from '~/hooks/use-toast';
+import { useAuth } from '~/hooks/useAuth';
+import { useToast } from '~/hooks/useToast';
 import type { Deal } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 

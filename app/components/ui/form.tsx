@@ -1,4 +1,3 @@
-// 简化的表单组件
 import React from 'react';
 
 import { combineClasses } from '~/lib/utils';
@@ -95,12 +94,3 @@ export const FormMessage = ({ children, className }: FormMessageProps) =>
       {children}
     </p>
   );
-
-export const useFormField = () => ({
-  id: 'field',
-  name: 'field',
-  formItemId: 'field-item',
-  formDescriptionId: 'field-desc',
-  formMessageId: 'field-message',
-  error: null,
-});

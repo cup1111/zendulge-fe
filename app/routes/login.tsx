@@ -6,7 +6,7 @@ import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/hooks/useAuth';
 
 import EmailInput from '../components/inputs/EmailInput';
 import PasswordInput from '../components/inputs/PasswordInput';
@@ -86,8 +86,8 @@ export default function Login() {
                 showValidationDetails={false}
               />
               {!auth.isAuthenticated && auth.errorMessage && !hasChanged && (
-                <div className='text-xs text-red-600'>
-                  <XCircle className='w-3 h-3 inline mr-1' />
+                <div className='flex items-center justify-center text-xs text-red-600'>
+                  <XCircle className='w-3 h-3 mr-1' />
                   {auth.errorMessage}
                 </div>
               )}

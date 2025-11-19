@@ -43,7 +43,7 @@ import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { BusinessStatus } from '~/constants/businessStatus';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/hooks/useAuth';
 import {
   mockBusinesses,
   mockUser,
@@ -53,7 +53,7 @@ import {
 } from '~/lib/mockData';
 import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
-import { useToast } from '../hooks/use-toast';
+import { useToast } from '../hooks/useToast';
 
 // 表单验证 Schema
 const profileSchema = z.object({

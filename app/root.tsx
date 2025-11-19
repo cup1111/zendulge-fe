@@ -1,27 +1,12 @@
 import { useEffect } from 'react';
-import type { LinksFunction } from 'react-router';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 
 import Footer from '~/components/layout/Footer';
 import Header from '~/components/layout/Header';
 import { Toaster } from '~/components/ui/toaster';
-import { AuthProvider } from '~/contexts/AuthContext';
+import { AuthProvider } from '~/contexts/AuthProvider';
 
 import './app.css';
-
-export const links: LinksFunction = () => [
-  { rel: 'icon', href: '/assets/app-icon.png', type: 'image/png' },
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.gstatic.com',
-    crossOrigin: 'anonymous',
-  },
-  {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap',
-  },
-];
 
 export const Layout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
@@ -59,6 +44,17 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <Meta />
         <Links />
+        <link rel='icon' href='/assets/app-icon.png' type='image/png' />
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
+        <link
+          rel='preconnect'
+          href='https://fonts.gstatic.com'
+          crossOrigin='anonymous'
+        />
+        <link
+          rel='stylesheet'
+          href='https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap'
+        />
       </head>
       <body suppressHydrationWarning>
         <AuthProvider>{children}</AuthProvider>
