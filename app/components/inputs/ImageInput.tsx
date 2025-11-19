@@ -68,9 +68,7 @@ export default function ImageInput({
             alt='Logo'
             className='w-20 h-20 object-cover rounded-lg'
           />
-          <div className='absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 rounded-lg transition'>
-            change
-          </div>
+          <div className='absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 rounded-lg transition' />
         </button>
       ) : (
         <Button
