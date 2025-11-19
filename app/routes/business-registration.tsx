@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import { registerBusiness } from '~/api/register';
+import { validateEmail } from '~/utils/validationUtils';
 
 import BusinessRegistrationFlow from '../components/layout/BusinessRegistrationFlow';
 import type {
@@ -110,7 +111,7 @@ export default function BusinessRegistration() {
         defaultValue: 'Australia +611',
       },
       businessEmail: {
-        isRequired: true,
+        validate: value => validateEmail(value) ?? null,
         value: '',
         defaultValue: '',
       },
@@ -120,7 +121,7 @@ export default function BusinessRegistration() {
         defaultValue: '',
       },
       contactPersonEmail: {
-        isRequired: true,
+        validate: value => validateEmail(value) ?? null,
         value: '',
         defaultValue: '',
       },
@@ -155,7 +156,7 @@ export default function BusinessRegistration() {
         defaultValue: '',
       },
       email: {
-        isRequired: true,
+        validate: value => validateEmail(value) ?? null,
         value: '',
         defaultValue: '',
       },

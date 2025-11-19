@@ -6,47 +6,153 @@ import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validatePassword,
+} from '~/utils/validationUtils';
 
 import ConfirmPasswordInput from '../components/inputs/ConfirmPasswordInput';
 import EmailInput from '../components/inputs/EmailInput';
 import PasswordInput from '../components/inputs/PasswordInput';
 
+type CustomerField<T> = {
+  isRequired?: boolean;
+  validate?: (value: T, ...args: string[]) => string | null;
+  value: T;
+  defaultValue: T;
+};
+
+type CustomerRegistrationFormData = {
+  email: CustomerField<string>;
+  password: CustomerField<string>;
+  confirmPassword: CustomerField<string>;
+};
+
+type ErrorState = {
+  [K in keyof CustomerRegistrationFormData]?: string;
+};
+
 export default function CustomerRegistration() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  // New state to track validity for email and password and confirm password
-  const [isPasswordValid, setIsPasswordValid] = useState(false);
-  const onPasswordValidityChange = (isValid: boolean) => {
-    setIsPasswordValid(isValid);
-  };
-
-  const [isEmailValid, setIsEmailValid] = useState(false);
-  const onEmailValidityChange = (isValid: boolean) => {
-    setIsEmailValid(isValid);
-  };
-
-  const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(false);
-  const onConfirmPasswordValidityChange = (isValid: boolean) => {
-    setIsConfirmPasswordValid(isValid);
-  };
+  const [customerRegistrationFormData, setCustomerRegistrationFormData] =
+    useState<CustomerRegistrationFormData>({
+      email: {
+        isRequired: true,
+        validate: value => validateEmail(value) ?? null,
+        value: '',
+        defaultValue: '',
+      },
+      password: {
+        isRequired: true,
+        validate: value => validatePassword(value) ?? null,
+        value: '',
+        defaultValue: '',
+      },
+      confirmPassword: {
+        validate: (value, password) =>
+          validateConfirmPassword(value, password) ?? null,
+        value: '',
+        defaultValue: '',
+      },
+    });
+  const [error, setError] = useState<ErrorState>({});
 
   const navigate = useNavigate();
 
+  const validateField = (
+    field: keyof CustomerRegistrationFormData,
+    value: string,
+    formData: CustomerRegistrationFormData
+  ): string | undefined => {
+    const currentField = formData[field];
+
+    // Check required field validation
+    if (currentField.isRequired && !value) {
+      return 'This field is required';
+    }
+
+    // Run custom validation if provided
+    if (currentField.validate) {
+      const isConfirmPassword = field === 'confirmPassword';
+      const validationMsg = isConfirmPassword
+        ? currentField.validate(value, formData.password.value)
+        : currentField.validate(value);
+
+      return validationMsg ?? undefined;
+    }
+
+    return undefined;
+  };
+
+  const handleInputChange = (
+    field: keyof CustomerRegistrationFormData,
+    value: string
+  ) => {
+    // Get current field configuration
+    const currentField = customerRegistrationFormData[field];
+
+    // Update form data
+    const updatedField = {
+      ...currentField,
+      value,
+    };
+    setCustomerRegistrationFormData({
+      ...customerRegistrationFormData,
+      [field]: updatedField,
+    });
+
+    // Validate field and update error state
+    const errorMsg = validateField(field, value, customerRegistrationFormData);
+
+    if (errorMsg) {
+      setError({ ...error, ...{ [field]: errorMsg } });
+    } else {
+      // Clear error if validation passes
+      setError(prev => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { [field]: _, ...rest } = prev as Record<string, string>;
+        return rest;
+      });
+    }
+  };
+
   const handleSubmit = async () => {
-    const submitForm = { email: formData.email, password: formData.password };
+    // Validate all form fields using validateField
+    const validateAll = (formData: CustomerRegistrationFormData) => {
+      const errs: ErrorState = {};
+
+      (
+        Object.keys(formData) as Array<keyof CustomerRegistrationFormData>
+      ).forEach(key => {
+        const fieldValue = formData[key].value;
+        const errorMsg = validateField(key, fieldValue, formData);
+        if (errorMsg) {
+          errs[key] = errorMsg;
+        }
+      });
+
+      return errs;
+    };
+
+    const newErrors = validateAll(customerRegistrationFormData);
+
+    setError(newErrors);
+
+    const hasError = Object.values(newErrors).some(msg => msg);
+    if (hasError) {
+      return;
+    }
+
+    const submitForm = {
+      email: customerRegistrationFormData.email.value,
+      password: customerRegistrationFormData.password.value,
+    };
     const response = await registerCustomer(submitForm);
     if (response.success) {
       navigate('/verify-email', {
         state: { email: submitForm.email },
       });
     }
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -88,8 +194,7 @@ export default function CustomerRegistration() {
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
               <EmailInput
-                onEmailValidityChange={onEmailValidityChange}
-                value={formData.email}
+                value={customerRegistrationFormData.email.value}
                 onChange={(email: string) => handleInputChange('email', email)}
                 onEnter={e => {
                   if (e.key === 'Enter') {
@@ -98,8 +203,7 @@ export default function CustomerRegistration() {
                 }}
               />
               <PasswordInput
-                onPasswordValidityChange={onPasswordValidityChange}
-                value={formData.password}
+                value={customerRegistrationFormData.password.value}
                 onChange={(password: string) =>
                   handleInputChange('password', password)
                 }
@@ -110,11 +214,8 @@ export default function CustomerRegistration() {
                 }}
               />
               <ConfirmPasswordInput
-                onConfirmPasswordValidityChange={
-                  onConfirmPasswordValidityChange
-                }
-                password={formData.password}
-                value={formData.confirmPassword}
+                password={customerRegistrationFormData.password.value}
+                value={customerRegistrationFormData.confirmPassword.value}
                 onChange={(confirmPassword: string) =>
                   handleInputChange('confirmPassword', confirmPassword)
                 }
@@ -125,9 +226,7 @@ export default function CustomerRegistration() {
                 }}
               />
               <Button
-                disabled={
-                  !(isEmailValid && isPasswordValid && isConfirmPasswordValid)
-                }
+                disabled={Object.values(error).some(msg => msg && msg !== '')}
                 variant='default'
                 className='w-full h-12 text-base mt-6'
                 onClick={handleSubmit}

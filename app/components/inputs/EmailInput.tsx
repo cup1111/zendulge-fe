@@ -1,5 +1,5 @@
 import { Mail, XCircle } from 'lucide-react';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
@@ -10,7 +10,6 @@ interface EmailInputProps {
   placeholder?: string;
   label?: string;
   showValidationDetails?: boolean;
-  onEmailValidityChange?: (isValid: boolean) => void;
   onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
@@ -20,14 +19,9 @@ export default function EmailInput({
   placeholder = 'Enter email address',
   label = 'Email Address',
   showValidationDetails = true,
-  onEmailValidityChange,
   onEnter,
 }: EmailInputProps) {
-  // Regular expression for validating email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const isEmailValid = emailRegex.test(value);
-  const hasInput = value.length > 0;
-  const shouldShowError = hasInput && !isEmailValid && showValidationDetails;
+  const shouldShowError = showValidationDetails;
 
   // Returns the CSS class name for the email input field based on validation state
   function getEmailFieldClassName() {
@@ -35,11 +29,6 @@ export default function EmailInput({
     if (shouldShowError) return 'border-red-500 focus:border-red-500';
     return borderClass;
   }
-
-  useEffect(() => {
-    if (onEmailValidityChange) onEmailValidityChange(isEmailValid);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEmailValid]);
 
   return (
     <div className='space-y-2'>

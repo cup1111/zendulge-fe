@@ -432,11 +432,12 @@ export default function BusinessRegistrationFlow({
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
                   showValidationDetails
+                  shouldShowError={error.businessEmail}
                 />
-                {error.businessEmail && renderErrorMessage(error.businessEmail)}
+                {/* {error.businessEmail && renderErrorMessage(error.businessEmail)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Primary email for customer communication
-                </p>
+                </p> */}
               </div>
             </div>
           )}
