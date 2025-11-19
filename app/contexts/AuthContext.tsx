@@ -216,10 +216,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     [navigate]
   );
 
-  const setCurrentBusiness = (business: Business) => {
+  const setCurrentBusiness = useCallback((business: Business) => {
     setCurrentBusinessState(business);
     localStorage.setItem('currentBusiness', JSON.stringify(business));
-  };
+  }, []);
 
   // Check for existing authentication on init
   useEffect(() => {
