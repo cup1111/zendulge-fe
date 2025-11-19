@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
 } from '~/components/ui/dropdown-menu';
 import { BusinessUserRole } from '~/constants/enums';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/contexts/useAuth';
 
 export default function Header() {
   const location = useLocation();

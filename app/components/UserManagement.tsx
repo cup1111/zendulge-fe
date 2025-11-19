@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Edit2, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/contexts/useAuth';
 
 import { API_CONFIG } from '../config/api';
 import api from '../config/axios';
