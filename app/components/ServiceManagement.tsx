@@ -41,7 +41,7 @@ import type {
 import { ServiceService } from '~/services/serviceService';
 
 import { BusinessUserRole } from '../constants/enums';
-import { useAuth } from '../contexts/useAuth';
+import { useAuth } from '../hooks/useAuth';
 
 type ApiError = {
   response?: {

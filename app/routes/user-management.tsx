@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/button';
 import UserManagement from '~/components/UserManagement';
 import { BusinessStatus } from '~/constants/businessStatus';
 import { BusinessUserRole } from '~/constants/enums';
-import { useAuth } from '~/contexts/useAuth';
+import { useAuth } from '~/hooks/useAuth';
 import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
 export default function UserManagementPage() {

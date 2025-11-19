@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-import type { Business, User } from './AuthContext';
+import type { Business, User } from './AuthProvider';
 
 export interface AuthContextType {
   user: User | null;

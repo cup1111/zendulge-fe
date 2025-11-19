@@ -8,7 +8,7 @@ import zendulgeAxios from '~/config/axios';
 
 import type { BusinessUserRole } from '../constants/enums';
 
-import { AuthContext, type AuthContextType } from './auth-context';
+import { AuthContext, type AuthContextType } from './AuthContext';
 
 export interface Business {
   id: string;

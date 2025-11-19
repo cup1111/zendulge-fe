@@ -21,7 +21,7 @@ import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 import { BusinessStatus } from '~/constants/businessStatus';
 import { BusinessUserRole, OperatingSiteStatus } from '~/constants/enums';
-import { useAuth } from '~/contexts/useAuth';
+import { useAuth } from '~/hooks/useAuth';
 import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
 interface OperatingSite {
