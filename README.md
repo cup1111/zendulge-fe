@@ -126,6 +126,10 @@ yarn quality
 yarn build
 ```
 
+```bash
+cp .env.example .env (CONFIG THE .env VALUE, eg: database)
+```
+
 ### Start Production Server
 
 ```bash
