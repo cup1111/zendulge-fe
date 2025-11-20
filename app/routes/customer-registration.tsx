@@ -107,15 +107,16 @@ export default function CustomerRegistration() {
     const errorMsg = validateField(field, value, updatedFormData);
 
     if (errorMsg) {
-      setError({ ...error, ...{ [field]: errorMsg } });
-    } else {
-      // Clear error if validation passes
-      setError(prev => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { [field]: _, ...rest } = prev as Record<string, string>;
-        return rest;
-      });
+      setError(prev => ({ ...prev, [field]: errorMsg }));
+      return;
     }
+
+    // Clear error if validation passes
+    setError(prev => {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { [field]: _, ...rest } = prev as Record<string, string>;
+      return rest;
+    });
   };
 
   const handleSubmit = async () => {

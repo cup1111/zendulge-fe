@@ -431,10 +431,6 @@ export default function BusinessRegistrationFlow({
                   placeholder='hello@yourbusiness.com'
                 />
                 {error.businessEmail && renderErrorMessage(error.businessEmail)}
-                {/* {error.businessEmail && renderErrorMessage(error.businessEmail)}
-                <p className='text-sm text-gray-600 mt-1'>
-                  Primary email for customer communication
-                </p> */}
               </div>
             </div>
           )}
