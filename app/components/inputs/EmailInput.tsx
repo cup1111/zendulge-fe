@@ -1,4 +1,4 @@
-import { Mail, XCircle } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import React from 'react';
 
 import { Input } from '~/components/ui/input';
@@ -9,7 +9,6 @@ interface EmailInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   label?: string;
-  showValidationDetails?: boolean;
   onEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
@@ -18,18 +17,8 @@ export default function EmailInput({
   onChange,
   placeholder = 'Enter email address',
   label = 'Email Address',
-  showValidationDetails = true,
   onEnter,
 }: EmailInputProps) {
-  const shouldShowError = showValidationDetails;
-
-  // Returns the CSS class name for the email input field based on validation state
-  function getEmailFieldClassName() {
-    const borderClass = 'border-gray-300';
-    if (shouldShowError) return 'border-red-500 focus:border-red-500';
-    return borderClass;
-  }
-
   return (
     <div className='space-y-2'>
       <Label className='flex items-center space-x-2'>
@@ -45,22 +34,11 @@ export default function EmailInput({
             onChange(e.target.value)
           }
           placeholder={placeholder}
-          className={getEmailFieldClassName()}
+          className='border-gray-300'
           onKeyDown={onEnter}
         />
         <div className='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none' />
       </div>
-
-      {showValidationDetails && (
-        <div className='space-y-2'>
-          {shouldShowError && (
-            <span className='text-xs text-red-600'>
-              <XCircle className='w-3 h-3 inline mr-1' />
-              Please enter a valid email address
-            </span>
-          )}
-        </div>
-      )}
     </div>
   );
 }

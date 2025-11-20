@@ -418,7 +418,6 @@ export default function BusinessRegistrationFlow({
                   }
                   label='Business Phone Number * (for customer contact)'
                   placeholder='Enter business phone (landline or mobile)'
-                  showValidationDetails
                 />
                 {error.phone && renderErrorMessage(error.phone)}
                 <p className='text-sm text-gray-600 mt-1'>
@@ -431,9 +430,8 @@ export default function BusinessRegistrationFlow({
                   onChange={value => onInputChange('businessEmail', value)}
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
-                  showValidationDetails
-                  shouldShowError={error.businessEmail}
                 />
+                {error.businessEmail && renderErrorMessage(error.businessEmail)}
                 {/* {error.businessEmail && renderErrorMessage(error.businessEmail)}
                 <p className='text-sm text-gray-600 mt-1'>
                   Primary email for customer communication
@@ -479,7 +477,6 @@ export default function BusinessRegistrationFlow({
                   onChange={value => onInputChange('contactPersonEmail', value)}
                   label='Contact Person Email *'
                   placeholder='john@yourbusiness.com'
-                  showValidationDetails
                 />
                 {error.contactPersonEmail &&
                   renderErrorMessage(error.contactPersonEmail)}
@@ -499,8 +496,6 @@ export default function BusinessRegistrationFlow({
                   }
                   label='Business Group Admin Mobile Phone *'
                   placeholder='Enter mobile phone for account management'
-                  mobileOnly
-                  showValidationDetails
                 />
                 {error.contactPersonPhone &&
                   renderErrorMessage(error.contactPersonPhone)}

@@ -193,38 +193,56 @@ export default function CustomerRegistration() {
               <CardTitle className='text-3xl'>Sign Up</CardTitle>
             </CardHeader>
             <CardContent className='space-y-4 px-8 pb-8'>
-              <EmailInput
-                value={customerRegistrationFormData.email.value}
-                onChange={(email: string) => handleInputChange('email', email)}
-                onEnter={e => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
+              <div>
+                <EmailInput
+                  value={customerRegistrationFormData.email.value}
+                  onChange={(email: string) =>
+                    handleInputChange('email', email)
                   }
-                }}
-              />
-              <PasswordInput
-                value={customerRegistrationFormData.password.value}
-                onChange={(password: string) =>
-                  handleInputChange('password', password)
-                }
-                onEnter={e => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
+                  onEnter={e => {
+                    if (e.key === 'Enter') {
+                      handleSubmit();
+                    }
+                  }}
+                />
+                {error.email && (
+                  <p className='text-xs text-red-600 mt-1'>{error.email}</p>
+                )}
+              </div>
+              <div>
+                <PasswordInput
+                  value={customerRegistrationFormData.password.value}
+                  onChange={(password: string) =>
+                    handleInputChange('password', password)
                   }
-                }}
-              />
-              <ConfirmPasswordInput
-                password={customerRegistrationFormData.password.value}
-                value={customerRegistrationFormData.confirmPassword.value}
-                onChange={(confirmPassword: string) =>
-                  handleInputChange('confirmPassword', confirmPassword)
-                }
-                onEnter={e => {
-                  if (e.key === 'Enter') {
-                    handleSubmit();
+                  onEnter={e => {
+                    if (e.key === 'Enter') {
+                      handleSubmit();
+                    }
+                  }}
+                />
+                {error.password && (
+                  <p className='text-xs text-red-600 mt-1'>{error.password}</p>
+                )}
+              </div>
+              <div>
+                <ConfirmPasswordInput
+                  value={customerRegistrationFormData.confirmPassword.value}
+                  onChange={(confirmPassword: string) =>
+                    handleInputChange('confirmPassword', confirmPassword)
                   }
-                }}
-              />
+                  onEnter={e => {
+                    if (e.key === 'Enter') {
+                      handleSubmit();
+                    }
+                  }}
+                />
+                {error.confirmPassword && (
+                  <p className='text-xs text-red-600 mt-1'>
+                    {error.confirmPassword}
+                  </p>
+                )}
+              </div>
               <Button
                 disabled={Object.values(error).some(msg => msg && msg !== '')}
                 variant='default'
