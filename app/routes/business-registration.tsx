@@ -57,11 +57,6 @@ export default function BusinessRegistration() {
         value: [] as string[],
         defaultValue: [],
       },
-      jobTitle: {
-        isRequired: true,
-        value: '',
-        defaultValue: 'Job Title',
-      },
       businessAddress: {
         country: {
           isRequired: true,
