@@ -246,7 +246,6 @@ export default function CustomerRegistration() {
                 )}
               </div>
               <Button
-                disabled={Object.values(error).some(msg => msg && msg !== '')}
                 variant='default'
                 className='w-full h-12 text-base mt-6'
                 onClick={handleSubmit}
