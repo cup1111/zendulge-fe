@@ -179,39 +179,72 @@ export default function BusinessRegistration() {
   const [error, setError] = useState<ErrorState>({});
   const [hasChanged, setHasChanged] = useState<boolean>(false);
 
-  const handleInputChange = (field: string, value: string) => {
+  const validateField = (
+    field: string,
+    value: string | string[],
+    formData: BusinessRegistrationFormData
+  ): string | undefined => {
+    const currentField = formData[field as keyof BusinessRegistrationFormData];
+
+    // Skip validation if field doesn't exist in form data
+    if (
+      !currentField ||
+      typeof currentField !== 'object' ||
+      !('value' in currentField)
+    ) {
+      return undefined;
+    }
+
+    // Check required field validation
+    // For arrays, check if array is empty
+    const isEmpty = Array.isArray(value) ? value.length === 0 : !value;
+    if (currentField.isRequired && isEmpty) {
+      return 'This field is required';
+    }
+
+    // Run custom validation if provided
+    if (currentField.validate) {
+      const isConfirmPassword = field === 'confirmPassword';
+      const validationMsg = isConfirmPassword
+        ? currentField.validate(value as string, formData.password.value)
+        : currentField.validate(value);
+
+      return validationMsg ?? undefined;
+    }
+
+    return undefined;
+  };
+
+  const handleInputChange = (field: string, value: string | string[]) => {
     setHasChanged(true);
+
+    // Get current field configuration
+    const currentField =
+      businessRegistrationFormData[field as keyof BusinessRegistrationFormData];
+
+    // Update form data
     const updatedField = {
-      ...businessRegistrationFormData[field],
-      ...{ value },
+      ...currentField,
+      value,
     };
-    setBusinessRegistrationFormData({
+    const updatedFormData = {
       ...businessRegistrationFormData,
-      ...{ [field]: updatedField },
-    });
-    if (businessRegistrationFormData[field].isRequired && !value) {
-      setError({ ...error, ...{ [field]: 'This field is required' } });
+      [field]: updatedField,
+    };
+    setBusinessRegistrationFormData(updatedFormData);
+
+    // Validate field with updated form data to ensure synchronization
+    // Pass updated formData so confirmPassword validation can access latest password value
+    const errorMsg = validateField(field, value, updatedFormData);
+
+    if (errorMsg) {
+      setError({ ...error, ...{ [field]: errorMsg } });
     } else {
+      // Clear error if validation passes
       setError(prev => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { [field]: _, ...rest } = prev as Record<string, string>;
         return rest;
-      });
-    }
-    if (field === 'confirmPassword') {
-      if (businessRegistrationFormData[field].validate) {
-        setError({
-          ...error,
-          [field]: businessRegistrationFormData[field].validate(
-            value,
-            businessRegistrationFormData.password.value
-          ),
-        });
-      }
-    } else if (businessRegistrationFormData[field].validate) {
-      setError({
-        ...error,
-        [field]: businessRegistrationFormData[field].validate(value),
       });
     }
   };
@@ -233,9 +266,11 @@ export default function BusinessRegistration() {
   };
   const handleSubmit = async () => {
     // Recursively validates all form fields including nested address fields
-    // Returns an object with error messages keyed by field path (empty string means no error)
-    const validateAll = (formData: BusinessRegistrationFormData, path = '') => {
-      const errs: Record<string, string> = {};
+    // Returns an ErrorState object with nested structure for businessAddress
+    const validateAll = (
+      formData: BusinessRegistrationFormData
+    ): ErrorState => {
+      const errs: Partial<ErrorState> = {};
 
       Object.entries(formData).forEach(([key, field]) => {
         // Special handling for confirmPassword - needs password field for comparison
@@ -252,13 +287,54 @@ export default function BusinessRegistration() {
           return;
         }
 
-        // Build full key path for nested fields (e.g., "businessAddress.street")
-        const fullKey = path ? `${path}.${key}` : key;
+        // Special handling for businessAddress - create nested structure
+        if (key === 'businessAddress') {
+          const addressErrors: Partial<Record<keyof BusinessAddress, string>> =
+            {};
+          let hasAddressError = false;
+
+          Object.entries(field).forEach(([addrKey, addrField]) => {
+            if (
+              addrField &&
+              typeof addrField === 'object' &&
+              'value' in addrField
+            ) {
+              // Validate required fields
+              if (addrField.isRequired && !addrField.value) {
+                addressErrors[addrKey as keyof BusinessAddress] =
+                  'This field is required';
+                hasAddressError = true;
+                return;
+              }
+
+              // Run custom validation function if provided
+              if (typeof addrField.validate === 'function') {
+                const validationMsg = addrField.validate(addrField.value);
+                if (validationMsg) {
+                  addressErrors[addrKey as keyof BusinessAddress] =
+                    validationMsg;
+                  hasAddressError = true;
+                }
+              }
+            }
+          });
+
+          // Only set businessAddress errors if there are actual errors
+          if (hasAddressError) {
+            errs.businessAddress = addressErrors as Record<
+              keyof BusinessAddress,
+              string
+            >;
+          }
+          return;
+        }
+
         // Check if field has a value property (BusinessField structure)
         if (field && typeof field === 'object' && 'value' in field) {
           // Validate required fields
           if (field.isRequired && !field.value) {
-            errs[fullKey] = 'This field is required';
+            errs[key as keyof BusinessRegistrationFormData] =
+              'This field is required';
             return;
           }
 
@@ -266,26 +342,39 @@ export default function BusinessRegistration() {
           if (typeof field.validate === 'function') {
             const validationMsg = field.validate(field.value);
             if (validationMsg) {
-              errs[fullKey] = validationMsg;
+              errs[key as keyof BusinessRegistrationFormData] = validationMsg;
               return;
             }
           }
-          errs[fullKey] = '';
-        }
-        // Recursively validate nested objects (like businessAddress)
-        else if (field && typeof field === 'object') {
-          Object.assign(errs, validateAll(field, fullKey));
+          errs[key as keyof BusinessRegistrationFormData] = '';
         }
       });
 
-      return errs;
+      return errs as ErrorState;
     };
 
     const newErrors = validateAll(businessRegistrationFormData);
 
     setError(newErrors);
 
-    const hasError = Object.values(newErrors).some(msg => msg);
+    // Check for errors including nested address errors
+    const hasError =
+      Object.values(newErrors).some(msg => {
+        if (typeof msg === 'string') {
+          return msg && msg !== '';
+        }
+        if (msg && typeof msg === 'object') {
+          // Check nested address errors
+          return Object.values(msg).some(
+            nestedMsg => nestedMsg && nestedMsg !== ''
+          );
+        }
+        return false;
+      }) ||
+      (newErrors.businessAddress &&
+        Object.values(newErrors.businessAddress).some(
+          msg => msg && msg !== ''
+        ));
     if (hasError) {
       return;
     }

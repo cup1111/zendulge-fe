@@ -96,13 +96,15 @@ export default function CustomerRegistration() {
       ...currentField,
       value,
     };
-    setCustomerRegistrationFormData({
+    const updatedFormData = {
       ...customerRegistrationFormData,
       [field]: updatedField,
-    });
+    };
+    setCustomerRegistrationFormData(updatedFormData);
 
-    // Validate field and update error state
-    const errorMsg = validateField(field, value, customerRegistrationFormData);
+    // Validate field with updated form data to ensure synchronization
+    // Pass updated formData so confirmPassword validation can access latest password value
+    const errorMsg = validateField(field, value, updatedFormData);
 
     if (errorMsg) {
       setError({ ...error, ...{ [field]: errorMsg } });
