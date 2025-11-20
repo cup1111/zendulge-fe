@@ -14,16 +14,20 @@ import { countries } from '~/constants/countries';
 
 interface PhoneInputProps {
   value: string;
-  selectedCountry: string;
+  selectedCountry: string; // 现在只存 ISO，如 "AU"
   onChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   placeholder?: string;
   label?: string;
 }
 
+// 获取区号
+const getDialCode = (code: string) =>
+  countries.find(c => c.code === code)?.dial_code ?? '';
+
 export default function PhoneInput({
   value,
-  selectedCountry = 'Australia-+61',
+  selectedCountry = 'AU',
   onChange,
   onCountryChange,
   placeholder = 'Enter phone number',
@@ -31,20 +35,19 @@ export default function PhoneInput({
 }: PhoneInputProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let newValue = e.target.value;
+    const dialCode = getDialCode(selectedCountry);
 
-    if (newValue && !newValue.startsWith('+') && selectedCountry) {
-      if (/^\d/.test(newValue)) {
-        const dialCode = selectedCountry.split('-')[1];
-        newValue = dialCode ? dialCode + newValue : newValue;
-      }
+    if (newValue && !newValue.startsWith('+') && /^\d/.test(newValue)) {
+      newValue = dialCode + newValue;
     }
 
     onChange(newValue);
   };
 
-  const handleCountryChange = (val: string) => {
-    onCountryChange(val);
-    const dialCode = val.split('-')[1];
+  const handleCountryChange = (code: string) => {
+    onCountryChange(code);
+    const dialCode = getDialCode(code);
+
     if (value && !value.startsWith('+')) {
       onChange(dialCode + value);
     }
@@ -62,12 +65,10 @@ export default function PhoneInput({
           <SelectTrigger className='w-[180px]'>
             <SelectValue placeholder='Select country code' />
           </SelectTrigger>
+
           <SelectContent>
             {countries.map(country => (
-              <SelectItem
-                key={country.name}
-                value={`${country.name}-${country.dial_code}`}
-              >
+              <SelectItem key={country.code} value={country.code}>
                 <span className='flex items-center space-x-2'>
                   <span>{country.emoji}</span>
                   <span>{country.dial_code}</span>
