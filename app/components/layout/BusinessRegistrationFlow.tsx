@@ -113,7 +113,7 @@ export default function BusinessRegistrationFlow({
         <div className='max-w-4xl mx-auto'>
           <p className='text-blue-800 text-sm'>
             Business Registration Process - {currentSection?.title} (
-            {sectionStep} of {maxSteps})
+            {sectionStep} of {maxSteps - 1})
           </p>
         </div>
       </div>
