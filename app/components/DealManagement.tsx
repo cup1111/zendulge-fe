@@ -31,8 +31,8 @@ import {
   TooltipTrigger,
 } from '~/components/ui/tooltip';
 import { BusinessUserRole } from '~/constants/enums';
-import { useAuth } from '~/contexts/AuthContext';
-import { useToast } from '~/hooks/use-toast';
+import { useAuth } from '~/hooks/useAuth';
+import { useToast } from '~/hooks/useToast';
 import type { Deal } from '~/services/dealService';
 import { DealService } from '~/services/dealService';
 
@@ -499,18 +499,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                     }
                     if (deal.recurrenceType !== 'none') {
                       display += ` (${deal.recurrenceType})`;
-                    }
-                    if (deal.endDate) {
-                      const endDate = new Date(deal.endDate);
-                      display += ` - ${formatDate(deal.endDate)}`;
-                      if (!deal.allDay) {
-                        const endTimeStr = endDate.toLocaleTimeString('en-AU', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          hour12: false,
-                        });
-                        display += ` ${endTimeStr}`;
-                      }
                     }
                     return display;
                   })()}

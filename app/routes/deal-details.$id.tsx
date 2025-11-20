@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
 import PublicDealService, {
   type PublicDeal,
+  type TimeSlot,
 } from '~/services/publicDealService';
 
 export default function DealDetailsPage() {
@@ -112,22 +113,32 @@ export default function DealDetailsPage() {
         )
       : undefined;
 
-  // 生成未来7天的时间段 (placeholder)
-  const generateTimeSlots = () => {
-    const slots = [] as Array<{ date: Date; time: string; available: boolean }>;
-    for (let i = 1; i <= 7; i += 1) {
-      const date = new Date();
-      date.setDate(date.getDate() + i);
-      slots.push({
-        date,
-        time: i % 2 === 0 ? '3:00 PM - 4:00 PM' : '10:00 AM - 11:00 AM',
-        available: true,
-      });
-    }
-    return slots;
+  // Convert 24-hour time to 12-hour format
+  const formatTimeTo12Hour = (time24: string): string => {
+    const [hours, minutes] = time24.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const hours12 = hours % 12 || 12;
+    return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
-  const timeSlots = generateTimeSlots();
+  // Format time slot for display
+  const formatTimeSlot = (slot: TimeSlot) => {
+    const date = new Date(slot.dateTime || slot.date);
+    const startTime12h = formatTimeTo12Hour(slot.startTime);
+    const endTime12h = formatTimeTo12Hour(slot.endTime);
+    return {
+      date,
+      dateStr: date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+      }),
+      time: `${startTime12h} - ${endTime12h}`,
+      available: slot.available,
+    };
+  };
+
+  const timeSlots = deal.availableTimeSlots?.map(formatTimeSlot) ?? [];
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -193,7 +204,7 @@ export default function DealDetailsPage() {
                     <span>
                       {deal.recurrenceType === 'none'
                         ? `Valid on ${deal.startDate ? new Date(deal.startDate).toLocaleDateString() : '—'}`
-                        : `Recurring: ${deal.recurrenceType}${deal.endDate ? ` until ${new Date(deal.endDate).toLocaleDateString()}` : ''}`}
+                        : `Recurring: ${deal.recurrenceType}`}
                     </span>
                   </div>
                   <div className='flex items-center text-sm text-gray-600'>
@@ -213,33 +224,37 @@ export default function DealDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                  {timeSlots.map(slot => (
-                    <div
-                      key={slot.date.toISOString()}
-                      className='p-3 border border-gray-200 rounded-lg hover:border-shadow-lavender hover:bg-gray-50 cursor-pointer transition-colors'
-                    >
-                      <div className='font-medium text-gray-900'>
-                        {slot.date.toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </div>
-                      <div className='text-sm text-gray-600 mt-1'>
-                        {slot.time}
-                      </div>
-                      <div className='text-xs text-green-600 mt-1'>
-                        Available
-                      </div>
+                {timeSlots.length > 0 ? (
+                  <>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                      {timeSlots.map(slot => (
+                        <div
+                          key={`${slot.date.toISOString()}-${slot.time}`}
+                          className='p-3 border border-gray-200 rounded-lg hover:border-shadow-lavender hover:bg-gray-50 cursor-pointer transition-colors'
+                        >
+                          <div className='font-medium text-gray-900'>
+                            {slot.dateStr}
+                          </div>
+                          <div className='text-sm text-gray-600 mt-1'>
+                            {slot.time}
+                          </div>
+                          <div className='text-xs text-green-600 mt-1'>
+                            Available
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <div className='mt-4 text-center'>
-                  <Button className='bg-shadow-lavender text-pure-white hover:bg-shadow-lavender/90'>
-                    Select Time & Book Now
-                  </Button>
-                </div>
+                    <div className='mt-4 text-center'>
+                      <Button className='bg-shadow-lavender text-pure-white hover:bg-shadow-lavender/90'>
+                        Select Time & Book Now
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className='text-center py-8 text-gray-500'>
+                    No available time slots within the next 2 weeks.
+                  </div>
+                )}
               </CardContent>
             </Card>
 

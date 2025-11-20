@@ -43,9 +43,8 @@ import { Separator } from '~/components/ui/separator';
 import { Switch } from '~/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { BusinessStatus } from '~/constants/businessStatus';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/hooks/useAuth';
 import {
-  mockBusinesses,
   mockUser,
   WELLNESS_CATEGORIES,
   type UserProfile,
@@ -53,7 +52,7 @@ import {
 } from '~/lib/mockData';
 import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
-import { useToast } from '../hooks/use-toast';
+import { useToast } from '../hooks/useToast';
 
 // 表单验证 Schema
 const profileSchema = z.object({
@@ -109,7 +108,6 @@ export default function Profile() {
   const [showAbnWarningDialog, setShowAbnWarningDialog] = useState(false);
   const [pendingBusinessData, setPendingBusinessData] =
     useState<BusinessFormData | null>(null);
-  const businesses = mockBusinesses;
 
   // Load business info if user has a current business
   useEffect(() => {
@@ -444,46 +442,6 @@ export default function Profile() {
                 </div>
 
                 <Separator className='my-4' />
-
-                {user.role === 'business' ? (
-                  <div className='space-y-3'>
-                    <div className='text-center'>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        $
-                        {businesses
-                          .reduce((sum, b) => sum + b.totalRevenue, 0)
-                          .toLocaleString()}
-                      </div>
-                      <div className='text-xs text-gray-600'>Total Revenue</div>
-                    </div>
-                    <div className='text-center'>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        {businesses.reduce(
-                          (sum, b) => sum + b.totalBookings,
-                          0
-                        )}
-                      </div>
-                      <div className='text-xs text-gray-600'>
-                        Total Bookings
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className='grid grid-cols-2 gap-4 text-center'>
-                    <div>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        {user.bookingsCount}
-                      </div>
-                      <div className='text-xs text-gray-600'>Bookings</div>
-                    </div>
-                    <div>
-                      <div className='text-2xl font-bold text-shadow-lavender'>
-                        {user.favoritesCount}
-                      </div>
-                      <div className='text-xs text-gray-600'>Favorites</div>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

@@ -21,7 +21,7 @@ import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 import { BusinessStatus } from '~/constants/businessStatus';
 import { OperatingSiteStatus } from '~/constants/enums';
-import { useAuth } from '~/contexts/AuthContext';
+import { useAuth } from '~/hooks/useAuth';
 import {
   mockActiveDeals,
   mockBusinessStats,

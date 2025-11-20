@@ -38,6 +38,7 @@ export const API_CONFIG = {
       userRole: (businessId: string, userId: string) =>
         `/business/${businessId}/users/${userId}/role`,
       roles: (businessId: string) => `/business/${businessId}/roles`,
+      uploadImage: 'Upload',
     },
   },
 };

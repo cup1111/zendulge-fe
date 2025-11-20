@@ -68,7 +68,7 @@ export default function Landing() {
     );
   }, []);
 
-  // Load recommended deals when userLocation changes (or on initial mount)
+  // Load recommended deals on initial mount (show all deals within 2 weeks, no location filtering)
   useEffect(() => {
     let mounted = true;
     setLoadingRecommended(true);
@@ -76,10 +76,8 @@ export default function Landing() {
 
     const loadDeals = async () => {
       try {
-        const deals = await PublicDealService.list({
-          latitude: userLocation?.latitude,
-          longitude: userLocation?.longitude,
-        });
+        // For recommended deals, don't pass location params - show all deals within 2 weeks
+        const deals = await PublicDealService.list({});
         if (mounted) setRecommendedDeals(deals);
       } catch {
         if (mounted) setErrorRecommended('Failed to load deals.');
@@ -92,7 +90,7 @@ export default function Landing() {
     return () => {
       mounted = false;
     };
-  }, [userLocation]);
+  }, []);
 
   // Load categories on mount
   useEffect(() => {

@@ -32,7 +32,7 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 import { Textarea } from '~/components/ui/textarea';
-import { useToast } from '~/hooks/use-toast';
+import { useToast } from '~/hooks/useToast';
 import type {
   Service,
   ServiceCreateRequest,
@@ -41,7 +41,7 @@ import type {
 import { ServiceService } from '~/services/serviceService';
 
 import { BusinessUserRole } from '../constants/enums';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 type ApiError = {
   response?: {
@@ -327,6 +327,9 @@ export default function ServiceManagement({
           </h2>
         </div>
 
+        {/* Services Grid */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6' />
+
         {/* Search and Add Service */}
         <div className='flex flex-col sm:flex-row gap-3'>
           {/* Search Input */}
@@ -477,9 +480,6 @@ export default function ServiceManagement({
             </Dialog>
           )}
         </div>
-
-        {/* Services Grid */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6' />
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
