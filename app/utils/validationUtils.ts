@@ -22,12 +22,35 @@ export function validateEmail(value: string): string | null {
  * Requires: at least 8 characters, one lowercase, one uppercase, one digit, one special character
  */
 export function validatePassword(value: string): string | null {
-  // Regular expression for validating password strength (same as PasswordInput.tsx)
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-  const isPasswordValid = passwordRegex.test(value);
+  if (!value) {
+    return 'Password is required';
+  }
 
-  if (!isPasswordValid) {
-    return 'Please enter a valid Password';
+  if (value.length < 8) {
+    return 'Password must be at least 8 characters long';
+  }
+
+  const hasLowerCase = /[a-z]/.test(value);
+  const hasUpperCase = /[A-Z]/.test(value);
+  const hasDigit = /\d/.test(value);
+  const hasSpecialChar = /[\W_]/.test(value);
+
+  const missingRequirements: string[] = [];
+  if (!hasLowerCase) {
+    missingRequirements.push('one lowercase letter');
+  }
+  if (!hasUpperCase) {
+    missingRequirements.push('one uppercase letter');
+  }
+  if (!hasDigit) {
+    missingRequirements.push('one digit');
+  }
+  if (!hasSpecialChar) {
+    missingRequirements.push('one special character');
+  }
+
+  if (missingRequirements.length > 0) {
+    return `Password must contain at least ${missingRequirements.join(', ')}`;
   }
 
   return null;
