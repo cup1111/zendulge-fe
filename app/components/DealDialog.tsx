@@ -409,12 +409,16 @@ export default function DealDialog({
     if (formData.allDay) {
       normalizedStart.setHours(0, 0, 0, 0);
     }
-    const todayStart = new Date(today);
-    todayStart.setHours(0, 0, 0, 0);
 
-    if (normalizedStart.getTime() < todayStart.getTime()) {
-      showValidationError('Start date cannot be before today.');
-      return;
+    // Only validate start date for new deals, not when editing
+    if (!isEditMode) {
+      const todayStart = new Date(today);
+      todayStart.setHours(0, 0, 0, 0);
+
+      if (normalizedStart.getTime() < todayStart.getTime()) {
+        showValidationError('Start date cannot be before today.');
+        return;
+      }
     }
 
     // Validate that deal price is less than base price
@@ -993,7 +997,7 @@ export default function DealDialog({
                             : formData.endTime,
                         });
                       }}
-                      min={todayString}
+                      min={isEditMode ? undefined : todayString}
                       required
                     />
                   </div>
