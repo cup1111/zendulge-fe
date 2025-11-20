@@ -285,26 +285,6 @@ export default function BusinessRegistrationFlow({
                   {error.lastName && renderErrorMessage(error.lastName)}
                 </div>
               </div>
-              <div>
-                <label
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='jobTitleInput'
-                >
-                  Job Title *
-                  <input
-                    id='jobTitleInput'
-                    type='text'
-                    placeholder='e.g., Owner, Manager, Director'
-                    value={businessRegistrationFormData.jobTitle.value}
-                    onChange={e => onInputChange('jobTitle', e.target.value)}
-                    className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
-                  />
-                </label>
-                {error.jobTitle && renderErrorMessage(error.jobTitle)}
-                <p className='text-sm text-gray-600 mt-1'>
-                  Your role within the business
-                </p>
-              </div>
             </div>
           )}
 
