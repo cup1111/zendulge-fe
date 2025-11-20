@@ -327,6 +327,9 @@ export default function ServiceManagement({
           </h2>
         </div>
 
+        {/* Services Grid */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6' />
+
         {/* Search and Add Service */}
         <div className='flex flex-col sm:flex-row gap-3'>
           {/* Search Input */}
@@ -477,9 +480,6 @@ export default function ServiceManagement({
             </Dialog>
           )}
         </div>
-
-        {/* Services Grid */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6' />
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

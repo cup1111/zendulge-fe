@@ -118,23 +118,6 @@ export default function BusinessRegistration() {
         value: [] as string[],
         defaultValue: [],
       },
-      jobTitle: {
-        isRequired: true,
-        // Job title validation: minimum 2 characters, maximum 100 characters
-        // Ensures meaningful job titles while allowing for various professional titles
-        // Important for business registration to identify the contact person's role
-        validate: value => {
-          if (value.trim().length < 2) {
-            return 'Job title must be at least 2 characters';
-          }
-          if (value.length > 100) {
-            return 'Job title cannot exceed 100 characters';
-          }
-          return null;
-        },
-        value: '',
-        defaultValue: 'Job Title',
-      },
       businessAddress: {
         country: {
           isRequired: true,
