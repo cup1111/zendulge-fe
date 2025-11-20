@@ -14,14 +14,13 @@ import { countries } from '~/constants/countries';
 
 interface PhoneInputProps {
   value: string;
-  selectedCountry: string; // 现在只存 ISO，如 "AU"
+  selectedCountry: string;
   onChange: (value: string) => void;
   onCountryChange: (value: string) => void;
   placeholder?: string;
   label?: string;
 }
 
-// 获取区号
 const getDialCode = (code: string) =>
   countries.find(c => c.code === code)?.dial_code ?? '';
 
