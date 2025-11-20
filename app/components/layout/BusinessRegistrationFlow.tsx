@@ -648,25 +648,12 @@ export default function BusinessRegistrationFlow({
               </h2>
               <div className='bg-green-50 border border-green-200 rounded-lg p-6'>
                 <ul className='text-green-700 text-left space-y-2'>
+                  <li>• Your registration has been submitted successfully</li>
                   <li>
-                    • Access your business dashboard with full admin
-                    capabilities
+                    • Your account requires manual review within 1–2 business
+                    days
                   </li>
-                  <li>
-                    • Set up your first services with detailed descriptions
-                  </li>
-                  <li>
-                    • Create time-limited deals with specific pricing and
-                    availability
-                  </li>
-                  <li>
-                    • Configure Stripe payment processing for customer bookings
-                  </li>
-                  <li>
-                    • Manage operating sites and business user access levels
-                  </li>
-                  <li>• Start receiving customer bookings and enquiries</li>
-                  <li>• View analytics and performance reports</li>
+                  <li>• We will notify you once the review is completed</li>
                 </ul>
               </div>
             </div>
