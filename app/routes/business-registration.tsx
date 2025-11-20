@@ -247,8 +247,8 @@ export default function BusinessRegistration() {
       },
       selectedCountry: {
         isRequired: true,
-        value: 'Australia +61',
-        defaultValue: 'Australia +611',
+        value: 'Australia-+61',
+        defaultValue: 'Australia-+61',
       },
       businessEmail: {
         isRequired: true,
@@ -300,8 +300,8 @@ export default function BusinessRegistration() {
       },
       contactPersonSelectedCountry: {
         isRequired: true,
-        value: 'Australia +61',
-        defaultValue: 'Australia +61',
+        value: 'Australia-+61',
+        defaultValue: 'Australia-+61',
       },
       website: {
         isRequired: false,

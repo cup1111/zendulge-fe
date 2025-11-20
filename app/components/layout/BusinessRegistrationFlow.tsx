@@ -410,7 +410,7 @@ export default function BusinessRegistrationFlow({
                   value={businessRegistrationFormData.phone.value || ''}
                   selectedCountry={
                     businessRegistrationFormData.selectedCountry.value ||
-                    'Australia +61'
+                    'Australia-+61'
                   }
                   onChange={value => onInputChange('phone', value)}
                   onCountryChange={value =>
@@ -488,7 +488,7 @@ export default function BusinessRegistrationFlow({
                   }
                   selectedCountry={
                     businessRegistrationFormData.contactPersonSelectedCountry
-                      .value || 'Australia +61'
+                      .value || 'Australia-+61'
                   }
                   onChange={value => onInputChange('contactPersonPhone', value)}
                   onCountryChange={value =>

@@ -23,7 +23,7 @@ interface PhoneInputProps {
 
 export default function PhoneInput({
   value,
-  selectedCountry,
+  selectedCountry = 'Australia-+61',
   onChange,
   onCountryChange,
   placeholder = 'Enter phone number',
@@ -35,7 +35,7 @@ export default function PhoneInput({
     if (newValue && !newValue.startsWith('+') && selectedCountry) {
       if (/^\d/.test(newValue)) {
         const dialCode = selectedCountry.split('-')[1];
-        newValue = dialCode + newValue;
+        newValue = dialCode ? dialCode + newValue : newValue;
       }
     }
 
