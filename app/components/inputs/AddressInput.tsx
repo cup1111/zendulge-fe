@@ -39,29 +39,26 @@ export default function AddressInput({
     };
     onChange(updatedAddressObject);
 
+    // Validate field and update error state with nested structure
+    let fieldError: string | null = null;
+
+    // Check required field validation
     if (updatedAddressObject[field].isRequired && !newValue) {
-      errorSetter({
-        ...error,
-        businessAddress: {
-          ...error.businessAddress,
-          [field]: 'This field is required.',
-        },
-      });
-    } else {
-      errorSetter({
-        ...error,
-        businessAddress: {
-          ...error.businessAddress,
-          [field]: '',
-        },
-      });
+      fieldError = 'This field is required.';
     }
-    if (updatedAddressObject[field].validate) {
-      errorSetter({
-        ...error,
-        [field]: updatedAddressObject[field].validate(newValue),
-      });
+    // Run custom validation if provided (only if no required field error)
+    else if (updatedAddressObject[field].validate) {
+      fieldError = updatedAddressObject[field].validate(newValue);
     }
+
+    // Update error state with nested businessAddress structure
+    errorSetter({
+      ...error,
+      businessAddress: {
+        ...error.businessAddress,
+        [field]: fieldError ?? '',
+      },
+    });
   };
   // Renders an error message component for address fields
   const renderErrorMessage = (message: string) => (
