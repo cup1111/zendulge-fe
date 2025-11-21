@@ -184,7 +184,6 @@ export default function DealDialog({
       ...normalizedAvailability,
       allDay,
       recurrenceType: initialData?.recurrenceType ?? 'none',
-      maxBookings: initialData?.maxBookings,
     };
   }, [initialData, normalizeAvailability]);
 
@@ -265,7 +264,6 @@ export default function DealDialog({
       })(),
       endTime,
       recurrenceType: initialSchedule.recurrenceType,
-      maxBookings: initialData?.maxBookings ?? undefined,
       status: initialData?.status ?? ('active' as const),
       tags: initialData?.tags ?? [],
       service: serviceId,
@@ -337,7 +335,6 @@ export default function DealDialog({
           : toTimeInputValue(initialData.startDate),
         endTime,
         recurrenceType: schedule.recurrenceType,
-        maxBookings: schedule.maxBookings,
         status: initialData.status ?? ('active' as const),
         tags: initialData.tags ?? [],
         service: serviceId,
@@ -363,7 +360,6 @@ export default function DealDialog({
         startTime: defaultSchedule.startTime,
         endTime: defaultSchedule.endTime,
         recurrenceType: 'none',
-        maxBookings: undefined,
         status: 'active' as const,
         tags: [],
         service: '',
@@ -457,7 +453,6 @@ export default function DealDialog({
         allDay: formData.allDay,
         startDate: startDateTimeStr,
         recurrenceType: formData.recurrenceType,
-        maxBookings: formData.maxBookings ?? undefined,
         status: formData.status,
         tags: formData.tags,
         service: formData.service,
@@ -493,7 +488,6 @@ export default function DealDialog({
           startTime: defaultSchedule.startTime,
           endTime: defaultSchedule.endTime,
           recurrenceType: 'none',
-          maxBookings: undefined,
           status: 'active' as const,
           tags: [],
           service: '',
@@ -817,28 +811,6 @@ export default function DealDialog({
                 </Select>
               </div>
 
-              {/* Max Bookings - Full Width */}
-              <div>
-                <Label htmlFor='maxBookings'>Max Bookings</Label>
-                <Input
-                  id='maxBookings'
-                  type='number'
-                  value={formData.maxBookings ?? ''}
-                  onChange={e => {
-                    const { value } = e.target;
-                    setFormData({
-                      ...formData,
-                      maxBookings:
-                        value === ''
-                          ? undefined
-                          : parseInt(value, 10) || undefined,
-                    });
-                  }}
-                  min='1'
-                  placeholder='Optional - leave blank for unlimited'
-                />
-              </div>
-
               {/* Description - Full Width */}
               <div className='md:col-span-2'>
                 <Label htmlFor='description'>Description *</Label>
@@ -912,7 +884,7 @@ export default function DealDialog({
               {/* Sections - only show when NOT all day */}
               {!formData.allDay && (
                 <div>
-                  <Label htmlFor='sections'>Sections *</Label>
+                  <Label htmlFor='sections'>Appointments *</Label>
                   <Input
                     id='sections'
                     type='number'

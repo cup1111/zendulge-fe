@@ -31,7 +31,6 @@ export interface Deal {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings: number;
   status: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
@@ -72,7 +71,6 @@ export interface DealCreateRequest {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
@@ -98,7 +96,6 @@ export interface DealUpdateRequest {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
@@ -150,7 +147,6 @@ interface RawDealApiResponse {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings?: number;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
