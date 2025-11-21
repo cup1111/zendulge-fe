@@ -249,7 +249,7 @@ export default function DealDialog({
       price: initialData?.price ?? 0,
       originalPrice: initialData?.originalPrice,
       duration: initialData?.duration ?? 60,
-      sections: initialData?.sections ?? 1,
+      appointments: sections,
       operatingSite: operatingSiteIds,
       allDay: initialSchedule.allDay,
       startDate: initialSchedule.startDate,
@@ -326,7 +326,7 @@ export default function DealDialog({
         price: initialData.price ?? 0,
         originalPrice: initialData.originalPrice,
         duration: initialData.duration ?? 60,
-        sections: initialData?.sections ?? 1,
+        appointments: sections,
         operatingSite: operatingSiteIds,
         allDay: schedule.allDay,
         startDate: schedule.startDate,
@@ -353,7 +353,7 @@ export default function DealDialog({
         price: 0,
         originalPrice: undefined,
         duration: 60,
-        sections: 1,
+        appointments: 1,
         operatingSite: [],
         allDay: false,
         startDate: defaultSchedule.startDate,
@@ -448,7 +448,7 @@ export default function DealDialog({
         price: formData.price,
         originalPrice: formData.originalPrice,
         duration: formData.duration,
-        sections: formData.allDay ? 1 : formData.sections,
+        sections: formData.allDay ? 1 : formData.appointments,
         operatingSite: formData.operatingSite,
         allDay: formData.allDay,
         startDate: startDateTimeStr,
@@ -481,7 +481,7 @@ export default function DealDialog({
           price: 0,
           originalPrice: undefined,
           duration: 60,
-          sections: 1,
+          appointments: 1,
           operatingSite: [],
           allDay: false,
           startDate: defaultSchedule.startDate,
@@ -852,7 +852,7 @@ export default function DealDialog({
                   <b>Time and Date</b>
                 </h1>
               </div>
-              {/* Duration and Sections */}
+              {/* Duration and Appointments */}
               <div>
                 <Label htmlFor='duration'>Duration (minutes) *</Label>
                 <Input
@@ -870,7 +870,7 @@ export default function DealDialog({
                           ? calculateEndTime(
                               formData.startTime,
                               newDuration,
-                              formData.sections
+                              formData.appointments
                             )
                           : formData.endTime,
                     });
@@ -881,26 +881,26 @@ export default function DealDialog({
                 />
               </div>
 
-              {/* Sections - only show when NOT all day */}
+              {/* Appointments - only show when NOT all day */}
               {!formData.allDay && (
                 <div>
-                  <Label htmlFor='sections'>Appointments *</Label>
+                  <Label htmlFor='appointments'>Appointments *</Label>
                   <Input
-                    id='sections'
+                    id='appointments'
                     type='number'
-                    value={formData.sections}
+                    value={formData.appointments}
                     onChange={e => {
-                      const newSections = parseInt(e.target.value, 10) || 1;
+                      const newAppointments = parseInt(e.target.value, 10) || 1;
                       setFormData({
                         ...formData,
-                        sections: newSections,
-                        // Recalculate endTime when sections changes
+                        appointments: newAppointments,
+                        // Recalculate endTime when appointments changes
                         endTime:
                           !formData.allDay && formData.startTime
                             ? calculateEndTime(
                                 formData.startTime,
                                 formData.duration,
-                                newSections
+                                newAppointments
                               )
                             : formData.endTime,
                       });
@@ -935,7 +935,7 @@ export default function DealDialog({
                             return calculateEndTime(
                               formData.startTime,
                               formData.duration,
-                              formData.sections
+                              formData.appointments
                             );
                           })(),
                         });
@@ -964,7 +964,7 @@ export default function DealDialog({
                             ? calculateEndTime(
                                 formData.startTime,
                                 formData.duration,
-                                formData.sections
+                                formData.appointments
                               )
                             : formData.endTime,
                         });
@@ -1025,7 +1025,7 @@ export default function DealDialog({
                             endTime: calculateEndTime(
                               newStartTime,
                               formData.duration,
-                              formData.sections
+                              formData.appointments
                             ),
                           });
                         }}
