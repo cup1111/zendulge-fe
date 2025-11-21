@@ -71,7 +71,6 @@ export default function Login() {
                     handleLogin();
                   }
                 }}
-                showValidationDetails={false}
               />
               <PasswordInput
                 value={formData.password}
@@ -83,7 +82,6 @@ export default function Login() {
                     handleLogin();
                   }
                 }}
-                showValidationDetails={false}
               />
               {!auth.isAuthenticated && auth.errorMessage && !hasChanged && (
                 <div className='flex items-center justify-center text-xs text-red-600'>

@@ -113,7 +113,7 @@ export default function BusinessRegistrationFlow({
         <div className='max-w-4xl mx-auto'>
           <p className='text-blue-800 text-sm'>
             Business Registration Process - {currentSection?.title} (
-            {sectionStep} of {maxSteps})
+            {sectionStep} of {maxSteps - 1})
           </p>
         </div>
       </div>
@@ -285,26 +285,6 @@ export default function BusinessRegistrationFlow({
                   {error.lastName && renderErrorMessage(error.lastName)}
                 </div>
               </div>
-              <div>
-                <label
-                  className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='jobTitleInput'
-                >
-                  Job Title *
-                  <input
-                    id='jobTitleInput'
-                    type='text'
-                    placeholder='e.g., Owner, Manager, Director'
-                    value={businessRegistrationFormData.jobTitle.value}
-                    onChange={e => onInputChange('jobTitle', e.target.value)}
-                    className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
-                  />
-                </label>
-                {error.jobTitle && renderErrorMessage(error.jobTitle)}
-                <p className='text-sm text-gray-600 mt-1'>
-                  Your role within the business
-                </p>
-              </div>
             </div>
           )}
 
@@ -409,8 +389,7 @@ export default function BusinessRegistrationFlow({
                 <PhoneInput
                   value={businessRegistrationFormData.phone.value || ''}
                   selectedCountry={
-                    businessRegistrationFormData.selectedCountry.value ||
-                    'Australia +61'
+                    businessRegistrationFormData.selectedCountry.value || 'AU'
                   }
                   onChange={value => onInputChange('phone', value)}
                   onCountryChange={value =>
@@ -418,7 +397,6 @@ export default function BusinessRegistrationFlow({
                   }
                   label='Business Phone Number * (for customer contact)'
                   placeholder='Enter business phone (landline or mobile)'
-                  showValidationDetails
                 />
                 {error.phone && renderErrorMessage(error.phone)}
                 <p className='text-sm text-gray-600 mt-1'>
@@ -431,12 +409,8 @@ export default function BusinessRegistrationFlow({
                   onChange={value => onInputChange('businessEmail', value)}
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
-                  showValidationDetails
                 />
                 {error.businessEmail && renderErrorMessage(error.businessEmail)}
-                <p className='text-sm text-gray-600 mt-1'>
-                  Primary email for customer communication
-                </p>
               </div>
             </div>
           )}
@@ -478,7 +452,6 @@ export default function BusinessRegistrationFlow({
                   onChange={value => onInputChange('contactPersonEmail', value)}
                   label='Contact Person Email *'
                   placeholder='john@yourbusiness.com'
-                  showValidationDetails
                 />
                 {error.contactPersonEmail &&
                   renderErrorMessage(error.contactPersonEmail)}
@@ -490,7 +463,7 @@ export default function BusinessRegistrationFlow({
                   }
                   selectedCountry={
                     businessRegistrationFormData.contactPersonSelectedCountry
-                      .value || 'Australia +61'
+                      .value || 'AU'
                   }
                   onChange={value => onInputChange('contactPersonPhone', value)}
                   onCountryChange={value =>
@@ -498,8 +471,6 @@ export default function BusinessRegistrationFlow({
                   }
                   label='Business Group Admin Mobile Phone *'
                   placeholder='Enter mobile phone for account management'
-                  mobileOnly
-                  showValidationDetails
                 />
                 {error.contactPersonPhone &&
                   renderErrorMessage(error.contactPersonPhone)}
