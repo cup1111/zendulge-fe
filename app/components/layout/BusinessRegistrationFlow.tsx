@@ -111,8 +111,6 @@ export default function BusinessRegistrationFlow({
   const currentSection = sections[sectionStep - 1];
   const maxSteps = sections.length;
   // Determines if the user can proceed to the next step
-  // Currently always true - TODO: Implement actual validation logic based on current step and form data
-  const canProceedToNextStep = true;
   // Renders an error message component
   const renderErrorMessage = (message: string) => (
     <p className='text-xs text-red-600'>{message}</p>
@@ -779,7 +777,6 @@ export default function BusinessRegistrationFlow({
               <button
                 type='button'
                 onClick={onNext}
-                disabled={!canProceedToNextStep}
                 className='px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90'
               >
                 Next
