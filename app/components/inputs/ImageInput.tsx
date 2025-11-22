@@ -37,7 +37,9 @@ export default function ImageInput({
           }
         );
         onChange(response.data.data.presignedUrl);
-        setImageUrl(URL.createObjectURL(imageFile));
+        if (response.data.data.presignedUrl) {
+          setImageUrl(URL.createObjectURL(imageFile));
+        }
       } catch (error: unknown) {
         // Type guard to ensure error is an Error or AxiosError
         if (error instanceof Error) {

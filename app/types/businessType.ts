@@ -15,35 +15,74 @@ export type BusinessAddress = {
   postcode: BusinessField<string>;
 };
 
-export type BusinessRegistrationFormData = {
+// Step 1: Basic Information
+export type Step1FormData = {
   businessName: BusinessField<string>;
+  companyLogo: BusinessField<string>;
   businessABN: BusinessField<string>;
   description: BusinessField<string>;
+};
+
+// Step 2: Business Group Admin Information
+export type Step2FormData = {
   firstName: BusinessField<string>;
   lastName: BusinessField<string>;
+};
+
+// Step 3: Service Categories
+export type Step3FormData = {
   categories: BusinessField<string[]>;
-  businessAddress: BusinessAddress;
+};
+
+// Step 4: Business Address
+export type Step4FormData = BusinessAddress;
+
+// Step 5: Contact Information
+export type Step5FormData = {
   phone: BusinessField<string>;
+  selectedCountry: BusinessField<string>;
   businessEmail: BusinessField<string>;
+};
+
+// Step 6: Contact Person
+export type Step6FormData = {
   contactPersonName: BusinessField<string>;
   contactPersonEmail: BusinessField<string>;
   contactPersonPhone: BusinessField<string>;
+  contactPersonSelectedCountry: BusinessField<string>;
+};
+
+// Step 7: Branding & Social Media
+export type Step7FormData = {
   website: BusinessField<string>;
   facebook: BusinessField<string>;
   twitter: BusinessField<string>;
+};
+
+// Step 8: Login Information
+export type Step8FormData = {
   email: BusinessField<string>;
   password: BusinessField<string>;
   confirmPassword: BusinessField<string>;
 };
 
-type AddressErrorState = {
-  [K in keyof BusinessAddress]?: string;
-};
+export type FormDataRecord = Record<
+  string,
+  BusinessField<string> | BusinessField<string[]>
+>;
+
+// Complete form data type (for backward compatibility and final merging)
+export type BusinessRegistrationFormData = Step1FormData &
+  Step2FormData &
+  Step3FormData &
+  Step4FormData &
+  Step5FormData &
+  Step6FormData &
+  Step7FormData &
+  Step8FormData;
 
 export type ErrorState = {
-  [K in keyof BusinessRegistrationFormData]: K extends 'businessAddress'
-    ? AddressErrorState
-    : string;
+  [K in keyof BusinessRegistrationFormData]?: string;
 };
 
 type BusinessAddressValue = {

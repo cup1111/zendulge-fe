@@ -26,16 +26,28 @@ const WELLNESS_CATEGORIES = [
 
 export default function BusinessRegistrationFlow({
   sectionStep,
-  businessRegistrationFormData,
+  step1Data,
+  setStep1Data,
+  step2Data,
+  setStep2Data,
+  step3Data,
+  setStep3Data,
+  step4Data,
+  setStep4Data,
+  step5Data,
+  setStep5Data,
+  step6Data,
+  setStep6Data,
+  step7Data,
+  setStep7Data,
+  step8Data,
+  setStep8Data,
   error,
   setError,
   onInputChange,
-  onAddressChange,
   onSubmit,
   onNext,
   onPrev,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  hasChanged,
 }: JSX.Element) {
   enum SectionNumber {
     basicInformation = 1,
@@ -124,7 +136,7 @@ export default function BusinessRegistrationFlow({
             <h1 className='text-3xl font-bold text-gray-900 mb-4'>
               Register Your Wellness Business
             </h1>
-            {/* 进度条 */}
+            {/* Progress bar */}
             <div className='flex space-x-2 mb-6'>
               {sections.slice(0, -1).map((section, i) => (
                 <div
@@ -157,9 +169,14 @@ export default function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessRegistrationFlow'
                     placeholder='e.g., Zen Wellness Spa'
-                    value={businessRegistrationFormData.businessName.value}
+                    value={step1Data.businessName.value}
                     onChange={e =>
-                      onInputChange('businessName', e.target.value)
+                      onInputChange(
+                        step1Data,
+                        setStep1Data,
+                        'businessName',
+                        e.target.value
+                      )
                     }
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
@@ -172,12 +189,17 @@ export default function BusinessRegistrationFlow({
                 </span>
                 <ImageInput
                   onChange={value => {
-                    onInputChange('companyLogo', value);
+                    onInputChange(
+                      step1Data,
+                      setStep1Data,
+                      'companyLogo',
+                      value
+                    );
                   }}
                   onUploadError={err => {
                     setError({ ...error, ...{ companyLogo: err.message } });
                   }}
-                  logoUrl={businessRegistrationFormData.companyLogo.value}
+                  logoUrl={step1Data.companyLogo.value}
                 />
                 {error.companyLogo && renderErrorMessage(error.companyLogo)}
               </div>
@@ -191,8 +213,15 @@ export default function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessABN'
                     placeholder='e.g., 12 345 678 901'
-                    value={businessRegistrationFormData.businessABN.value}
-                    onChange={e => onInputChange('businessABN', e.target.value)}
+                    value={step1Data.businessABN.value}
+                    onChange={e =>
+                      onInputChange(
+                        step1Data,
+                        setStep1Data,
+                        'businessABN',
+                        e.target.value
+                      )
+                    }
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
                 </label>
@@ -208,21 +237,25 @@ export default function BusinessRegistrationFlow({
                     <textarea
                       id='businessDescription'
                       placeholder='Describe your wellness business, services, and unique approach...'
-                      value={businessRegistrationFormData.description.value}
+                      value={step1Data.description.value}
                       onChange={e =>
-                        onInputChange('description', e.target.value)
+                        onInputChange(
+                          step1Data,
+                          setStep1Data,
+                          'description',
+                          e.target.value
+                        )
                       }
                       className='w-full border rounded-lg p-3 h-24 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent pr-12'
                     />
                     <span
                       className={`absolute bottom-2 right-3 text-xs ${
-                        businessRegistrationFormData.description.value.length >
-                        500
+                        step1Data.description.value.length > 500
                           ? 'text-red-500'
                           : 'text-gray-400'
                       }`}
                     >
-                      {businessRegistrationFormData.description.value.length}
+                      {step1Data.description.value.length}
                       /500
                     </span>
                   </div>
@@ -260,8 +293,15 @@ export default function BusinessRegistrationFlow({
                       id='fristNameInput'
                       type='text'
                       placeholder='Enter your first name'
-                      value={businessRegistrationFormData.firstName.value}
-                      onChange={e => onInputChange('firstName', e.target.value)}
+                      value={step2Data.firstName.value}
+                      onChange={e =>
+                        onInputChange(
+                          step2Data,
+                          setStep2Data,
+                          'firstName',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -277,8 +317,15 @@ export default function BusinessRegistrationFlow({
                       id='lastNameInput'
                       type='text'
                       placeholder='Enter your last name'
-                      value={businessRegistrationFormData.lastName.value}
-                      onChange={e => onInputChange('lastName', e.target.value)}
+                      value={step2Data.lastName.value}
+                      onChange={e =>
+                        onInputChange(
+                          step2Data,
+                          setStep2Data,
+                          'lastName',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -317,20 +364,22 @@ export default function BusinessRegistrationFlow({
                           id={`category-${service}`}
                           type='checkbox'
                           className='rounded text-shadow-lavender focus:ring-shadow-lavender'
-                          checked={businessRegistrationFormData.categories?.value.includes(
+                          checked={step3Data.categories?.value.includes(
                             service
                           )}
                           onChange={e => {
-                            const categories =
-                              businessRegistrationFormData.categories.value ||
-                              [];
+                            const categories = step3Data.categories.value || [];
                             if (e.target.checked) {
-                              onInputChange('categories', [
-                                ...categories,
-                                service,
-                              ]);
+                              onInputChange(
+                                step3Data,
+                                setStep3Data,
+                                'categories',
+                                [...categories, service]
+                              );
                             } else {
                               onInputChange(
+                                step3Data,
+                                setStep3Data,
                                 'categories',
                                 categories.filter((p: string) => p !== service)
                               );
@@ -365,10 +414,10 @@ export default function BusinessRegistrationFlow({
                   Business Address
                 </label>
                 <AddressInput
-                  value={businessRegistrationFormData.businessAddress}
-                  onChange={address => onAddressChange(address)}
+                  step4Data={step4Data}
+                  setStep4Data={setStep4Data}
+                  onInputChange={onInputChange}
                   error={error}
-                  errorSetter={setError}
                 />
                 <p className='text-sm text-gray-600'>
                   This is where customers will visit for your wellness services
@@ -387,13 +436,18 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <PhoneInput
-                  value={businessRegistrationFormData.phone.value || ''}
-                  selectedCountry={
-                    businessRegistrationFormData.selectedCountry.value || 'AU'
+                  value={step5Data.phone.value || ''}
+                  selectedCountry={step5Data.selectedCountry.value || 'AU'}
+                  onChange={value =>
+                    onInputChange(step5Data, setStep5Data, 'phone', value)
                   }
-                  onChange={value => onInputChange('phone', value)}
                   onCountryChange={value =>
-                    onInputChange('selectedCountry', value)
+                    onInputChange(
+                      step5Data,
+                      setStep5Data,
+                      'selectedCountry',
+                      value
+                    )
                   }
                   label='Business Phone Number * (for customer contact)'
                   placeholder='Enter business phone (landline or mobile)'
@@ -405,8 +459,15 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <EmailInput
-                  value={businessRegistrationFormData.businessEmail.value || ''}
-                  onChange={value => onInputChange('businessEmail', value)}
+                  value={step5Data.businessEmail.value || ''}
+                  onChange={value =>
+                    onInputChange(
+                      step5Data,
+                      setStep5Data,
+                      'businessEmail',
+                      value
+                    )
+                  }
                   label='Business Email Address *'
                   placeholder='hello@yourbusiness.com'
                 />
@@ -434,9 +495,14 @@ export default function BusinessRegistrationFlow({
                     id='contactPersonName'
                     type='text'
                     placeholder='John Smith'
-                    value={businessRegistrationFormData.contactPersonName.value}
+                    value={step6Data.contactPersonName.value}
                     onChange={e =>
-                      onInputChange('contactPersonName', e.target.value)
+                      onInputChange(
+                        step6Data,
+                        setStep6Data,
+                        'contactPersonName',
+                        e.target.value
+                      )
                     }
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                   />
@@ -446,10 +512,15 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <EmailInput
-                  value={
-                    businessRegistrationFormData.contactPersonEmail.value || ''
+                  value={step6Data.contactPersonEmail.value || ''}
+                  onChange={value =>
+                    onInputChange(
+                      step6Data,
+                      setStep6Data,
+                      'contactPersonEmail',
+                      value
+                    )
                   }
-                  onChange={value => onInputChange('contactPersonEmail', value)}
                   label='Contact Person Email *'
                   placeholder='john@yourbusiness.com'
                 />
@@ -458,16 +529,25 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <PhoneInput
-                  value={
-                    businessRegistrationFormData.contactPersonPhone.value || ''
-                  }
+                  value={step6Data.contactPersonPhone.value || ''}
                   selectedCountry={
-                    businessRegistrationFormData.contactPersonSelectedCountry
-                      .value || 'AU'
+                    step6Data.contactPersonSelectedCountry.value || 'AU'
                   }
-                  onChange={value => onInputChange('contactPersonPhone', value)}
+                  onChange={value =>
+                    onInputChange(
+                      step6Data,
+                      setStep6Data,
+                      'contactPersonPhone',
+                      value
+                    )
+                  }
                   onCountryChange={value =>
-                    onInputChange('contactPersonSelectedCountry', value)
+                    onInputChange(
+                      step6Data,
+                      setStep6Data,
+                      'contactPersonSelectedCountry',
+                      value
+                    )
                   }
                   label='Business Group Admin Mobile Phone *'
                   placeholder='Enter mobile phone for account management'
@@ -501,8 +581,15 @@ export default function BusinessRegistrationFlow({
                       id='businessWeb'
                       type='url'
                       placeholder='https://yourbusiness.com'
-                      value={businessRegistrationFormData.website.value}
-                      onChange={e => onInputChange('website', e.target.value)}
+                      value={step7Data.website.value}
+                      onChange={e =>
+                        onInputChange(
+                          step7Data,
+                          setStep7Data,
+                          'website',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -518,8 +605,15 @@ export default function BusinessRegistrationFlow({
                       id='fecebook'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
-                      value={businessRegistrationFormData.facebook.value}
-                      onChange={e => onInputChange('facebook', e.target.value)}
+                      value={step7Data.facebook.value}
+                      onChange={e =>
+                        onInputChange(
+                          step7Data,
+                          setStep7Data,
+                          'facebook',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -535,8 +629,15 @@ export default function BusinessRegistrationFlow({
                       id='xProfile'
                       type='url'
                       placeholder='https://x.com/yourbusiness'
-                      value={businessRegistrationFormData.twitter.value}
-                      onChange={e => onInputChange('twitter', e.target.value)}
+                      value={step7Data.twitter.value}
+                      onChange={e =>
+                        onInputChange(
+                          step7Data,
+                          setStep7Data,
+                          'twitter',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -565,8 +666,15 @@ export default function BusinessRegistrationFlow({
                       id='email'
                       type='email'
                       placeholder='youremail@.com'
-                      value={businessRegistrationFormData.email.value}
-                      onChange={e => onInputChange('email', e.target.value)}
+                      value={step8Data.email.value}
+                      onChange={e =>
+                        onInputChange(
+                          step8Data,
+                          setStep8Data,
+                          'email',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -582,8 +690,15 @@ export default function BusinessRegistrationFlow({
                       id='password'
                       type='password'
                       placeholder='your password'
-                      value={businessRegistrationFormData.password.value}
-                      onChange={e => onInputChange('password', e.target.value)}
+                      value={step8Data.password.value}
+                      onChange={e =>
+                        onInputChange(
+                          step8Data,
+                          setStep8Data,
+                          'password',
+                          e.target.value
+                        )
+                      }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
                   </label>
@@ -597,9 +712,14 @@ export default function BusinessRegistrationFlow({
                       id='confirmPassword'
                       type='password'
                       placeholder='confirm your password'
-                      value={businessRegistrationFormData.confirmPassword.value}
+                      value={step8Data.confirmPassword.value}
                       onChange={e =>
-                        onInputChange('confirmPassword', e.target.value)
+                        onInputChange(
+                          step8Data,
+                          setStep8Data,
+                          'confirmPassword',
+                          e.target.value
+                        )
                       }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
