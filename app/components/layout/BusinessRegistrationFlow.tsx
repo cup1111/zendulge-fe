@@ -6,6 +6,7 @@ import { MapPin } from 'lucide-react';
 import AddressInput from '~/components/inputs/AddressInput';
 import EmailInput from '~/components/inputs/EmailInput';
 import PhoneInput from '~/components/inputs/PhoneInput';
+import { SectionNumber } from '~/enum/SectionNumber';
 
 import ImageInput from '../inputs/ImageInput';
 
@@ -26,22 +27,22 @@ const WELLNESS_CATEGORIES = [
 
 export default function BusinessRegistrationFlow({
   sectionStep,
-  businessBasicInfo,
-  setBusinessBasicInfo,
-  ownerIdentity,
-  setOwnerIdentity,
-  businessCategory,
-  setBusinessCategory,
-  businessAddress,
-  setBusinessAddress,
-  businessContact,
-  setBusinessContact,
-  contactPerson,
-  setContactPerson,
-  businessSocialMedia,
-  setBusinessSocialMedia,
-  accountCredentials,
-  setAccountCredentials,
+  businessBasicInfoFormData,
+  setBusinessBasicInfoFormData,
+  ownerIdentityFormData,
+  setOwnerIdentityFormData,
+  businessCategoryFormData,
+  setBusinessCategoryFormData,
+  businessAddressFormData,
+  setBusinessAddressFormData,
+  businessContactFormData,
+  setBusinessContactFormData,
+  contactPersonFormData,
+  setContactPersonFormData,
+  businessSocialMediaFormData,
+  setBusinessSocialMediaFormData,
+  accountCredentialsFormData,
+  setAccountCredentialsFormData,
   error,
   setError,
   onInputChange,
@@ -49,17 +50,6 @@ export default function BusinessRegistrationFlow({
   onNext,
   onPrev,
 }: JSX.Element) {
-  enum SectionNumber {
-    businessBasicInfoSection = 1,
-    ownerIdentitySection,
-    businessCategorySection,
-    businessAddressSection,
-    businessContactSection,
-    contactPersonSection,
-    businessSocialMediaSection,
-    accountCredentialsSection,
-    completedSection,
-  }
   const sections = [
     {
       key: 'basicInfo',
@@ -167,11 +157,11 @@ export default function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessRegistrationFlow'
                     placeholder='e.g., Zen Wellness Spa'
-                    value={businessBasicInfo.businessName.value}
+                    value={businessBasicInfoFormData.businessName.value}
                     onChange={e =>
                       onInputChange(
-                        businessBasicInfo,
-                        setBusinessBasicInfo,
+                        businessBasicInfoFormData,
+                        setBusinessBasicInfoFormData,
                         'businessName',
                         e.target.value
                       )
@@ -188,8 +178,8 @@ export default function BusinessRegistrationFlow({
                 <ImageInput
                   onChange={value => {
                     onInputChange(
-                      businessBasicInfo,
-                      setBusinessBasicInfo,
+                      businessBasicInfoFormData,
+                      setBusinessBasicInfoFormData,
                       'companyLogo',
                       value
                     );
@@ -197,7 +187,7 @@ export default function BusinessRegistrationFlow({
                   onUploadError={err => {
                     setError({ ...error, ...{ companyLogo: err.message } });
                   }}
-                  logoUrl={businessBasicInfo.companyLogo.value}
+                  logoUrl={businessBasicInfoFormData.companyLogo.value}
                 />
                 {error.companyLogo && renderErrorMessage(error.companyLogo)}
               </div>
@@ -211,11 +201,11 @@ export default function BusinessRegistrationFlow({
                     type='text'
                     id='BusinessABN'
                     placeholder='e.g., 12 345 678 901'
-                    value={businessBasicInfo.businessABN.value}
+                    value={businessBasicInfoFormData.businessABN.value}
                     onChange={e =>
                       onInputChange(
-                        businessBasicInfo,
-                        setBusinessBasicInfo,
+                        businessBasicInfoFormData,
+                        setBusinessBasicInfoFormData,
                         'businessABN',
                         e.target.value
                       )
@@ -235,11 +225,11 @@ export default function BusinessRegistrationFlow({
                     <textarea
                       id='businessDescription'
                       placeholder='Describe your wellness business, services, and unique approach...'
-                      value={businessBasicInfo.description.value}
+                      value={businessBasicInfoFormData.description.value}
                       onChange={e =>
                         onInputChange(
-                          businessBasicInfo,
-                          setBusinessBasicInfo,
+                          businessBasicInfoFormData,
+                          setBusinessBasicInfoFormData,
                           'description',
                           e.target.value
                         )
@@ -248,12 +238,12 @@ export default function BusinessRegistrationFlow({
                     />
                     <span
                       className={`absolute bottom-2 right-3 text-xs ${
-                        businessBasicInfo.description.value.length > 500
+                        businessBasicInfoFormData.description.value.length > 500
                           ? 'text-red-500'
                           : 'text-gray-400'
                       }`}
                     >
-                      {businessBasicInfo.description.value.length}
+                      {businessBasicInfoFormData.description.value.length}
                       /500
                     </span>
                   </div>
@@ -291,11 +281,11 @@ export default function BusinessRegistrationFlow({
                       id='fristNameInput'
                       type='text'
                       placeholder='Enter your first name'
-                      value={ownerIdentity.firstName.value}
+                      value={ownerIdentityFormData.firstName.value}
                       onChange={e =>
                         onInputChange(
-                          ownerIdentity,
-                          setOwnerIdentity,
+                          ownerIdentityFormData,
+                          setOwnerIdentityFormData,
                           'firstName',
                           e.target.value
                         )
@@ -315,11 +305,11 @@ export default function BusinessRegistrationFlow({
                       id='lastNameInput'
                       type='text'
                       placeholder='Enter your last name'
-                      value={ownerIdentity.lastName.value}
+                      value={ownerIdentityFormData.lastName.value}
                       onChange={e =>
                         onInputChange(
-                          ownerIdentity,
-                          setOwnerIdentity,
+                          ownerIdentityFormData,
+                          setOwnerIdentityFormData,
                           'lastName',
                           e.target.value
                         )
@@ -362,23 +352,23 @@ export default function BusinessRegistrationFlow({
                           id={`category-${service}`}
                           type='checkbox'
                           className='rounded text-shadow-lavender focus:ring-shadow-lavender'
-                          checked={businessCategory.categories?.value.includes(
+                          checked={businessCategoryFormData.categories?.value.includes(
                             service
                           )}
                           onChange={e => {
                             const categories =
-                              businessCategory.categories.value || [];
+                              businessCategoryFormData.categories.value || [];
                             if (e.target.checked) {
                               onInputChange(
-                                businessCategory,
-                                setBusinessCategory,
+                                businessCategoryFormData,
+                                setBusinessCategoryFormData,
                                 'categories',
                                 [...categories, service]
                               );
                             } else {
                               onInputChange(
-                                businessCategory,
-                                setBusinessCategory,
+                                businessCategoryFormData,
+                                setBusinessCategoryFormData,
                                 'categories',
                                 categories.filter((p: string) => p !== service)
                               );
@@ -413,8 +403,8 @@ export default function BusinessRegistrationFlow({
                   Business Address
                 </label>
                 <AddressInput
-                  businessAddress={businessAddress}
-                  setBusinessAddress={setBusinessAddress}
+                  businessAddress={businessAddressFormData}
+                  setBusinessAddress={setBusinessAddressFormData}
                   onInputChange={onInputChange}
                   error={error}
                 />
@@ -435,22 +425,22 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <PhoneInput
-                  value={businessContact.phone.value || ''}
+                  value={businessContactFormData.phone.value || ''}
                   selectedCountry={
-                    businessContact.selectedCountry.value || 'AU'
+                    businessContactFormData.selectedCountry.value || 'AU'
                   }
                   onChange={value =>
                     onInputChange(
-                      businessContact,
-                      setBusinessContact,
+                      businessContactFormData,
+                      setBusinessContactFormData,
                       'phone',
                       value
                     )
                   }
                   onCountryChange={value =>
                     onInputChange(
-                      businessContact,
-                      setBusinessContact,
+                      businessContactFormData,
+                      setBusinessContactFormData,
                       'selectedCountry',
                       value
                     )
@@ -465,11 +455,11 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <EmailInput
-                  value={businessContact.businessEmail.value || ''}
+                  value={businessContactFormData.businessEmail.value || ''}
                   onChange={value =>
                     onInputChange(
-                      businessContact,
-                      setBusinessContact,
+                      businessContactFormData,
+                      setBusinessContactFormData,
                       'businessEmail',
                       value
                     )
@@ -501,11 +491,11 @@ export default function BusinessRegistrationFlow({
                     id='contactPersonName'
                     type='text'
                     placeholder='John Smith'
-                    value={contactPerson.contactPersonName.value}
+                    value={contactPersonFormData.contactPersonName.value}
                     onChange={e =>
                       onInputChange(
-                        contactPerson,
-                        setContactPerson,
+                        contactPersonFormData,
+                        setContactPersonFormData,
                         'contactPersonName',
                         e.target.value
                       )
@@ -518,11 +508,11 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <EmailInput
-                  value={contactPerson.contactPersonEmail.value || ''}
+                  value={contactPersonFormData.contactPersonEmail.value || ''}
                   onChange={value =>
                     onInputChange(
-                      contactPerson,
-                      setContactPerson,
+                      contactPersonFormData,
+                      setContactPersonFormData,
                       'contactPersonEmail',
                       value
                     )
@@ -535,22 +525,23 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <PhoneInput
-                  value={contactPerson.contactPersonPhone.value || ''}
+                  value={contactPersonFormData.contactPersonPhone.value || ''}
                   selectedCountry={
-                    contactPerson.contactPersonSelectedCountry.value || 'AU'
+                    contactPersonFormData.contactPersonSelectedCountry.value ||
+                    'AU'
                   }
                   onChange={value =>
                     onInputChange(
-                      contactPerson,
-                      setContactPerson,
+                      contactPersonFormData,
+                      setContactPersonFormData,
                       'contactPersonPhone',
                       value
                     )
                   }
                   onCountryChange={value =>
                     onInputChange(
-                      contactPerson,
-                      setContactPerson,
+                      contactPersonFormData,
+                      setContactPersonFormData,
                       'contactPersonSelectedCountry',
                       value
                     )
@@ -587,11 +578,11 @@ export default function BusinessRegistrationFlow({
                       id='businessWeb'
                       type='url'
                       placeholder='https://yourbusiness.com'
-                      value={businessSocialMedia.website.value}
+                      value={businessSocialMediaFormData.website.value}
                       onChange={e =>
                         onInputChange(
-                          businessSocialMedia,
-                          setBusinessSocialMedia,
+                          businessSocialMediaFormData,
+                          setBusinessSocialMediaFormData,
                           'website',
                           e.target.value
                         )
@@ -611,11 +602,11 @@ export default function BusinessRegistrationFlow({
                       id='fecebook'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
-                      value={businessSocialMedia.facebook.value}
+                      value={businessSocialMediaFormData.facebook.value}
                       onChange={e =>
                         onInputChange(
-                          businessSocialMedia,
-                          setBusinessSocialMedia,
+                          businessSocialMediaFormData,
+                          setBusinessSocialMediaFormData,
                           'facebook',
                           e.target.value
                         )
@@ -635,11 +626,11 @@ export default function BusinessRegistrationFlow({
                       id='xProfile'
                       type='url'
                       placeholder='https://x.com/yourbusiness'
-                      value={businessSocialMedia.twitter.value}
+                      value={businessSocialMediaFormData.twitter.value}
                       onChange={e =>
                         onInputChange(
-                          businessSocialMedia,
-                          setBusinessSocialMedia,
+                          businessSocialMediaFormData,
+                          setBusinessSocialMediaFormData,
                           'twitter',
                           e.target.value
                         )
@@ -672,11 +663,11 @@ export default function BusinessRegistrationFlow({
                       id='email'
                       type='email'
                       placeholder='youremail@.com'
-                      value={accountCredentials.email.value}
+                      value={accountCredentialsFormData.email.value}
                       onChange={e =>
                         onInputChange(
-                          accountCredentials,
-                          setAccountCredentials,
+                          accountCredentialsFormData,
+                          setAccountCredentialsFormData,
                           'email',
                           e.target.value
                         )
@@ -696,11 +687,11 @@ export default function BusinessRegistrationFlow({
                       id='password'
                       type='password'
                       placeholder='your password'
-                      value={accountCredentials.password.value}
+                      value={accountCredentialsFormData.password.value}
                       onChange={e =>
                         onInputChange(
-                          accountCredentials,
-                          setAccountCredentials,
+                          accountCredentialsFormData,
+                          setAccountCredentialsFormData,
                           'password',
                           e.target.value
                         )
@@ -718,11 +709,11 @@ export default function BusinessRegistrationFlow({
                       id='confirmPassword'
                       type='password'
                       placeholder='confirm your password'
-                      value={accountCredentials.confirmPassword.value}
+                      value={accountCredentialsFormData.confirmPassword.value}
                       onChange={e =>
                         onInputChange(
-                          accountCredentials,
-                          setAccountCredentials,
+                          accountCredentialsFormData,
+                          setAccountCredentialsFormData,
                           'confirmPassword',
                           e.target.value
                         )

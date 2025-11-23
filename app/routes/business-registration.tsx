@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 
 import { registerBusiness } from '~/api/register';
+import { SectionNumber } from '~/enum/SectionNumber';
 import {
   validateConfirmPassword,
   validateEmail,
@@ -366,29 +367,26 @@ const createAccountCredentials = (): AccountCredentials => ({
 });
 
 export default function BusinessRegistration() {
-  const [sectionStep, setSectionStep] = useState<number>(1);
+  const [sectionStep, setSectionStep] = useState<SectionNumber>(
+    SectionNumber.businessBasicInfoSection
+  );
 
   // Create independent state for each step
-  const [businessBasicInfo, setBusinessBasicInfo] = useState<BusinessBasicInfo>(
-    createBusinessBasicInfo()
-  );
-  const [ownerIdentity, setOwnerIdentity] = useState<OwnerIdentity>(
-    createOwnerIdentity()
-  );
-  const [businessCategory, setBusinessCategory] = useState<BusinessCategory>(
-    createBusinessCategory()
-  );
-  const [businessAddress, setBusinessAddress] =
+  const [businessBasicInfoFormData, setBusinessBasicInfoFormData] =
+    useState<BusinessBasicInfo>(createBusinessBasicInfo());
+  const [ownerIdentityFormData, setOwnerIdentityFormData] =
+    useState<OwnerIdentity>(createOwnerIdentity());
+  const [businessCategoryFormData, setBusinessCategoryFormData] =
+    useState<BusinessCategory>(createBusinessCategory());
+  const [businessAddressFormData, setBusinessAddressFormData] =
     useState<BusinessAddressFormData>(createBusinessAddress());
-  const [businessContact, setBusinessContact] = useState<BusinessContact>(
-    createBusinessContact()
-  );
-  const [contactPerson, setContactPerson] = useState<ContactPerson>(
-    createContactPerson()
-  );
-  const [businessSocialMedia, setBusinessSocialMedia] =
+  const [businessContactFormData, setBusinessContactFormData] =
+    useState<BusinessContact>(createBusinessContact());
+  const [contactPersonFormData, setContactPersonFormData] =
+    useState<ContactPerson>(createContactPerson());
+  const [businessSocialMediaFormData, setBusinessSocialMediaFormData] =
     useState<BusinessSocialMedia>(createBusinessSocialMedia());
-  const [accountCredentials, setAccountCredentials] =
+  const [accountCredentialsFormData, setAccountCredentialsFormData] =
     useState<AccountCredentials>(createAccountCredentials());
 
   const [error, setError] = useState<ErrorState>({});
@@ -492,28 +490,28 @@ export default function BusinessRegistration() {
 
     switch (step) {
       case 1:
-        stepData = businessBasicInfo;
+        stepData = businessBasicInfoFormData;
         break;
       case 2:
-        stepData = ownerIdentity;
+        stepData = ownerIdentityFormData;
         break;
       case 3:
-        stepData = businessCategory;
+        stepData = businessCategoryFormData;
         break;
       case 4:
-        stepData = businessAddress;
+        stepData = businessAddressFormData;
         break;
       case 5:
-        stepData = businessContact;
+        stepData = businessContactFormData;
         break;
       case 6:
-        stepData = contactPerson;
+        stepData = contactPersonFormData;
         break;
       case 7:
-        stepData = businessSocialMedia;
+        stepData = businessSocialMediaFormData;
         break;
       case 8:
-        stepData = accountCredentials;
+        stepData = accountCredentialsFormData;
         break;
       default:
         return false;
@@ -587,29 +585,29 @@ export default function BusinessRegistration() {
 
     // Merge data from all steps
     const mergedFormData: BusinessRegistrationFormData = {
-      ...businessBasicInfo,
-      ...ownerIdentity,
-      ...businessCategory,
-      ...businessAddress,
-      ...businessContact,
-      ...contactPerson,
-      ...businessSocialMedia,
-      ...accountCredentials,
+      ...businessBasicInfoFormData,
+      ...ownerIdentityFormData,
+      ...businessCategoryFormData,
+      ...businessAddressFormData,
+      ...businessContactFormData,
+      ...contactPersonFormData,
+      ...businessSocialMediaFormData,
+      ...accountCredentialsFormData,
     };
 
     // Extract all values
     const data = extractFormValues(mergedFormData);
     delete data.confirmPassword; // Remove confirmPassword before submission
 
-    // Combine address fields from businessAddress into businessAddress object
+    // Combine address fields from businessAddressFormData into businessAddress object
     const businessAddressPayload = {
-      country: businessAddress.country.value,
-      streetNumber: businessAddress.streetNumber.value,
-      street: businessAddress.street.value,
-      suburb: businessAddress.suburb.value,
-      city: businessAddress.city.value,
-      state: businessAddress.state.value,
-      postcode: businessAddress.postcode.value,
+      country: businessAddressFormData.country.value,
+      streetNumber: businessAddressFormData.streetNumber.value,
+      street: businessAddressFormData.street.value,
+      suburb: businessAddressFormData.suburb.value,
+      city: businessAddressFormData.city.value,
+      state: businessAddressFormData.state.value,
+      postcode: businessAddressFormData.postcode.value,
     };
 
     // Delete scattered address fields, add businessAddress object
@@ -631,22 +629,22 @@ export default function BusinessRegistration() {
   return (
     <BusinessRegistrationFlow
       sectionStep={sectionStep}
-      businessBasicInfo={businessBasicInfo}
-      setBusinessBasicInfo={setBusinessBasicInfo}
-      ownerIdentity={ownerIdentity}
-      setOwnerIdentity={setOwnerIdentity}
-      businessCategory={businessCategory}
-      setBusinessCategory={setBusinessCategory}
-      businessAddress={businessAddress}
-      setBusinessAddress={setBusinessAddress}
-      businessContact={businessContact}
-      setBusinessContact={setBusinessContact}
-      contactPerson={contactPerson}
-      setContactPerson={setContactPerson}
-      businessSocialMedia={businessSocialMedia}
-      setBusinessSocialMedia={setBusinessSocialMedia}
-      accountCredentials={accountCredentials}
-      setAccountCredentials={setAccountCredentials}
+      businessBasicInfoFormData={businessBasicInfoFormData}
+      setBusinessBasicInfoFormData={setBusinessBasicInfoFormData}
+      ownerIdentityFormData={ownerIdentityFormData}
+      setOwnerIdentityFormData={setOwnerIdentityFormData}
+      businessCategoryFormData={businessCategoryFormData}
+      setBusinessCategoryFormData={setBusinessCategoryFormData}
+      businessAddressFormData={businessAddressFormData}
+      setBusinessAddressFormData={setBusinessAddressFormData}
+      businessContactFormData={businessContactFormData}
+      setBusinessContactFormData={setBusinessContactFormData}
+      contactPersonFormData={contactPersonFormData}
+      setContactPersonFormData={setContactPersonFormData}
+      businessSocialMediaFormData={businessSocialMediaFormData}
+      setBusinessSocialMediaFormData={setBusinessSocialMediaFormData}
+      accountCredentialsFormData={accountCredentialsFormData}
+      setAccountCredentialsFormData={setAccountCredentialsFormData}
       error={error}
       setError={setError}
       onInputChange={handleInputChange}
