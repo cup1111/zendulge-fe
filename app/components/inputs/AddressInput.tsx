@@ -10,14 +10,16 @@ import {
 } from '~/components/ui/select';
 
 import type {
+  BusinessAddressFormData,
   ErrorState,
   FormDataRecord,
-  Step4FormData,
 } from '../../types/businessType';
 
 interface AddressInputProps {
-  step4Data: Step4FormData;
-  setStep4Data: React.Dispatch<React.SetStateAction<Step4FormData>>;
+  businessAddress: BusinessAddressFormData;
+  setBusinessAddress: React.Dispatch<
+    React.SetStateAction<BusinessAddressFormData>
+  >;
   onInputChange: <T extends FormDataRecord>(
     formData: T,
     setFormData: React.Dispatch<React.SetStateAction<T>>,
@@ -28,8 +30,8 @@ interface AddressInputProps {
 }
 
 export default function AddressInput({
-  step4Data,
-  setStep4Data,
+  businessAddress,
+  setBusinessAddress,
   onInputChange,
   error,
 }: AddressInputProps) {
@@ -51,11 +53,11 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Number *</Label>
               <Input
-                value={step4Data.streetNumber.value}
+                value={businessAddress.streetNumber.value}
                 onChange={e =>
                   onInputChange(
-                    step4Data,
-                    setStep4Data,
+                    businessAddress,
+                    setBusinessAddress,
                     'streetNumber',
                     e.target.value
                   )
@@ -68,11 +70,11 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Name *</Label>
               <Input
-                value={step4Data.street.value ?? ''}
+                value={businessAddress.street.value ?? ''}
                 onChange={e =>
                   onInputChange(
-                    step4Data,
-                    setStep4Data,
+                    businessAddress,
+                    setBusinessAddress,
                     'street',
                     e.target.value
                   )
@@ -87,11 +89,11 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Suburb</Label>
               <Input
-                value={step4Data.suburb.value ?? ''}
+                value={businessAddress.suburb.value ?? ''}
                 onChange={e =>
                   onInputChange(
-                    step4Data,
-                    setStep4Data,
+                    businessAddress,
+                    setBusinessAddress,
                     'suburb',
                     e.target.value
                   )
@@ -104,9 +106,14 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>City *</Label>
               <Input
-                value={step4Data.city.value || ''}
+                value={businessAddress.city.value || ''}
                 onChange={e =>
-                  onInputChange(step4Data, setStep4Data, 'city', e.target.value)
+                  onInputChange(
+                    businessAddress,
+                    setBusinessAddress,
+                    'city',
+                    e.target.value
+                  )
                 }
                 placeholder='Melbourne'
               />
@@ -118,9 +125,14 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>State *</Label>
               <Select
-                value={step4Data.state.value ?? ''}
+                value={businessAddress.state.value ?? ''}
                 onValueChange={val =>
-                  onInputChange(step4Data, setStep4Data, 'state', val)
+                  onInputChange(
+                    businessAddress,
+                    setBusinessAddress,
+                    'state',
+                    val
+                  )
                 }
               >
                 <SelectTrigger>
@@ -143,11 +155,11 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Postal Code *</Label>
               <Input
-                value={step4Data.postcode.value ?? ''}
+                value={businessAddress.postcode.value ?? ''}
                 onChange={e =>
                   onInputChange(
-                    step4Data,
-                    setStep4Data,
+                    businessAddress,
+                    setBusinessAddress,
                     'postcode',
                     e.target.value
                   )

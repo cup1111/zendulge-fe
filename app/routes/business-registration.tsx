@@ -12,21 +12,21 @@ import {
 
 import BusinessRegistrationFlow from '../components/layout/BusinessRegistrationFlow';
 import type {
+  AccountCredentials,
+  BusinessAddressFormData,
+  BusinessBasicInfo,
+  BusinessCategory,
+  BusinessContact,
   BusinessRegistrationFormData,
+  BusinessSocialMedia,
+  ContactPerson,
   ErrorState,
   FormDataRecord,
-  Step1FormData,
-  Step2FormData,
-  Step3FormData,
-  Step4FormData,
-  Step5FormData,
-  Step6FormData,
-  Step7FormData,
-  Step8FormData,
+  OwnerIdentity,
 } from '../types/businessType';
 
 // Initialize form data for each step
-const createStep1Data = (): Step1FormData => ({
+const createBusinessBasicInfo = (): BusinessBasicInfo => ({
   businessName: {
     isRequired: true,
     validate: value => {
@@ -70,7 +70,7 @@ const createStep1Data = (): Step1FormData => ({
   },
 });
 
-const createStep2Data = (): Step2FormData => ({
+const createOwnerIdentity = (): OwnerIdentity => ({
   firstName: {
     isRequired: true,
     validate: value => {
@@ -107,7 +107,7 @@ const createStep2Data = (): Step2FormData => ({
   },
 });
 
-const createStep3Data = (): Step3FormData => ({
+const createBusinessCategory = (): BusinessCategory => ({
   categories: {
     validate: value => {
       if (value.length < 1) {
@@ -120,7 +120,7 @@ const createStep3Data = (): Step3FormData => ({
   },
 });
 
-const createStep4Data = (): Step4FormData => ({
+const createBusinessAddress = (): BusinessAddressFormData => ({
   country: {
     isRequired: true,
     value: 'Australia',
@@ -200,7 +200,7 @@ const createStep4Data = (): Step4FormData => ({
   },
 });
 
-const createStep5Data = (): Step5FormData => ({
+const createBusinessContact = (): BusinessContact => ({
   phone: {
     isRequired: true,
     validate: value => {
@@ -229,7 +229,7 @@ const createStep5Data = (): Step5FormData => ({
   },
 });
 
-const createStep6Data = (): Step6FormData => ({
+const createContactPerson = (): ContactPerson => ({
   contactPersonName: {
     isRequired: true,
     validate: value => {
@@ -272,7 +272,7 @@ const createStep6Data = (): Step6FormData => ({
   },
 });
 
-const createStep7Data = (): Step7FormData => ({
+const createBusinessSocialMedia = (): BusinessSocialMedia => ({
   website: {
     isRequired: false,
     validate: value => {
@@ -344,7 +344,7 @@ const createStep7Data = (): Step7FormData => ({
   },
 });
 
-const createStep8Data = (): Step8FormData => ({
+const createAccountCredentials = (): AccountCredentials => ({
   email: {
     isRequired: true,
     validate: value => validateEmail(value) ?? null,
@@ -369,14 +369,27 @@ export default function BusinessRegistration() {
   const [sectionStep, setSectionStep] = useState<number>(1);
 
   // Create independent state for each step
-  const [step1Data, setStep1Data] = useState<Step1FormData>(createStep1Data());
-  const [step2Data, setStep2Data] = useState<Step2FormData>(createStep2Data());
-  const [step3Data, setStep3Data] = useState<Step3FormData>(createStep3Data());
-  const [step4Data, setStep4Data] = useState<Step4FormData>(createStep4Data());
-  const [step5Data, setStep5Data] = useState<Step5FormData>(createStep5Data());
-  const [step6Data, setStep6Data] = useState<Step6FormData>(createStep6Data());
-  const [step7Data, setStep7Data] = useState<Step7FormData>(createStep7Data());
-  const [step8Data, setStep8Data] = useState<Step8FormData>(createStep8Data());
+  const [businessBasicInfo, setBusinessBasicInfo] = useState<BusinessBasicInfo>(
+    createBusinessBasicInfo()
+  );
+  const [ownerIdentity, setOwnerIdentity] = useState<OwnerIdentity>(
+    createOwnerIdentity()
+  );
+  const [businessCategory, setBusinessCategory] = useState<BusinessCategory>(
+    createBusinessCategory()
+  );
+  const [businessAddress, setBusinessAddress] =
+    useState<BusinessAddressFormData>(createBusinessAddress());
+  const [businessContact, setBusinessContact] = useState<BusinessContact>(
+    createBusinessContact()
+  );
+  const [contactPerson, setContactPerson] = useState<ContactPerson>(
+    createContactPerson()
+  );
+  const [businessSocialMedia, setBusinessSocialMedia] =
+    useState<BusinessSocialMedia>(createBusinessSocialMedia());
+  const [accountCredentials, setAccountCredentials] =
+    useState<AccountCredentials>(createAccountCredentials());
 
   const [error, setError] = useState<ErrorState>({});
 
@@ -468,39 +481,39 @@ export default function BusinessRegistration() {
   // Validate all fields for the specified step, return whether there are errors
   const validateStepFields = (step: number): boolean => {
     let stepData:
-      | Step1FormData
-      | Step2FormData
-      | Step3FormData
-      | Step4FormData
-      | Step5FormData
-      | Step6FormData
-      | Step7FormData
-      | Step8FormData;
+      | BusinessBasicInfo
+      | OwnerIdentity
+      | BusinessCategory
+      | BusinessAddressFormData
+      | BusinessContact
+      | ContactPerson
+      | BusinessSocialMedia
+      | AccountCredentials;
 
     switch (step) {
       case 1:
-        stepData = step1Data;
+        stepData = businessBasicInfo;
         break;
       case 2:
-        stepData = step2Data;
+        stepData = ownerIdentity;
         break;
       case 3:
-        stepData = step3Data;
+        stepData = businessCategory;
         break;
       case 4:
-        stepData = step4Data;
+        stepData = businessAddress;
         break;
       case 5:
-        stepData = step5Data;
+        stepData = businessContact;
         break;
       case 6:
-        stepData = step6Data;
+        stepData = contactPerson;
         break;
       case 7:
-        stepData = step7Data;
+        stepData = businessSocialMedia;
         break;
       case 8:
-        stepData = step8Data;
+        stepData = accountCredentials;
         break;
       default:
         return false;
@@ -574,29 +587,29 @@ export default function BusinessRegistration() {
 
     // Merge data from all steps
     const mergedFormData: BusinessRegistrationFormData = {
-      ...step1Data,
-      ...step2Data,
-      ...step3Data,
-      ...step4Data,
-      ...step5Data,
-      ...step6Data,
-      ...step7Data,
-      ...step8Data,
+      ...businessBasicInfo,
+      ...ownerIdentity,
+      ...businessCategory,
+      ...businessAddress,
+      ...businessContact,
+      ...contactPerson,
+      ...businessSocialMedia,
+      ...accountCredentials,
     };
 
     // Extract all values
     const data = extractFormValues(mergedFormData);
     delete data.confirmPassword; // Remove confirmPassword before submission
 
-    // Combine address fields from step4Data into businessAddress object
-    const businessAddress = {
-      country: step4Data.country.value,
-      streetNumber: step4Data.streetNumber.value,
-      street: step4Data.street.value,
-      suburb: step4Data.suburb.value,
-      city: step4Data.city.value,
-      state: step4Data.state.value,
-      postcode: step4Data.postcode.value,
+    // Combine address fields from businessAddress into businessAddress object
+    const businessAddressPayload = {
+      country: businessAddress.country.value,
+      streetNumber: businessAddress.streetNumber.value,
+      street: businessAddress.street.value,
+      suburb: businessAddress.suburb.value,
+      city: businessAddress.city.value,
+      state: businessAddress.state.value,
+      postcode: businessAddress.postcode.value,
     };
 
     // Delete scattered address fields, add businessAddress object
@@ -607,7 +620,7 @@ export default function BusinessRegistration() {
     delete data.city;
     delete data.state;
     delete data.postcode;
-    data.businessAddress = businessAddress;
+    data.businessAddress = businessAddressPayload;
 
     const response = await registerBusiness(data);
     if (response.successful || response.success) {
@@ -618,22 +631,22 @@ export default function BusinessRegistration() {
   return (
     <BusinessRegistrationFlow
       sectionStep={sectionStep}
-      step1Data={step1Data}
-      setStep1Data={setStep1Data}
-      step2Data={step2Data}
-      setStep2Data={setStep2Data}
-      step3Data={step3Data}
-      setStep3Data={setStep3Data}
-      step4Data={step4Data}
-      setStep4Data={setStep4Data}
-      step5Data={step5Data}
-      setStep5Data={setStep5Data}
-      step6Data={step6Data}
-      setStep6Data={setStep6Data}
-      step7Data={step7Data}
-      setStep7Data={setStep7Data}
-      step8Data={step8Data}
-      setStep8Data={setStep8Data}
+      businessBasicInfo={businessBasicInfo}
+      setBusinessBasicInfo={setBusinessBasicInfo}
+      ownerIdentity={ownerIdentity}
+      setOwnerIdentity={setOwnerIdentity}
+      businessCategory={businessCategory}
+      setBusinessCategory={setBusinessCategory}
+      businessAddress={businessAddress}
+      setBusinessAddress={setBusinessAddress}
+      businessContact={businessContact}
+      setBusinessContact={setBusinessContact}
+      contactPerson={contactPerson}
+      setContactPerson={setContactPerson}
+      businessSocialMedia={businessSocialMedia}
+      setBusinessSocialMedia={setBusinessSocialMedia}
+      accountCredentials={accountCredentials}
+      setAccountCredentials={setAccountCredentials}
       error={error}
       setError={setError}
       onInputChange={handleInputChange}

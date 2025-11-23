@@ -16,7 +16,7 @@ export type BusinessAddress = {
 };
 
 // Step 1: Basic Information
-export type Step1FormData = {
+export type BusinessBasicInfo = {
   businessName: BusinessField<string>;
   companyLogo: BusinessField<string>;
   businessABN: BusinessField<string>;
@@ -24,28 +24,28 @@ export type Step1FormData = {
 };
 
 // Step 2: Business Group Admin Information
-export type Step2FormData = {
+export type OwnerIdentity = {
   firstName: BusinessField<string>;
   lastName: BusinessField<string>;
 };
 
 // Step 3: Service Categories
-export type Step3FormData = {
+export type BusinessCategory = {
   categories: BusinessField<string[]>;
 };
 
 // Step 4: Business Address
-export type Step4FormData = BusinessAddress;
+export type BusinessAddressFormData = BusinessAddress;
 
 // Step 5: Contact Information
-export type Step5FormData = {
+export type BusinessContact = {
   phone: BusinessField<string>;
   selectedCountry: BusinessField<string>;
   businessEmail: BusinessField<string>;
 };
 
 // Step 6: Contact Person
-export type Step6FormData = {
+export type ContactPerson = {
   contactPersonName: BusinessField<string>;
   contactPersonEmail: BusinessField<string>;
   contactPersonPhone: BusinessField<string>;
@@ -53,14 +53,14 @@ export type Step6FormData = {
 };
 
 // Step 7: Branding & Social Media
-export type Step7FormData = {
+export type BusinessSocialMedia = {
   website: BusinessField<string>;
   facebook: BusinessField<string>;
   twitter: BusinessField<string>;
 };
 
 // Step 8: Login Information
-export type Step8FormData = {
+export type AccountCredentials = {
   email: BusinessField<string>;
   password: BusinessField<string>;
   confirmPassword: BusinessField<string>;
@@ -72,14 +72,14 @@ export type FormDataRecord = Record<
 >;
 
 // Complete form data type (for backward compatibility and final merging)
-export type BusinessRegistrationFormData = Step1FormData &
-  Step2FormData &
-  Step3FormData &
-  Step4FormData &
-  Step5FormData &
-  Step6FormData &
-  Step7FormData &
-  Step8FormData;
+export type BusinessRegistrationFormData = BusinessBasicInfo &
+  OwnerIdentity &
+  BusinessCategory &
+  BusinessAddressFormData &
+  BusinessContact &
+  ContactPerson &
+  BusinessSocialMedia &
+  AccountCredentials;
 
 export type ErrorState = {
   [K in keyof BusinessRegistrationFormData]?: string;
