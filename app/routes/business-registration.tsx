@@ -39,6 +39,23 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: 'Business Name',
       },
+      companyName: {
+        isRequired: true,
+        // company name validation: minimum 2 characters for meaningful names,
+        // maximum 100 characters to prevent excessively long names
+        // This ensures professional company names while maintaining database constraints
+        validate: value => {
+          if (value.trim().length < 2) {
+            return 'Company name must be at least 2 characters';
+          }
+          if (value.length > 100) {
+            return 'Company name cannot exceed 100 characters';
+          }
+          return null;
+        },
+        value: '',
+        defaultValue: 'Company Name',
+      },
       businessABN: {
         isRequired: true,
         // ABN validation: Australian Business Number must be exactly 11 digits
@@ -625,6 +642,8 @@ export default function BusinessRegistration() {
     }
   };
 
+  const [showCompanyInput, setShowCompanyInput] = useState<boolean>(false);
+
   return (
     <BusinessRegistrationFlow
       sectionStep={sectionStep}
@@ -637,6 +656,8 @@ export default function BusinessRegistration() {
       onNext={nextStep}
       onPrev={prevStep}
       hasChanged={hasChanged}
+      showCompanyInput={showCompanyInput}
+      setShowCompanyInput={setShowCompanyInput}
     />
   );
 }

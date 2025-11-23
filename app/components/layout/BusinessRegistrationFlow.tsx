@@ -36,6 +36,8 @@ export default function BusinessRegistrationFlow({
   onPrev,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasChanged,
+  setShowCompanyInput,
+  showCompanyInput,
 }: JSX.Element) {
   enum SectionNumber {
     basicInformation = 1,
@@ -150,12 +152,12 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='BusinessRegistrationFlow'
+                  htmlFor='businessname'
                 >
                   Business Name *
                   <input
                     type='text'
-                    id='BusinessRegistrationFlow'
+                    id='businessname'
                     placeholder='e.g., Zen Wellness Spa'
                     value={businessRegistrationFormData.businessName.value}
                     onChange={e =>
@@ -165,6 +167,39 @@ export default function BusinessRegistrationFlow({
                   />
                 </label>
                 {error.businessName && renderErrorMessage(error.businessName)}
+              </div>
+              <div>
+                <label
+                  className='block text-sm font-medium text-gray-700 mb-2'
+                  htmlFor='companycheckbox'
+                >
+                  <input
+                    id='companycheckbox'
+                    type='checkbox'
+                    defaultChecked={!showCompanyInput}
+                    onChange={() => setShowCompanyInput(!showCompanyInput)}
+                  />
+                  Company Name is same as Business Name
+                </label>
+                <div />
+                {showCompanyInput && (
+                  <label
+                    className='block text-sm font-medium text-gray-700 mb-2'
+                    htmlFor='companyname'
+                  >
+                    Company Name *
+                    <input
+                      type='text'
+                      id='companyname'
+                      placeholder='e.g., Zen Wellness Spa'
+                      value={businessRegistrationFormData.companyName.value}
+                      onChange={e =>
+                        onInputChange('companyName', e.target.value)
+                      }
+                      className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
+                    />
+                  </label>
+                )}
               </div>
               <div>
                 <span className='block text-sm font-medium text-gray-700 mb-2'>
