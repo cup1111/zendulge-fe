@@ -384,8 +384,9 @@ export default function BusinessRegistration() {
         defaultValue: '',
       },
       confirmPassword: {
-        validate: (value, password) =>
-          validateConfirmPassword(value, password) ?? null,
+        validate: (value, password) => {
+          validateConfirmPassword(value, password);
+        },
         value: '',
         defaultValue: '',
       },
@@ -395,10 +396,10 @@ export default function BusinessRegistration() {
 
   const validateField = (
     field: string,
-    value: string | string[],
-    formData: BusinessRegistrationFormData
+    value: string | string[]
   ): string | undefined => {
-    const currentField = formData[field as keyof BusinessRegistrationFormData];
+    const currentField =
+      businessRegistrationFormData[field as keyof BusinessRegistrationFormData];
 
     // Skip validation if field doesn't exist in form data
     if (
@@ -420,7 +421,10 @@ export default function BusinessRegistration() {
     if (currentField.validate) {
       const isConfirmPassword = field === 'confirmPassword';
       const validationMsg = isConfirmPassword
-        ? currentField.validate(value as string, formData.password.value)
+        ? currentField.validate(
+            value as string,
+            businessRegistrationFormData.password.value
+          )
         : currentField.validate(value);
 
       return validationMsg ?? undefined;
@@ -449,7 +453,7 @@ export default function BusinessRegistration() {
 
     // Validate field with updated form data to ensure synchronization
     // Pass updated formData so confirmPassword validation can access latest password value
-    const errorMsg = validateField(field, value, updatedFormData);
+    const errorMsg = validateField(field, value);
 
     if (errorMsg) {
       setError({ ...error, ...{ [field]: errorMsg } });
@@ -498,8 +502,7 @@ export default function BusinessRegistration() {
     const hasError = fieldsToValidate.some(field => {
       const result = validateField(
         field,
-        businessRegistrationFormData[field].value,
-        businessRegistrationFormData
+        businessRegistrationFormData[field].value
       );
 
       if (result) {
@@ -640,3 +643,16 @@ export default function BusinessRegistration() {
     />
   );
 }
+
+// //asd.ts
+// import abc from './business-registration'
+// abc(a)
+
+// function abc() {
+//   const password = 0;
+//   function def() {
+//     console.log(password);
+//   }
+//   password = 1;
+//   def();
+// }
