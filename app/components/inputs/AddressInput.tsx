@@ -9,57 +9,27 @@ import {
   SelectValue,
 } from '~/components/ui/select';
 
-import type { BusinessAddress, ErrorState } from '../../types/businessType';
+import type { ErrorState } from '../../types/businessType';
 
 interface AddressInputProps {
-  value: BusinessAddress;
-  onChange: (address: BusinessAddress) => void;
+  formData: {
+    businessAddressCountry: string;
+    businessAddressStreetNumber: string;
+    businessAddressStreet: string;
+    businessAddressSuburb: string;
+    businessAddressCity: string;
+    businessAddressState: string;
+    businessAddressPostcode: string;
+  };
+  onInputChange: (field: string, value: string) => void;
   error: ErrorState;
-  errorSetter: (error: ErrorState) => void;
 }
 
 export default function AddressInput({
-  value,
-  onChange,
+  formData,
+  onInputChange,
   error,
-  errorSetter,
 }: AddressInputProps) {
-  // Handles changes to address form fields
-  // Updates the address state and validation errors
-  const handleAddressFieldChange = (
-    field: keyof BusinessAddress,
-    newValue: string
-  ) => {
-    // const updatedField = { ...value[field], value: newValue };
-    // onChange({ ...value, [field]: updatedField });
-
-    const updatedAddressObject = {
-      ...value,
-      [field]: { ...value[field], value: newValue },
-    };
-    onChange(updatedAddressObject);
-
-    // Validate field and update error state with nested structure
-    let fieldError: string | null = null;
-
-    // Check required field validation
-    if (updatedAddressObject[field].isRequired && !newValue) {
-      fieldError = 'This field is required.';
-    }
-    // Run custom validation if provided (only if no required field error)
-    else if (updatedAddressObject[field].validate) {
-      fieldError = updatedAddressObject[field].validate(newValue);
-    }
-
-    // Update error state with nested businessAddress structure
-    errorSetter({
-      ...error,
-      businessAddress: {
-        ...error.businessAddress,
-        [field]: fieldError ?? '',
-      },
-    });
-  };
   // Renders an error message component for address fields
   const renderErrorMessage = (message: string) => (
     <p className='text-xs text-red-600'>{message}</p>
@@ -78,27 +48,27 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Number *</Label>
               <Input
-                value={value.streetNumber.value}
+                value={formData.businessAddressStreetNumber}
                 onChange={e =>
-                  handleAddressFieldChange('streetNumber', e.target.value)
+                  onInputChange('businessAddressStreetNumber', e.target.value)
                 }
                 placeholder='123'
               />
-              {error.businessAddress?.streetNumber &&
-                renderErrorMessage(error.businessAddress?.streetNumber)}
+              {error.businessAddressStreetNumber &&
+                renderErrorMessage(error.businessAddressStreetNumber)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Name *</Label>
               <Input
-                value={value.street.value ?? ''}
+                value={formData.businessAddressStreet ?? ''}
                 onChange={e =>
-                  handleAddressFieldChange('street', e.target.value)
+                  onInputChange('businessAddressStreet', e.target.value)
                 }
                 placeholder='Collins Street'
               />
-              {error.businessAddress?.street &&
-                renderErrorMessage(error.businessAddress?.street)}
+              {error.businessAddressStreet &&
+                renderErrorMessage(error.businessAddressStreet)}
             </div>
           </div>
 
@@ -106,25 +76,27 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Suburb</Label>
               <Input
-                value={value.suburb.value ?? ''}
+                value={formData.businessAddressSuburb ?? ''}
                 onChange={e =>
-                  handleAddressFieldChange('suburb', e.target.value)
+                  onInputChange('businessAddressSuburb', e.target.value)
                 }
                 placeholder='Suburb'
               />
-              {error.businessAddress?.suburb &&
-                renderErrorMessage(error.businessAddress?.suburb)}
+              {error.businessAddressSuburb &&
+                renderErrorMessage(error.businessAddressSuburb)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>City *</Label>
               <Input
-                value={value.city.value || ''}
-                onChange={e => handleAddressFieldChange('city', e.target.value)}
+                value={formData.businessAddressCity || ''}
+                onChange={e =>
+                  onInputChange('businessAddressCity', e.target.value)
+                }
                 placeholder='Melbourne'
               />
-              {error.businessAddress?.city &&
-                renderErrorMessage(error.businessAddress?.city)}
+              {error.businessAddressCity &&
+                renderErrorMessage(error.businessAddressCity)}
             </div>
           </div>
 
@@ -132,8 +104,10 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>State *</Label>
               <Select
-                value={value.state.value ?? ''}
-                onValueChange={val => handleAddressFieldChange('state', val)}
+                value={formData.businessAddressState ?? ''}
+                onValueChange={val =>
+                  onInputChange('businessAddressState', val)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select State' />
@@ -149,21 +123,21 @@ export default function AddressInput({
                   <SelectItem value='NT'>NT</SelectItem>
                 </SelectContent>
               </Select>
-              {error.businessAddress?.state &&
-                renderErrorMessage(error.businessAddress?.state)}
+              {error.businessAddressState &&
+                renderErrorMessage(error.businessAddressState)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Postal Code *</Label>
               <Input
-                value={value.postcode.value ?? ''}
+                value={formData.businessAddressPostcode ?? ''}
                 onChange={e =>
-                  handleAddressFieldChange('postcode', e.target.value)
+                  onInputChange('businessAddressPostcode', e.target.value)
                 }
                 placeholder='3000'
               />
-              {error.businessAddress?.postcode &&
-                renderErrorMessage(error.businessAddress?.postcode)}
+              {error.businessAddressPostcode &&
+                renderErrorMessage(error.businessAddressPostcode)}
             </div>
 
             <div className='space-y-2'>

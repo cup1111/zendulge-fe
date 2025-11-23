@@ -6,6 +6,7 @@ import { MapPin } from 'lucide-react';
 import AddressInput from '~/components/inputs/AddressInput';
 import EmailInput from '~/components/inputs/EmailInput';
 import PhoneInput from '~/components/inputs/PhoneInput';
+import { SectionNumber } from '~/enum/SectionNumber';
 
 import ImageInput from '../inputs/ImageInput';
 
@@ -37,17 +38,6 @@ export default function BusinessRegistrationFlow({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasChanged,
 }: JSX.Element) {
-  enum SectionNumber {
-    basicInformation = 1,
-    adminInformation,
-    serviceCategories,
-    businessAddress,
-    contactInformation,
-    contactPerson,
-    brandingSocialMedia,
-    loginInformation,
-    completed,
-  }
   const sections = [
     {
       key: 'basicInfo',
@@ -172,14 +162,14 @@ export default function BusinessRegistrationFlow({
                 </span>
                 <ImageInput
                   onChange={value => {
-                    onInputChange('companyLogo', value);
+                    onInputChange('businessLogo', value);
                   }}
                   onUploadError={err => {
-                    setError({ ...error, ...{ companyLogo: err.message } });
+                    setError({ ...error, ...{ businessLogo: err.message } });
                   }}
-                  logoUrl={businessRegistrationFormData.companyLogo.value}
+                  logoUrl={businessRegistrationFormData.businessLogo.value}
                 />
-                {error.companyLogo && renderErrorMessage(error.companyLogo)}
+                {error.businessLogo && renderErrorMessage(error.businessLogo)}
               </div>
               <div>
                 <label
@@ -365,10 +355,26 @@ export default function BusinessRegistrationFlow({
                   Business Address
                 </label>
                 <AddressInput
-                  value={businessRegistrationFormData.businessAddress}
-                  onChange={address => onAddressChange(address)}
+                  formData={{
+                    businessAddressCountry:
+                      businessRegistrationFormData.businessAddressCountry.value,
+                    businessAddressStreetNumber:
+                      businessRegistrationFormData.businessAddressStreetNumber
+                        .value,
+                    businessAddressStreet:
+                      businessRegistrationFormData.businessAddressStreet.value,
+                    businessAddressSuburb:
+                      businessRegistrationFormData.businessAddressSuburb.value,
+                    businessAddressCity:
+                      businessRegistrationFormData.businessAddressCity.value,
+                    businessAddressState:
+                      businessRegistrationFormData.businessAddressState.value,
+                    businessAddressPostcode:
+                      businessRegistrationFormData.businessAddressPostcode
+                        .value,
+                  }}
+                  onInputChange={onAddressChange}
                   error={error}
-                  errorSetter={setError}
                 />
                 <p className='text-sm text-gray-600'>
                   This is where customers will visit for your wellness services
