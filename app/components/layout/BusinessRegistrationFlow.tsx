@@ -650,8 +650,7 @@ export default function BusinessRegistrationFlow({
                 <ul className='text-green-700 text-left space-y-2'>
                   <li>• Your registration has been submitted successfully</li>
                   <li>
-                    • Your account requires manual review within 1–2 business
-                    days
+                    • We will review your registration and be in touch very soon
                   </li>
                   <li>• We will notify you once the review is completed</li>
                 </ul>
