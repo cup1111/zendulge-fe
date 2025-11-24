@@ -647,7 +647,7 @@ export default function BusinessRegistration() {
 
   const [companyCheckboxChecked, setCompanyCheckboxChecked] =
     useState<boolean>(false);
-  if (!companyCheckboxChecked) {
+  if (companyCheckboxChecked) {
     businessRegistrationFormData.companyName.value =
       businessRegistrationFormData.businessName.value;
   }
