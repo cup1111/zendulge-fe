@@ -37,6 +37,8 @@ export default function BusinessRegistrationFlow({
   onPrev,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasChanged,
+  companyCheckboxChecked,
+  setCompanyCheckboxChecked,
 }: JSX.Element) {
   const sections = [
     {
@@ -140,13 +142,13 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='BusinessRegistrationFlow'
+                  htmlFor='businessName'
                 >
                   Business Name *
                   <input
                     type='text'
-                    id='BusinessRegistrationFlow'
-                    placeholder='e.g., Zen Wellness Spa'
+                    id='businessName'
+                    placeholder='e.g. Zen Wellness Spa'
                     value={businessRegistrationFormData.businessName.value}
                     onChange={e =>
                       onInputChange('businessName', e.target.value)
@@ -155,6 +157,42 @@ export default function BusinessRegistrationFlow({
                   />
                 </label>
                 {error.businessName && renderErrorMessage(error.businessName)}
+              </div>
+              <div>
+                <label
+                  className='flex items-center gap-2 text-sm font-medium text-gray-700 mb-2'
+                  htmlFor='companyCheckbox'
+                >
+                  <input
+                    id='companyCheckbox'
+                    type='checkbox'
+                    defaultChecked={companyCheckboxChecked}
+                    onChange={() =>
+                      setCompanyCheckboxChecked(!companyCheckboxChecked)
+                    }
+                  />
+                  Company Name is same as Business Name
+                </label>
+                <div />
+                {!companyCheckboxChecked && (
+                  <label
+                    className='block text-sm font-medium text-gray-700 mb-2'
+                    htmlFor='companyName'
+                  >
+                    Company Name *
+                    <input
+                      type='text'
+                      id='companyName'
+                      placeholder='e.g. Zen Wellness Spa'
+                      value={businessRegistrationFormData.companyName.value}
+                      onChange={e =>
+                        onInputChange('companyName', e.target.value)
+                      }
+                      className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
+                    />
+                    {error.companyName && renderErrorMessage(error.companyName)}
+                  </label>
+                )}
               </div>
               <div>
                 <span className='block text-sm font-medium text-gray-700 mb-2'>
@@ -174,13 +212,13 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='BusinessABN'
+                  htmlFor='businessABN'
                 >
                   Business ABN *
                   <input
                     type='text'
-                    id='BusinessABN'
-                    placeholder='e.g., 12 345 678 901'
+                    id='businessABN'
+                    placeholder='e.g. 12 345 678 901'
                     value={businessRegistrationFormData.businessABN.value}
                     onChange={e => onInputChange('businessABN', e.target.value)}
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
@@ -517,11 +555,11 @@ export default function BusinessRegistrationFlow({
                 <div>
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='facebook'
+                    htmlFor='facebookProfile'
                   >
                     Facebook Page URL
                     <input
-                      id='fecebook'
+                      id='facebookProfile'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
                       value={businessRegistrationFormData.facebook.value}
