@@ -158,7 +158,7 @@ export default function BusinessRegistrationFlow({
                   <input
                     type='text'
                     id='businessName'
-                    placeholder='e.g., Zen Wellness Spa'
+                    placeholder='e.g. Zen Wellness Spa'
                     value={businessRegistrationFormData.businessName.value}
                     onChange={e =>
                       onInputChange('businessName', e.target.value)
@@ -193,7 +193,7 @@ export default function BusinessRegistrationFlow({
                     <input
                       type='text'
                       id='companyName'
-                      placeholder='e.g., Zen Wellness Spa'
+                      placeholder='e.g. Zen Wellness Spa'
                       value={businessRegistrationFormData.companyName.value}
                       onChange={e =>
                         onInputChange('companyName', e.target.value)
@@ -228,7 +228,7 @@ export default function BusinessRegistrationFlow({
                   <input
                     type='text'
                     id='businessABN'
-                    placeholder='e.g., 12 345 678 901'
+                    placeholder='e.g. 12 345 678 901'
                     value={businessRegistrationFormData.businessABN.value}
                     onChange={e => onInputChange('businessABN', e.target.value)}
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
@@ -549,11 +549,11 @@ export default function BusinessRegistrationFlow({
                 <div>
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='fecebookProfile'
+                    htmlFor='facebookProfile'
                   >
                     Facebook Page URL
                     <input
-                      id='fecebookProfile'
+                      id='facebookProfile'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
                       value={businessRegistrationFormData.facebook.value}
