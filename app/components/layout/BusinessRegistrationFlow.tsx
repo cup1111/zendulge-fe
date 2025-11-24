@@ -170,7 +170,7 @@ export default function BusinessRegistrationFlow({
               </div>
               <div>
                 <label
-                  className='block text-sm font-medium text-gray-700 mb-2'
+                  className='flex items-center gap-2 text-sm font-medium text-gray-700 mb-2'
                   htmlFor='companycheckbox'
                 >
                   <input
