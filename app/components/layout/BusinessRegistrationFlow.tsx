@@ -198,6 +198,7 @@ export default function BusinessRegistrationFlow({
                       }
                       className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
                     />
+                    {error.companyName && renderErrorMessage(error.companyName)}
                   </label>
                 )}
               </div>

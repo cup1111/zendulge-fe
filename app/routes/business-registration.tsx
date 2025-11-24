@@ -643,6 +643,10 @@ export default function BusinessRegistration() {
   };
 
   const [showCompanyInput, setShowCompanyInput] = useState<boolean>(false);
+  if (!showCompanyInput) {
+    businessRegistrationFormData.companyName.value =
+      businessRegistrationFormData.businessName.value;
+  }
 
   return (
     <BusinessRegistrationFlow
