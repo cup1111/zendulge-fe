@@ -4,6 +4,7 @@
 import { useState } from 'react';
 
 import { registerBusiness } from '~/api/register';
+import { SectionNumber } from '~/enum/SectionNumber';
 import {
   validateConfirmPassword,
   validateEmail,
@@ -12,13 +13,14 @@ import {
 
 import BusinessRegistrationFlow from '../components/layout/BusinessRegistrationFlow';
 import type {
-  BusinessAddress,
   BusinessRegistrationFormData,
   ErrorState,
 } from '../types/businessType';
 
 export default function BusinessRegistration() {
-  const [sectionStep, setSectionStep] = useState<number>(1);
+  const [sectionStep, setSectionStep] = useState<SectionNumber>(
+    SectionNumber.basicInformation
+  );
   const [businessRegistrationFormData, setBusinessRegistrationFormData] =
     useState<BusinessRegistrationFormData>({
       // Business fields
@@ -118,95 +120,93 @@ export default function BusinessRegistration() {
         value: [] as string[],
         defaultValue: [],
       },
-      businessAddress: {
-        country: {
-          isRequired: true,
-          value: 'Australia',
-          defaultValue: 'Australia',
+      businessAddressCountry: {
+        isRequired: true,
+        value: 'Australia',
+        defaultValue: 'Australia',
+      },
+      businessAddressStreetNumber: {
+        isRequired: true,
+        // Street number validation: allows numbers and common suffixes (e.g., "123A", "45/67")
+        // Important for accurate address formatting and delivery purposes
+        validate: value => {
+          // In character class [], forward slash doesn't need escaping
+          if (!/^[\d/A-Za-z-]+$/.test(value.trim())) {
+            return 'Street number can only contain numbers, letters, slashes, and hyphens';
+          }
+          if (value.trim().length > 20) {
+            return 'Street number cannot exceed 20 characters';
+          }
+          return null;
         },
-        streetNumber: {
-          isRequired: true,
-          // Street number validation: allows numbers and common suffixes (e.g., "123A", "45/67")
-          // Important for accurate address formatting and delivery purposes
-          validate: value => {
-            // In character class [], forward slash doesn't need escaping
-            if (!/^[\d/A-Za-z-]+$/.test(value.trim())) {
-              return 'Street number can only contain numbers, letters, slashes, and hyphens';
-            }
-            if (value.trim().length > 20) {
-              return 'Street number cannot exceed 20 characters';
-            }
-            return null;
-          },
-          value: '',
-          defaultValue: '',
+        value: '',
+        defaultValue: '',
+      },
+      businessAddressStreet: {
+        isRequired: true,
+        // Street name validation: minimum 2 characters, allows letters, numbers, and common address terms
+        // Ensures valid street names for accurate address formatting
+        validate: value => {
+          if (value.trim().length < 2) {
+            return 'Street name must be at least 2 characters';
+          }
+          if (value.length > 100) {
+            return 'Street name cannot exceed 100 characters';
+          }
+          return null;
         },
-        street: {
-          isRequired: true,
-          // Street name validation: minimum 2 characters, allows letters, numbers, and common address terms
-          // Ensures valid street names for accurate address formatting
-          validate: value => {
-            if (value.trim().length < 2) {
-              return 'Street name must be at least 2 characters';
-            }
-            if (value.length > 100) {
-              return 'Street name cannot exceed 100 characters';
-            }
-            return null;
-          },
-          value: '',
-          defaultValue: '',
+        value: '',
+        defaultValue: '',
+      },
+      businessAddressSuburb: {
+        isRequired: true,
+        // Suburb validation: minimum 2 characters, maximum 50 characters
+        // Important for accurate address identification in Australia
+        validate: value => {
+          if (value.trim().length < 2) {
+            return 'Suburb must be at least 2 characters';
+          }
+          if (value.length > 50) {
+            return 'Suburb cannot exceed 50 characters';
+          }
+          return null;
         },
-        suburb: {
-          isRequired: true,
-          // Suburb validation: minimum 2 characters, maximum 50 characters
-          // Important for accurate address identification in Australia
-          validate: value => {
-            if (value.trim().length < 2) {
-              return 'Suburb must be at least 2 characters';
-            }
-            if (value.length > 50) {
-              return 'Suburb cannot exceed 50 characters';
-            }
-            return null;
-          },
-          value: '',
-          defaultValue: '',
+        value: '',
+        defaultValue: '',
+      },
+      businessAddressCity: {
+        isRequired: true,
+        // City validation: minimum 2 characters, maximum 50 characters
+        // Ensures valid city names for accurate address formatting
+        validate: value => {
+          if (value.trim().length < 2) {
+            return 'City must be at least 2 characters';
+          }
+          if (value.length > 50) {
+            return 'City cannot exceed 50 characters';
+          }
+          return null;
         },
-        city: {
-          isRequired: true,
-          // City validation: minimum 2 characters, maximum 50 characters
-          // Ensures valid city names for accurate address formatting
-          validate: value => {
-            if (value.trim().length < 2) {
-              return 'City must be at least 2 characters';
-            }
-            if (value.length > 50) {
-              return 'City cannot exceed 50 characters';
-            }
-            return null;
-          },
-          value: '',
-          defaultValue: '',
+        value: '',
+        defaultValue: '',
+      },
+      businessAddressState: {
+        isRequired: true,
+        value: '',
+        defaultValue: '',
+      },
+      businessAddressPostcode: {
+        isRequired: true,
+        // Postcode validation: Australian postcodes are exactly 4 digits
+        // Critical for accurate mail delivery and address verification
+        validate: value => {
+          if (!/^\d{4}$/.test(value.trim())) {
+            return 'Australian postcode must be exactly 4 digits';
+          }
+          return null;
         },
-        state: {
-          isRequired: true,
-          value: '',
-          defaultValue: '',
-        },
-        postcode: {
-          isRequired: true,
-          // Postcode validation: Australian postcodes are exactly 4 digits
-          // Critical for accurate mail delivery and address verification
-          validate: value => {
-            if (!/^\d{4}$/.test(value.trim())) {
-              return 'Australian postcode must be exactly 4 digits';
-            }
-            return null;
-          },
-          value: '',
-          defaultValue: '',
-        },
+        value: '',
+        defaultValue: '',
       },
       phone: {
         isRequired: true,
@@ -366,7 +366,7 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      companyLogo: {
+      businessLogo: {
         isRequired: false,
         value: '',
         defaultValue: '',
@@ -384,8 +384,9 @@ export default function BusinessRegistration() {
         defaultValue: '',
       },
       confirmPassword: {
-        validate: (value, password) =>
-          validateConfirmPassword(value, password) ?? null,
+        validate: (value, password) => {
+          validateConfirmPassword(value, password);
+        },
         value: '',
         defaultValue: '',
       },
@@ -395,10 +396,10 @@ export default function BusinessRegistration() {
 
   const validateField = (
     field: string,
-    value: string | string[],
-    formData: BusinessRegistrationFormData
+    value: string | string[]
   ): string | undefined => {
-    const currentField = formData[field as keyof BusinessRegistrationFormData];
+    const currentField =
+      businessRegistrationFormData[field as keyof BusinessRegistrationFormData];
 
     // Skip validation if field doesn't exist in form data
     if (
@@ -420,7 +421,10 @@ export default function BusinessRegistration() {
     if (currentField.validate) {
       const isConfirmPassword = field === 'confirmPassword';
       const validationMsg = isConfirmPassword
-        ? currentField.validate(value as string, formData.password.value)
+        ? currentField.validate(
+            value as string,
+            businessRegistrationFormData.password.value
+          )
         : currentField.validate(value);
 
       return validationMsg ?? undefined;
@@ -449,7 +453,7 @@ export default function BusinessRegistration() {
 
     // Validate field with updated form data to ensure synchronization
     // Pass updated formData so confirmPassword validation can access latest password value
-    const errorMsg = validateField(field, value, updatedFormData);
+    const errorMsg = validateField(field, value);
 
     if (errorMsg) {
       setError({ ...error, ...{ [field]: errorMsg } });
@@ -462,15 +466,57 @@ export default function BusinessRegistration() {
       });
     }
   };
-  const handleAddressChange = (value: BusinessAddress) => {
-    setBusinessRegistrationFormData({
-      ...businessRegistrationFormData,
-      businessAddress: value,
-    });
+  const handleAddressChange = (field: string, value: string) => {
+    handleInputChange(field, value);
   };
 
+  const currentStepFields = {
+    [SectionNumber.basicInformation]: [
+      'businessName',
+      'businessLogo',
+      'businessABN',
+      'description',
+    ],
+    [SectionNumber.adminInformation]: ['firstName', 'lastName'],
+    [SectionNumber.serviceCategories]: ['categories'],
+    [SectionNumber.businessAddress]: [
+      'businessAddressCountry',
+      'businessAddressStreetNumber',
+      'businessAddressStreet',
+      'businessAddressSuburb',
+      'businessAddressCity',
+      'businessAddressState',
+      'businessAddressPostcode',
+    ],
+    [SectionNumber.contactInformation]: ['phone', 'businessEmail'],
+    [SectionNumber.contactPerson]: [
+      'contactPersonName',
+      'contactPersonEmail',
+      'contactPersonPhone',
+    ],
+    [SectionNumber.brandingSocialMedia]: ['website', 'facebook', 'twitter'],
+    [SectionNumber.loginInformation]: ['email', 'password', 'confirmPassword'],
+  };
   const nextStep = () => {
-    setSectionStep(prev => prev + 1);
+    const fieldsToValidate = currentStepFields[sectionStep];
+    const hasError = fieldsToValidate.some(field => {
+      const result = validateField(
+        field,
+        businessRegistrationFormData[field].value
+      );
+
+      if (result) {
+        setError({ ...error, [field]: result });
+        return true;
+      }
+      return false;
+    });
+
+    if (hasError) {
+      return;
+    }
+
+    setSectionStep(sectionStep + 1);
     setHasChanged(false);
   };
 
@@ -479,8 +525,7 @@ export default function BusinessRegistration() {
     setHasChanged(true);
   };
   const handleSubmit = async () => {
-    // Recursively validates all form fields including nested address fields
-    // Returns an ErrorState object with nested structure for businessAddress
+    // Validates all form fields (all fields are now flat)
     const validateAll = (
       formData: BusinessRegistrationFormData
     ): ErrorState => {
@@ -498,48 +543,6 @@ export default function BusinessRegistration() {
             return;
           }
           errs[key] = '';
-          return;
-        }
-
-        // Special handling for businessAddress - create nested structure
-        if (key === 'businessAddress') {
-          const addressErrors: Partial<Record<keyof BusinessAddress, string>> =
-            {};
-          let hasAddressError = false;
-
-          Object.entries(field).forEach(([addrKey, addrField]) => {
-            if (
-              addrField &&
-              typeof addrField === 'object' &&
-              'value' in addrField
-            ) {
-              // Validate required fields
-              if (addrField.isRequired && !addrField.value) {
-                addressErrors[addrKey as keyof BusinessAddress] =
-                  'This field is required';
-                hasAddressError = true;
-                return;
-              }
-
-              // Run custom validation function if provided
-              if (typeof addrField.validate === 'function') {
-                const validationMsg = addrField.validate(addrField.value);
-                if (validationMsg) {
-                  addressErrors[addrKey as keyof BusinessAddress] =
-                    validationMsg;
-                  hasAddressError = true;
-                }
-              }
-            }
-          });
-
-          // Only set businessAddress errors if there are actual errors
-          if (hasAddressError) {
-            errs.businessAddress = addressErrors as Record<
-              keyof BusinessAddress,
-              string
-            >;
-          }
           return;
         }
 
@@ -571,37 +574,18 @@ export default function BusinessRegistration() {
 
     setError(newErrors);
 
-    // Check for errors including nested address errors
-    const hasError =
-      Object.values(newErrors).some(msg => {
-        if (typeof msg === 'string') {
-          return msg && msg !== '';
-        }
-        if (msg && typeof msg === 'object') {
-          // Check nested address errors
-          return Object.values(msg).some(
-            nestedMsg => nestedMsg && nestedMsg !== ''
-          );
-        }
-        return false;
-      }) ||
-      (newErrors.businessAddress &&
-        Object.values(newErrors.businessAddress).some(
-          msg => msg && msg !== ''
-        ));
+    // Check for errors (all errors are now flat strings)
+    const hasError = Object.values(newErrors).some(msg => msg && msg !== '');
     if (hasError) {
       return;
     }
 
-    // Extracts the actual values from the nested BusinessField structure
+    // Extracts the actual values from the BusinessField structure
     // Transforms the form data structure into a flat payload for API submission
     // Example: { businessName: { value: "My Business", ... } } becomes { businessName: "My Business" }
+    // Also reconstructs businessAddress from flat address fields
     type ExtractValues<T> = {
-      [K in keyof T]: T[K] extends { value: infer V }
-        ? V
-        : T[K] extends object
-          ? ExtractValues<T[K]>
-          : T[K];
+      [K in keyof T]: T[K] extends { value: infer V } ? V : T[K];
     };
     function extractFormValues<T>(formData: T): ExtractValues<T> {
       return Object.fromEntries(
@@ -609,16 +593,35 @@ export default function BusinessRegistration() {
           // Extract value from BusinessField structure
           if (val && typeof val === 'object' && 'value' in val)
             return [key, val.value];
-          // Recursively process nested objects
-          if (val && typeof val === 'object')
-            return [key, extractFormValues(val)];
           // Return primitive values as-is
           return [key, val];
         })
       );
     }
-    const data = extractFormValues(businessRegistrationFormData);
-    delete data.confirmPassword; // 提交前移除 confirmPassword
+    const flatData = extractFormValues(businessRegistrationFormData);
+    delete flatData.confirmPassword; // 提交前移除 confirmPassword
+
+    // Reconstruct businessAddress from flat address fields
+    const data = {
+      ...flatData,
+      businessAddress: {
+        country: flatData.businessAddressCountry,
+        streetNumber: flatData.businessAddressStreetNumber,
+        street: flatData.businessAddressStreet,
+        suburb: flatData.businessAddressSuburb,
+        city: flatData.businessAddressCity,
+        state: flatData.businessAddressState,
+        postcode: flatData.businessAddressPostcode,
+      },
+    };
+    // Remove flat address fields
+    delete data.businessAddressCountry;
+    delete data.businessAddressStreetNumber;
+    delete data.businessAddressStreet;
+    delete data.businessAddressSuburb;
+    delete data.businessAddressCity;
+    delete data.businessAddressState;
+    delete data.businessAddressPostcode;
     const response = await registerBusiness(data);
     if (response.successful || response.success) {
       nextStep();
