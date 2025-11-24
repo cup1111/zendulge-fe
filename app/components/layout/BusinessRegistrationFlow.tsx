@@ -152,12 +152,12 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='businessname'
+                  htmlFor='businessName'
                 >
                   Business Name *
                   <input
                     type='text'
-                    id='businessname'
+                    id='businessName'
                     placeholder='e.g., Zen Wellness Spa'
                     value={businessRegistrationFormData.businessName.value}
                     onChange={e =>
@@ -171,10 +171,10 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='flex items-center gap-2 text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='companycheckbox'
+                  htmlFor='companyCheckbox'
                 >
                   <input
-                    id='companycheckbox'
+                    id='companyCheckbox'
                     type='checkbox'
                     defaultChecked={!showCompanyInput}
                     onChange={() => setShowCompanyInput(!showCompanyInput)}
@@ -185,12 +185,12 @@ export default function BusinessRegistrationFlow({
                 {showCompanyInput && (
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='companyname'
+                    htmlFor='companyName'
                   >
                     Company Name *
                     <input
                       type='text'
-                      id='companyname'
+                      id='companyName'
                       placeholder='e.g., Zen Wellness Spa'
                       value={businessRegistrationFormData.companyName.value}
                       onChange={e =>
@@ -220,12 +220,12 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='BusinessABN'
+                  htmlFor='businessABN'
                 >
                   Business ABN *
                   <input
                     type='text'
-                    id='BusinessABN'
+                    id='businessABN'
                     placeholder='e.g., 12 345 678 901'
                     value={businessRegistrationFormData.businessABN.value}
                     onChange={e => onInputChange('businessABN', e.target.value)}
@@ -547,11 +547,11 @@ export default function BusinessRegistrationFlow({
                 <div>
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='facebook'
+                    htmlFor='fecebookProfile'
                   >
                     Facebook Page URL
                     <input
-                      id='fecebook'
+                      id='fecebookProfile'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
                       value={businessRegistrationFormData.facebook.value}
