@@ -642,8 +642,9 @@ export default function BusinessRegistration() {
     }
   };
 
-  const [showCompanyInput, setShowCompanyInput] = useState<boolean>(false);
-  if (!showCompanyInput) {
+  const [companyCheckboxChecked, setCompanyCheckboxChecked] =
+    useState<boolean>(false);
+  if (!companyCheckboxChecked) {
     businessRegistrationFormData.companyName.value =
       businessRegistrationFormData.businessName.value;
   }
@@ -660,8 +661,8 @@ export default function BusinessRegistration() {
       onNext={nextStep}
       onPrev={prevStep}
       hasChanged={hasChanged}
-      showCompanyInput={showCompanyInput}
-      setShowCompanyInput={setShowCompanyInput}
+      companyCheckboxChecked={companyCheckboxChecked}
+      setCompanyCheckboxChecked={setCompanyCheckboxChecked}
     />
   );
 }

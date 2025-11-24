@@ -36,8 +36,8 @@ export default function BusinessRegistrationFlow({
   onPrev,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasChanged,
-  setShowCompanyInput,
-  showCompanyInput,
+  companyCheckboxChecked,
+  setCompanyCheckboxChecked,
 }: JSX.Element) {
   enum SectionNumber {
     basicInformation = 1,
@@ -176,13 +176,15 @@ export default function BusinessRegistrationFlow({
                   <input
                     id='companyCheckbox'
                     type='checkbox'
-                    defaultChecked={!showCompanyInput}
-                    onChange={() => setShowCompanyInput(!showCompanyInput)}
+                    defaultChecked={companyCheckboxChecked}
+                    onChange={() =>
+                      setCompanyCheckboxChecked(!companyCheckboxChecked)
+                    }
                   />
                   Company Name is same as Business Name
                 </label>
                 <div />
-                {showCompanyInput && (
+                {!companyCheckboxChecked && (
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
                     htmlFor='companyName'
