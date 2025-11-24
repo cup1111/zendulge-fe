@@ -643,16 +643,3 @@ export default function BusinessRegistration() {
     />
   );
 }
-
-// //asd.ts
-// import abc from './business-registration'
-// abc(a)
-
-// function abc() {
-//   const password = 0;
-//   function def() {
-//     console.log(password);
-//   }
-//   password = 1;
-//   def();
-// }
