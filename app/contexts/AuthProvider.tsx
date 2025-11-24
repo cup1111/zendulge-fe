@@ -160,6 +160,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             'currentBusiness',
             JSON.stringify(firstBusiness)
           );
+
+          const roleDataResponse = await zendulgeAxios.get(
+            API_CONFIG.endpoints.auth.role(firstBusiness.id)
+          );
+
+          const userDataWithRole = {
+            ...userData,
+            role: roleDataResponse.data.role,
+          };
+          setUserState(userDataWithRole);
+          localStorage.setItem('user', JSON.stringify(userDataWithRole));
+
           clearErrorMessage();
           navigate('/business-management');
         } else {
@@ -234,12 +246,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Load saved business or auto-select first one
         const business = getCurrentBusinessFromStorage(userData);
         setCurrentBusinessState(business);
-
-        const response = await zendulgeAxios.get(
-          API_CONFIG.endpoints.auth.role(business?.id ?? '')
-        );
-        // Token is valid, set user data
-        setUserState({ ...userData, role: response.data.role });
       } catch (error: unknown) {
         // Error initializing auth - log out user
         logout();
