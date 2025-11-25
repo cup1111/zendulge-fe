@@ -401,9 +401,7 @@ export default function BusinessRegistration() {
         defaultValue: '',
       },
       confirmPassword: {
-        validate: (value, password) => {
-          validateConfirmPassword(value, password);
-        },
+        validate: (value, password) => validateConfirmPassword(value, password),
         value: '',
         defaultValue: '',
       },
