@@ -2,6 +2,7 @@
 // @ts-nocheck
 
 import { MapPin } from 'lucide-react';
+import { Link } from 'react-router';
 
 import AddressInput from '~/components/inputs/AddressInput';
 import EmailInput from '~/components/inputs/EmailInput';
@@ -101,15 +102,16 @@ export default function BusinessRegistrationFlow({
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Banner */}
-      <div className='bg-blue-100 border-b border-blue-200 p-4'>
-        <div className='max-w-4xl mx-auto'>
-          <p className='text-blue-800 text-sm'>
-            Business Registration Process - {currentSection?.title} (
-            {sectionStep} of {maxSteps - 1})
-          </p>
+      {sectionStep <= maxSteps - 1 && (
+        <div className='bg-blue-100 border-b border-blue-200 p-4'>
+          <div className='max-w-4xl mx-auto'>
+            <p className='text-blue-800 text-sm'>
+              Business Registration Process - {currentSection?.title} (
+              {sectionStep} of {maxSteps - 1})
+            </p>
+          </div>
         </div>
-      </div>
-
+      )}
       <div className='max-w-4xl mx-auto px-4 py-8'>
         <div className='bg-white rounded-lg shadow-md p-8'>
           <div className='mb-8'>
@@ -685,7 +687,7 @@ export default function BusinessRegistrationFlow({
               </button>
             )}
             <div className='flex-1' />
-            {sectionStep < maxSteps - 1 ? (
+            {sectionStep < maxSteps - 1 && (
               <button
                 type='button'
                 onClick={onNext}
@@ -694,13 +696,22 @@ export default function BusinessRegistrationFlow({
               >
                 Next
               </button>
-            ) : (
+            )}
+            {sectionStep === maxSteps - 1 && (
               <button
                 type='button'
                 onClick={onSubmit}
                 className='px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90'
               >
                 Submit
+              </button>
+            )}
+            {sectionStep === maxSteps && (
+              <button
+                type='button'
+                className='px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90'
+              >
+                <Link to='/'>Back to Home Page</Link>
               </button>
             )}
           </div>
