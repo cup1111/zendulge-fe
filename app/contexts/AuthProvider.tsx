@@ -98,6 +98,20 @@ function getCurrentBusinessFromStorage(userData: User): Business | null {
   return null;
 }
 
+// Helper: enrich user data with the role for the selected business
+async function getUserRoleDataFromBusiness(
+  userData: User,
+  business: Business | null
+): Promise<User> {
+  if (business?.id) {
+    const roleResp = await zendulgeAxios.get(
+      API_CONFIG.endpoints.auth.role(business.id)
+    );
+    return { ...userData, role: roleResp.data.role };
+  }
+  return userData;
+}
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUserState] = useState<User | null>(null);
   const [currentBusiness, setCurrentBusinessState] = useState<Business | null>(
@@ -160,6 +174,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             'currentBusiness',
             JSON.stringify(firstBusiness)
           );
+
+          // Fetch role for the selected business and merge into user before persisting
+          const userDataWithRole = await getUserRoleDataFromBusiness(
+            userData,
+            firstBusiness
+          );
+          setUserState(userDataWithRole);
+          localStorage.setItem('user', JSON.stringify(userDataWithRole));
+
           clearErrorMessage();
           navigate('/business-management');
         } else {
@@ -235,11 +258,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const business = getCurrentBusinessFromStorage(userData);
         setCurrentBusinessState(business);
 
-        const response = await zendulgeAxios.get(
-          API_CONFIG.endpoints.auth.role(business?.id ?? '')
-        );
-        // Token is valid, set user data
-        setUserState({ ...userData, role: response.data.role });
+        // Restore role from storage or re-fetch for the current business when missing
+        const savedUserData = localStorage.getItem('user');
+        const savedUser = savedUserData ? JSON.parse(savedUserData) : null;
+
+        if (savedUser?.role) {
+          setUserState({ ...userData, role: savedUser.role });
+        } else {
+          const userDataWithRole = await getUserRoleDataFromBusiness(
+            userData,
+            business
+          );
+          setUserState(userDataWithRole);
+          localStorage.setItem('user', JSON.stringify(userDataWithRole));
+        }
       } catch (error: unknown) {
         // Error initializing auth - log out user
         logout();
