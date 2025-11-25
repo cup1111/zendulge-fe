@@ -192,10 +192,10 @@ export default function Header() {
 
             {!isAuthenticated ? (
               <>
-                <Button variant='secondary'>
+                <Button variant='secondary' asChild>
                   <Link to='/login'>Sign In</Link>
                 </Button>
-                <Button variant='default'>
+                <Button variant='default' asChild>
                   <Link to='/customer-registration'>Sign Up</Link>
                 </Button>
               </>
