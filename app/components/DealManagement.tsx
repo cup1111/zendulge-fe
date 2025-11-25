@@ -367,9 +367,20 @@ export default function DealManagement({ businessId }: DealManagementProps) {
           >
             <CardHeader className='pb-3'>
               <div className='flex items-start justify-between mb-2'>
-                <CardTitle className='text-lg font-semibold text-gray-900 truncate pr-2'>
-                  {deal.title ?? 'Untitled Deal'}
-                </CardTitle>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <CardTitle className='text-lg font-semibold text-gray-900 truncate pr-2 '>
+                        {deal.title ?? 'Untitled Deal'}
+                      </CardTitle>
+                    </TooltipTrigger>
+
+                    <TooltipContent side='top' className='max-w-xs'>
+                      {deal.title ?? 'Untitled Deal'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
                 <div className='flex space-x-1 flex-shrink-0'>
                   {canDuplicateDeal() && (
                     <Button
@@ -617,7 +628,11 @@ export default function DealManagement({ businessId }: DealManagementProps) {
             setIsDuplicateDialogOpen(false);
             setDealToDuplicate(null);
           }}
-          initialData={dealToDuplicate}
+          initialData={{
+            ...dealToDuplicate,
+            title: `${dealToDuplicate?.title ?? ''} (Duplicate)`,
+          }}
+          duplicate
         />
       )}
 

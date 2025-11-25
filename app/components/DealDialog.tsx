@@ -6,6 +6,7 @@ import { Checkbox } from '~/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -44,6 +45,7 @@ interface DealDialogProps {
   dealId?: string; // Deal ID for edit mode, undefined for create mode
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  duplicate?: boolean;
 }
 
 const formatDate = (date: Date) => {
@@ -104,6 +106,7 @@ export default function DealDialog({
   dealId,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
+  duplicate,
 }: DealDialogProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -521,6 +524,14 @@ export default function DealDialog({
     user?.role?.slug === BusinessUserRole.Manager ||
     user?.role?.slug === BusinessUserRole.Employee;
 
+  let dialogTitle = 'Create Deal';
+
+  if (duplicate) {
+    dialogTitle = 'Duplicate Deal';
+  } else if (isEditMode) {
+    dialogTitle = 'Edit Deal';
+  }
+
   if (!canCreateDeal) {
     return null;
   }
@@ -530,7 +541,10 @@ export default function DealDialog({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className='max-w-4xl max-h-[90vh] overflow-y-auto'>
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Edit Deal' : 'Create Deal'}</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>
+            Fill out the form below to configure your deal.
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (

@@ -35,6 +35,15 @@ export interface BusinessInfo {
   updatedAt?: string;
 }
 
+interface RawCustomer {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  active: boolean;
+}
+
 export interface BusinessUpdateRequest {
   name?: string;
   email?: string;
@@ -100,10 +109,18 @@ class BusinessService {
    * Get customers for a business
    */
   static async getCustomers(businessId: string): Promise<Customer[]> {
-    const response = await api.get<ApiResponse<Customer[]>>(
+    const response = await api.get<ApiResponse<RawCustomer[]>>(
       API_CONFIG.endpoints.business.getCustomers(businessId)
     );
-    return response.data.data;
+
+    return response.data.data.map(c => ({
+      id: c._id, // ✅ now valid
+      firstName: c.firstName,
+      lastName: c.lastName,
+      email: c.email,
+      phoneNumber: c.phoneNumber,
+      active: c.active,
+    }));
   }
 }
 
