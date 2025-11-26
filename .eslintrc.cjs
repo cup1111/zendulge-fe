@@ -54,16 +54,6 @@ module.exports = {
     // Prettier integration
     'prettier/prettier': 'error',
 
-    'no-underscore-dangle': [
-      'error',
-      {
-        allow: ['_id'], // ✅ allow MongoDB _id
-        allowAfterThis: true,
-        allowAfterSuper: true,
-        enforceInMethodNames: false,
-      },
-    ],
-
     // React rules
     'react/react-in-jsx-scope': 'off', // Not needed with React 17+
     'react/prop-types': 'off', // Using TypeScript for prop validation
