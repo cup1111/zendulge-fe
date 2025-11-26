@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios';
 import {
   ArrowLeft,
   Building2,
@@ -202,12 +203,15 @@ export default function DealDetailsPage() {
           : 'Deal has been saved for later.',
       });
     } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      const serverMessage = axiosErr.response?.data?.message;
       toast({
         title: 'Save failed',
         description:
-          err instanceof Error
+          serverMessage ??
+          (err instanceof Error
             ? err.message
-            : 'Failed to save deal. Please try again.',
+            : 'Failed to save deal. Please try again.'),
         variant: 'destructive',
       });
     } finally {
