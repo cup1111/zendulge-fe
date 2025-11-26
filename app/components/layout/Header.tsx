@@ -190,12 +190,12 @@ export default function Header() {
 
             {!isAuthenticated ? (
               <>
-                <Button variant='secondary' asChild>
-                  <Link to='/login'>Sign In</Link>
-                </Button>
-                <Button variant='default' asChild>
-                  <Link to='/customer-registration'>Sign Up</Link>
-                </Button>
+                <Link to='/login'>
+                  <Button variant='secondary'>Sign In</Button>
+                </Link>
+                <Link to='/customer-registration'>
+                  <Button variant='default'>Sign Up</Button>
+                </Link>
               </>
             ) : (
               <DropdownMenu>
