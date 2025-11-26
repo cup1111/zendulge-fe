@@ -22,18 +22,17 @@ export default function NotFound() {
           </p>
 
           <div className='flex gap-3'>
-            <Button
-              asChild
-              className='flex-1 bg-shadow-lavender hover:bg-shadow-lavender/90'
-            >
-              <Link to='/'>
+            <Link to='/'>
+              <Button className='flex-1 bg-shadow-lavender hover:bg-shadow-lavender/90'>
                 <Home className='w-4 h-4 mr-2' />
                 Go Home
-              </Link>
-            </Button>
-            <Button asChild variant='ghost' className='flex-1'>
-              <Link to='/help'>Get Help</Link>
-            </Button>
+              </Button>
+            </Link>
+            <Link to='/help'>
+              <Button variant='ghost' className='flex-1'>
+                Get Help
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>

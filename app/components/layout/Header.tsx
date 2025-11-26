@@ -16,7 +16,6 @@ export default function Header() {
   const navigate = useNavigate();
   const { user, currentBusiness, businesses, setCurrentBusiness } = useAuth();
 
-  // 静态展示：模拟已登录用户 (fallback for demo)
   const isAuthenticated = !!user;
   const displayUser = user ?? {
     firstName: 'Demo',
@@ -46,7 +45,6 @@ export default function Header() {
                 alt='Zendulge Logo'
                 className='w-8 h-8 mr-3 rounded-lg'
                 onError={e => {
-                  // 如果图片加载失败，显示渐变色方块
                   e.currentTarget.style.display = 'none';
                   const fallback = e.currentTarget
                     .nextElementSibling as HTMLElement;
@@ -192,12 +190,12 @@ export default function Header() {
 
             {!isAuthenticated ? (
               <>
-                <Button variant='secondary'>
-                  <Link to='/login'>Sign In</Link>
-                </Button>
-                <Button variant='default'>
-                  <Link to='/customer-registration'>Sign Up</Link>
-                </Button>
+                <Link to='/login'>
+                  <Button variant='secondary'>Sign In</Button>
+                </Link>
+                <Link to='/customer-registration'>
+                  <Button variant='default'>Sign Up</Button>
+                </Link>
               </>
             ) : (
               <DropdownMenu>
