@@ -61,6 +61,8 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const isManager = user?.role?.slug === BusinessUserRole.Manager;
   const isEmployee = user?.role?.slug === BusinessUserRole.Employee;
 
+  const [isConfirmDuplicateOpen, setIsConfirmDuplicateOpen] = useState(false);
+
   const canEditDeal = (deal: Deal) => {
     if (isOwner) return true;
     if (isManager) return true; // Managers can edit all deals in their operating sites
@@ -175,7 +177,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
 
   const openDuplicateDialog = (deal: Deal) => {
     setDealToDuplicate(deal);
-    setIsDuplicateDialogOpen(true);
+    setIsConfirmDuplicateOpen(true);
   };
 
   const handleDeleteDeal = async () => {
@@ -534,6 +536,44 @@ export default function DealManagement({ businessId }: DealManagementProps) {
           </Card>
         ))}
       </div>
+
+      {/* confirm duplicate */}
+      <Dialog
+        open={isConfirmDuplicateOpen}
+        onOpenChange={setIsConfirmDuplicateOpen}
+      >
+        <DialogContent className='max-w-md'>
+          <DialogHeader>
+            <DialogTitle>
+              Duplicate this {dealToDuplicate?.status?.toUpperCase()} deal?
+            </DialogTitle>
+          </DialogHeader>
+
+          <p className='text-gray-600'>
+            A new deal will be created with the same details. You can modify it
+            before saving.
+          </p>
+
+          <div className='flex justify-end space-x-2 mt-6'>
+            <Button
+              variant='outline'
+              onClick={() => setIsConfirmDuplicateOpen(false)}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              onClick={() => {
+                setIsConfirmDuplicateOpen(false);
+                setIsDuplicateDialogOpen(true); // ✅ open actual duplicate form
+              }}
+              className='bg-shadow-lavender hover:bg-shadow-lavender/90'
+            >
+              Yes, Duplicate
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {filteredDeals.length === 0 && (
         <div className='text-center py-12'>
