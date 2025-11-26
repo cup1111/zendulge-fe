@@ -7,6 +7,7 @@ import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 
 import type { BusinessUserRole } from '../constants/enums';
+import SavedDealService from '../services/savedDealService';
 
 import { AuthContext, type AuthContextType } from './AuthContext';
 
@@ -151,6 +152,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Set user state
         setUserState(userData);
         localStorage.setItem('user', JSON.stringify(userData));
+
+        // Best-effort sync of guest saved deals now that the user is authenticated
+        await SavedDealService.syncGuestSavedDealsToServer();
 
         // Auto-select first business if available
         if (userData.businesses && userData.businesses.length > 0) {
