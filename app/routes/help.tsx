@@ -254,7 +254,9 @@ export default function Help() {
                   className='text-primary border-secondary hover:bg-secondary bg-transparent'
                   asChild
                 >
-                  Download PDF
+                  <a href='/assets/app-icon.png' download>
+                    Download PDF
+                  </a>
                 </Button>
               </div>
 
@@ -296,7 +298,7 @@ export default function Help() {
         </Card>
 
         {/* Contact Banner */}
-        <Card className='bg-gradient-to-r from-primary to-primary/80 border-0'>
+        <Card className='bg-primary border-0'>
           <CardContent className='pt-8 pb-8 text-center text-white'>
             <h3 className='text-2xl font-bold mb-3'>Still need help?</h3>
             <p className='mb-6 text-white/80 max-w-xl mx-auto'>
