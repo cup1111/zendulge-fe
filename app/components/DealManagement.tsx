@@ -617,7 +617,10 @@ export default function DealManagement({ businessId }: DealManagementProps) {
             setIsDuplicateDialogOpen(false);
             setDealToDuplicate(null);
           }}
-          initialData={dealToDuplicate}
+          initialData={{
+            ...dealToDuplicate,
+            title: `${dealToDuplicate.title ?? 'Untitled Deal'} (duplicate)`,
+          }}
         />
       )}
 
