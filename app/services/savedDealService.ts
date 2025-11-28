@@ -128,11 +128,15 @@ export default class SavedDealService {
       })
     );
 
-    const failedDealIds = results.filter((id): id is string => Boolean(id));
-    if (failedDealIds.length > 0) {
-      localStorage.setItem(this.guestKey, JSON.stringify(failedDealIds));
-    } else {
+    const failedDealIds = Array.isArray(results)
+      ? results.filter((id): id is string => Boolean(id))
+      : [];
+
+    if (failedDealIds.length === 0) {
       this.clearGuestSavedDeals();
+      return;
     }
+
+    localStorage.setItem(this.guestKey, JSON.stringify(failedDealIds));
   }
 }

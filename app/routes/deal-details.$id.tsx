@@ -60,7 +60,7 @@ export default function DealDetailsPage() {
   }, [dealId]);
 
   useEffect(() => {
-    let mounted = true;
+    let isStillMounted = true;
     const checkSaved = async () => {
       if (!dealId) {
         setIsSaved(false);
@@ -76,14 +76,14 @@ export default function DealDetailsPage() {
 
       try {
         const saved = await SavedDealService.isSaved(dealId);
-        if (mounted) setIsSaved(saved);
+        if (isStillMounted) setIsSaved(saved);
       } catch {
-        if (mounted) setIsSaved(false);
+        if (isStillMounted) setIsSaved(false);
       }
     };
     checkSaved();
     return () => {
-      mounted = false;
+      isStillMounted = false;
     };
   }, [dealId, isAuthenticated]);
 
@@ -177,7 +177,7 @@ export default function DealDetailsPage() {
 
   const timeSlots = deal.availableTimeSlots?.map(formatTimeSlot) ?? [];
 
-  const handleSaveForLater = async () => {
+  const handleBookmark = async () => {
     if (!dealId) return;
     if (isSaved || isSaving) return;
 
@@ -400,7 +400,7 @@ export default function DealDetailsPage() {
                     size='default'
                     className='w-full gap-2'
                     disabled={isSaved || isSaving}
-                    onClick={handleSaveForLater}
+                    onClick={handleBookmark}
                   >
                     {isSaved ? 'Saved' : 'Save for later'}
                   </Button>
