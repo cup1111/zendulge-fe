@@ -50,6 +50,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
   const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
   const [dealToDuplicate, setDealToDuplicate] = useState<Deal | null>(null);
+  const [confirmDuplicate, setConfirmDuplicate] = useState(false);
 
   // Pagination and search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -358,6 +359,49 @@ export default function DealManagement({ businessId }: DealManagementProps) {
         {searchTerm && ` matching "${searchTerm}"`}
       </div>
 
+      {/* Confirm Duplicate Dialog */}
+      <Dialog open={confirmDuplicate} onOpenChange={setConfirmDuplicate}>
+        <DialogContent className='max-w-md'>
+          <DialogHeader>
+            <DialogTitle>Duplicate Deal</DialogTitle>
+          </DialogHeader>
+
+          <p className='text-gray-600'>
+            Are you sure you want to duplicate this{' '}
+            <span className='font-semibold'>
+              {dealToDuplicate
+                ? formatStatus(dealToDuplicate.status ?? 'unknown')
+                : ''}
+            </span>{' '}
+            deal: "{dealToDuplicate?.title}"?
+          </p>
+
+          <div className='flex justify-end space-x-2 mt-4'>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setConfirmDuplicate(false);
+                setDealToDuplicate(null);
+              }}
+              className='cursor-pointer'
+            >
+              Cancel
+            </Button>
+
+            <Button
+              className='cursor-pointer bg-shadow-lavender hover:bg-shadow-lavender/90'
+              onClick={() => {
+                setConfirmDuplicate(false);
+                if (!dealToDuplicate) return;
+                openDuplicateDialog(dealToDuplicate);
+              }}
+            >
+              Duplicate
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Deals Grid */}
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'>
         {paginatedDeals.map(deal => (
@@ -375,7 +419,10 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                     <Button
                       variant='ghost'
                       size='sm'
-                      onClick={() => openDuplicateDialog(deal)}
+                      onClick={() => {
+                        setDealToDuplicate(deal);
+                        setConfirmDuplicate(true);
+                      }}
                       className='cursor-pointer p-1 h-8 w-8'
                       title='Duplicate deal'
                     >
