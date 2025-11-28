@@ -373,7 +373,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                 ? formatStatus(dealToDuplicate.status ?? 'unknown')
                 : ''}
             </span>{' '}
-            deal: "{dealToDuplicate?.title}"?
+            deal: &quot;{dealToDuplicate?.title}&quot;?
           </p>
 
           <div className='flex justify-end space-x-2 mt-4'>
