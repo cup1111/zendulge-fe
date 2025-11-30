@@ -87,6 +87,11 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     // Anyone who can create deals can duplicate them
     canCreateDeal();
 
+  // Status tab state
+  const STATUS_TABS = ['active', 'inactive', 'sold_out', 'expired'] as const;
+  type StatusTab = (typeof STATUS_TABS)[number];
+  const [activeTab, setActiveTab] = useState<StatusTab>('active');
+
   // Filtered and paginated deals
   const filteredDeals = useMemo(() => {
     const filtered = deals.filter(deal => {
@@ -109,10 +114,6 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedDeals = filteredDeals.slice(startIndex, endIndex);
-
-  const STATUS_TABS = ['active', 'inactive', 'sold_out', 'expired'] as const;
-  type StatusTab = (typeof STATUS_TABS)[number];
-  const [activeTab, setActiveTab] = useState<StatusTab>('active');
 
   // Reset to first page when search term changes
   useEffect(() => {
