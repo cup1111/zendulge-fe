@@ -24,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import {
   Tooltip,
   TooltipContent,
@@ -369,24 +370,22 @@ export default function DealManagement({ businessId }: DealManagementProps) {
       </div>
 
       {/* Status Tabs */}
-      {STATUS_TABS.map(tab => (
-        <button
-          type='button'
-          key={tab}
-          className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer
-      ${
-        activeTab === tab
-          ? 'bg-shadow-lavender text-white'
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-      }`}
-          onClick={() => {
-            setActiveTab(tab);
-            setCurrentPage(1);
-          }}
-        >
-          {formatStatus(tab)}
-        </button>
-      ))}
+      <Tabs
+        value={activeTab}
+        onValueChange={value => {
+          setActiveTab(value as StatusTab);
+          setCurrentPage(1);
+        }}
+        className='w-full'
+      >
+        <TabsList className='grid w-full grid-cols-4 lg:w-auto'>
+          {STATUS_TABS.map(tab => (
+            <TabsTrigger key={tab} value={tab}>
+              {formatStatus(tab)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
