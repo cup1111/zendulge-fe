@@ -94,21 +94,33 @@ export default function DealManagement({ businessId }: DealManagementProps) {
 
   // Filtered and paginated deals
   const filteredDeals = useMemo(() => {
-    const filtered = deals.filter(deal => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        deal.title?.toLowerCase().includes(searchLower) ||
-        (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
-        deal.description?.toLowerCase().includes(searchLower) ||
-        deal.operatingSite.some(site =>
-          site.name?.toLowerCase().includes(searchLower)
-        ) ||
-        deal.service?.name?.toLowerCase().includes(searchLower)
-      );
-    });
+    const filtered = deals
+      .filter(deal => {
+        // state filter
+        if (deal.status !== activeTab) return false;
+
+        // search filter
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          deal.title?.toLowerCase().includes(searchLower) ||
+          (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
+          deal.description?.toLowerCase().includes(searchLower) ||
+          deal.operatingSite.some(site =>
+            site.name?.toLowerCase().includes(searchLower)
+          ) ||
+          deal.service?.name?.toLowerCase().includes(searchLower)
+        );
+      })
+
+      // sort by start date descending
+      .sort((a, b) => {
+        const dateA = new Date(a.startDate ?? 0).getTime();
+        const dateB = new Date(b.startDate ?? 0).getTime();
+        return dateB - dateA; // newest first
+      });
 
     return filtered;
-  }, [deals, searchTerm]);
+  }, [deals, searchTerm, activeTab]);
 
   const totalPages = Math.ceil(filteredDeals.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
