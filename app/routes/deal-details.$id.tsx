@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios';
 import {
   ArrowLeft,
   Building2,
@@ -14,18 +15,26 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
+import { useAuth } from '~/hooks/useAuth';
+import { useToast } from '~/hooks/useToast';
 import PublicDealService, {
   type PublicDeal,
   type TimeSlot,
 } from '~/services/publicDealService';
 
+import SavedDealService from '../services/savedDealService';
+
 export default function DealDetailsPage() {
   const params = useParams();
   const navigate = useNavigate();
   const dealId = params.id;
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [deal, setDeal] = useState<PublicDeal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -49,6 +58,34 @@ export default function DealDetailsPage() {
       mounted = false;
     };
   }, [dealId]);
+
+  useEffect(() => {
+    let isStillMounted = true;
+    const checkSaved = async () => {
+      if (!dealId) {
+        setIsSaved(false);
+        return;
+      }
+
+      if (!isAuthenticated) {
+        const guestSaved =
+          SavedDealService.getGuestSavedDeals().includes(dealId);
+        setIsSaved(guestSaved);
+        return;
+      }
+
+      try {
+        const saved = await SavedDealService.isSaved(dealId);
+        if (isStillMounted) setIsSaved(saved);
+      } catch {
+        if (isStillMounted) setIsSaved(false);
+      }
+    };
+    checkSaved();
+    return () => {
+      isStillMounted = false;
+    };
+  }, [dealId, isAuthenticated]);
 
   if (loading) {
     return (
@@ -139,6 +176,48 @@ export default function DealDetailsPage() {
   };
 
   const timeSlots = deal.availableTimeSlots?.map(formatTimeSlot) ?? [];
+
+  const handleBookmark = async () => {
+    if (!dealId) return;
+    if (isSaved || isSaving) return;
+
+    if (!isAuthenticated) {
+      SavedDealService.saveGuestSavedDeal(dealId);
+      setIsSaved(true);
+      toast({
+        title: 'Saved locally',
+        description: 'We will sync this deal to your account after you log in.',
+      });
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const resp = await SavedDealService.save(dealId);
+      setIsSaved(true);
+      const alreadySaved = resp?.message?.toLowerCase().includes('already');
+      toast({
+        title: alreadySaved ? 'Already saved' : 'Saved',
+        description: alreadySaved
+          ? 'This deal is already in your saved list.'
+          : 'Deal has been saved for later.',
+      });
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      const serverMessage = axiosErr.response?.data?.message;
+      toast({
+        title: 'Save failed',
+        description:
+          serverMessage ??
+          (err instanceof Error
+            ? err.message
+            : 'Failed to save deal. Please try again.'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -320,9 +399,10 @@ export default function DealDetailsPage() {
                     variant='ghost'
                     size='default'
                     className='w-full gap-2'
+                    disabled={isSaved || isSaving}
+                    onClick={handleBookmark}
                   >
-                    {/* <Heart className='w-4 h-4' /> */}
-                    Save for later
+                    {isSaved ? 'Saved' : 'Save for later'}
                   </Button>
                 </div>
 
