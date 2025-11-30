@@ -110,6 +110,10 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const endIndex = startIndex + itemsPerPage;
   const paginatedDeals = filteredDeals.slice(startIndex, endIndex);
 
+  const STATUS_TABS = ['active', 'inactive', 'sold_out', 'expired'] as const;
+  type StatusTab = (typeof STATUS_TABS)[number];
+  const [activeTab, setActiveTab] = useState<StatusTab>('active');
+
   // Reset to first page when search term changes
   useEffect(() => {
     setCurrentPage(1);
@@ -350,6 +354,26 @@ export default function DealManagement({ businessId }: DealManagementProps) {
           )}
         </div>
       </div>
+
+      {/* Status Tabs */}
+      {STATUS_TABS.map(tab => (
+        <button
+          type='button'
+          key={tab}
+          className={`px-4 py-2 rounded-md text-sm font-medium cursor-pointer
+      ${
+        activeTab === tab
+          ? 'bg-shadow-lavender text-white'
+          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+      }`}
+          onClick={() => {
+            setActiveTab(tab);
+            setCurrentPage(1);
+          }}
+        >
+          {formatStatus(tab)}
+        </button>
+      ))}
 
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
