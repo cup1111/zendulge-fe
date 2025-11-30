@@ -376,15 +376,44 @@ export default function DealManagement({ businessId }: DealManagementProps) {
           setActiveTab(value as StatusTab);
           setCurrentPage(1);
         }}
-        className='w-full'
+        className='w-full relative'
       >
-        <TabsList className='grid w-full grid-cols-4 lg:w-auto'>
-          {STATUS_TABS.map(tab => (
-            <TabsTrigger key={tab} value={tab}>
-              {formatStatus(tab)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className='relative w-full'>
+          <div
+            className='
+        absolute 
+        top-0 left-0 
+        h-full 
+        bg-shadow-lavender/20 
+        rounded-md
+        transition-all duration-300
+      '
+            style={{
+              width: `calc(100% / ${STATUS_TABS.length})`,
+              transform: `translateX(${STATUS_TABS.indexOf(activeTab) * 100}%)`,
+            }}
+          />
+
+          <TabsList className='relative grid w-full grid-cols-4 lg:w-auto bg-white p-1 rounded-md shadow-sm h-full p-0'>
+            {STATUS_TABS.map(tab => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className={`
+            relative z-10
+            data-[state=active]:bg-shadow-lavender 
+            data-[state=active]:text-white
+            data-[state=inactive]:bg-transparent
+            data-[state=inactive]:text-gray-700
+            rounded-md px-3 py-1 text-sm font-medium
+            transition-colors
+          `}
+              >
+                {formatStatus(tab)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
       </Tabs>
 
       {/* Results Summary */}
