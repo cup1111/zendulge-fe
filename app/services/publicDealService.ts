@@ -117,6 +117,26 @@ const mapDeal = (raw: PublicDealsResponse['data'][number]): PublicDeal => {
   };
 };
 
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  distance?: number;
+  business: {
+    id: string;
+    name: string;
+  };
+}
+
+export interface RecommendResponse {
+  success: boolean;
+  message: string;
+  type: 'locations' | 'deals';
+  data: Location[] | PublicDeal[];
+}
+
 export default class PublicDealService {
   static async list(params?: {
     category?: string;
@@ -140,5 +160,51 @@ export default class PublicDealService {
       data: PublicDealsResponse['data'][number];
     }>(`/public/deals/${id}`);
     return mapDeal(response.data.data);
+  }
+
+  static async recommend(params?: {
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
+    limit?: number;
+    skip?: number;
+    userLatitude?: number;
+    userLongitude?: number;
+  }): Promise<RecommendResponse> {
+    const response = await api.get<RecommendResponse>('/public/recommend', {
+      params,
+    });
+
+    // If it's deals, map them
+    if (response.data.type === 'deals') {
+      return {
+        ...response.data,
+        data: (response.data.data as unknown[]).map((raw: unknown) => {
+          // Handle both mapped and unmapped deal formats
+          if (raw.id) {
+            return raw;
+          }
+          return mapDeal(raw);
+        }),
+      };
+    }
+
+    return response.data;
+  }
+
+  static async getLocationsForService(serviceId: string): Promise<Location[]> {
+    const response = await api.get<{
+      success: boolean;
+      message: string;
+      data: Location[];
+    }>(`/public/services/${serviceId}/locations`);
+    return response.data.data;
+  }
+
+  static async getDealsForLocation(siteId: string): Promise<PublicDeal[]> {
+    const response = await api.get<PublicDealsResponse>(
+      `/public/locations/${siteId}/deals`
+    );
+    return response.data.data.map(mapDeal);
   }
 }

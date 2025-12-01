@@ -7,7 +7,7 @@ export default [
   route('business-dashboard', './routes/business-dashboard.tsx'),
   route('business-management', './routes/business-management.tsx'),
   route('user-management', './routes/user-management.tsx'),
-  route('deal-details/:id', './routes/deal-details.$id.tsx'),
+  route('service/:id', './routes/service.$id.tsx'),
   route('login', './routes/login.tsx'),
   route('profile', './routes/profile.tsx'),
   route('business-registration', './routes/business-registration.tsx'),

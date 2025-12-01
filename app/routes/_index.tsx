@@ -1,6 +1,6 @@
 import { Calendar, MapPin, Percent, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 
 import appIcon from '~/assets/app-icon.png';
 import heroBackground from '~/assets/massage.jpeg';
@@ -20,6 +20,7 @@ import PublicDealService, {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [location, setLocation] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchRadius, setSearchRadius] = useState(5);
@@ -68,29 +69,72 @@ export default function Landing() {
     );
   }, []);
 
-  // Load recommended deals on initial mount (show all deals within 2 weeks, no location filtering)
+  // Load recommended deals using geolocation or query parameters
   useEffect(() => {
     let mounted = true;
-    setLoadingRecommended(true);
-    setErrorRecommended(null);
 
-    const loadDeals = async () => {
-      try {
-        // For recommended deals, don't pass location params - show all deals within 2 weeks
-        const deals = await PublicDealService.list({});
-        if (mounted) setRecommendedDeals(deals);
-      } catch {
-        if (mounted) setErrorRecommended('Failed to load deals.');
-      } finally {
-        if (mounted) setLoadingRecommended(false);
+    const loadRecommendedDeals = async () => {
+      // Get latitude, longitude, and km from query parameters (override)
+      const queryLat = searchParams.get('latitude');
+      const queryLng = searchParams.get('longitude');
+      const queryKm = searchParams.get('km');
+
+      // Use query parameters if provided, otherwise use geolocation
+      const latitude = queryLat ? parseFloat(queryLat) : userLocation?.latitude;
+      const longitude = queryLng
+        ? parseFloat(queryLng)
+        : userLocation?.longitude;
+      const radiusKm = queryKm ? parseFloat(queryKm) : 10;
+
+      // Only load if we have valid coordinates
+      if (
+        latitude !== undefined &&
+        longitude !== undefined &&
+        !Number.isNaN(latitude) &&
+        !Number.isNaN(longitude)
+      ) {
+        setLoadingRecommended(true);
+        setErrorRecommended(null);
+
+        try {
+          const response = await PublicDealService.recommend({
+            latitude,
+            longitude,
+            radiusKm: radiusKm && !Number.isNaN(radiusKm) ? radiusKm : 10,
+            userLatitude: userLocation?.latitude,
+            userLongitude: userLocation?.longitude,
+          });
+          if (mounted) {
+            if (response.type === 'deals') {
+              setRecommendedDeals(response.data as PublicDeal[]);
+            } else {
+              setRecommendedDeals([]);
+            }
+          }
+        } catch (error) {
+          if (mounted) setErrorRecommended('Failed to load recommendations.');
+        } finally {
+          if (mounted) setLoadingRecommended(false);
+        }
+        return;
+      }
+      // If no coordinates available yet, wait
+      if (mounted) {
+        setRecommendedDeals([]);
+        setLoadingRecommended(false);
       }
     };
 
-    loadDeals();
+    loadRecommendedDeals();
     return () => {
       mounted = false;
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    searchParams.toString(),
+    userLocation?.latitude,
+    userLocation?.longitude,
+  ]);
 
   // Load categories on mount
   useEffect(() => {
@@ -206,7 +250,7 @@ export default function Landing() {
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                 {loadingRecommended && (
                   <div className='col-span-3 text-sm text-gray-600'>
-                    Loading…
+                    Loading deals…
                   </div>
                 )}
                 {errorRecommended && (
@@ -216,6 +260,7 @@ export default function Landing() {
                 )}
                 {!loadingRecommended &&
                   !errorRecommended &&
+                  recommendedDeals.length > 0 &&
                   recommendedDeals.map(d => (
                     <div
                       key={d.id}
@@ -255,7 +300,9 @@ export default function Landing() {
                             size='sm'
                             className='bg-shadow-lavender hover:bg-shadow-lavender/90'
                             onClick={() => {
-                              navigate(`/deal-details/${d.id}`);
+                              if (d.service?.id) {
+                                navigate(`/service/${d.service.id}`);
+                              }
                             }}
                           >
                             View Deal
@@ -264,6 +311,16 @@ export default function Landing() {
                       </div>
                     </div>
                   ))}
+                {!loadingRecommended &&
+                  !errorRecommended &&
+                  recommendedDeals.length === 0 && (
+                    <div className='col-span-3 text-sm text-gray-600 text-center py-8'>
+                      {searchParams.get('latitude') &&
+                      searchParams.get('longitude')
+                        ? 'No deals available at this location.'
+                        : 'Please provide latitude and longitude in the URL query parameters to see recommended deals.'}
+                    </div>
+                  )}
               </div>
             </div>
 
@@ -532,7 +589,9 @@ export default function Landing() {
                           size='sm'
                           className='bg-shadow-lavender hover:bg-shadow-lavender/90'
                           onClick={() => {
-                            navigate(`/deal-details/${d.id}`);
+                            if (d.service?.id) {
+                              navigate(`/service/${d.service.id}`);
+                            }
                           }}
                         >
                           View Deal

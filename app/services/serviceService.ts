@@ -7,7 +7,14 @@ export interface Service {
   duration: number; // Duration in minutes
   basePrice: number;
   description?: string;
-  business: string;
+  business:
+    | string
+    | {
+        _id: string;
+        name: string;
+        logo?: string;
+        description?: string;
+      };
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
@@ -98,6 +105,49 @@ export class ServiceService {
     serviceId: string
   ): Promise<void> {
     await api.delete(`/business/${businessId}/services/${serviceId}`);
+  }
+
+  /**
+   * Get public service details (no authentication required)
+   */
+  static async getPublicServiceById(serviceId: string): Promise<Service> {
+    const response = await api.get<ServiceApiResponse>(
+      `/public/services/${serviceId}`
+    );
+    const service = response.data.data as {
+      _id?: { toString: () => string };
+      id?: string;
+      name: string;
+      category: string;
+      duration: number;
+      basePrice: number;
+      description?: string;
+      business?: { _id?: { toString: () => string } } | string;
+      status: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    // Map _id to id and handle business object
+    // eslint-disable-next-line no-underscore-dangle
+    const mappedServiceId = service._id?.toString() ?? service.id ?? '';
+    const businessObj = service.business as
+      | { _id?: { toString: () => string } }
+      | string
+      | undefined;
+    // eslint-disable-next-line no-underscore-dangle
+    const businessValue = businessObj ?? (businessObj?._id ? businessObj : '');
+    return {
+      id: mappedServiceId,
+      name: service.name,
+      category: service.category,
+      duration: service.duration,
+      basePrice: service.basePrice,
+      description: service.description,
+      business: businessValue,
+      status: service.status,
+      createdAt: service.createdAt,
+      updatedAt: service.updatedAt,
+    };
   }
 }
 
