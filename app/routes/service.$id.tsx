@@ -4,6 +4,13 @@ import { useNavigate, useParams } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog';
 import { Separator } from '~/components/ui/separator';
 import PublicDealService, {
   type Location,
@@ -75,6 +82,14 @@ export default function ServicePage() {
   const [loadingDeal, setLoadingDeal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{
+    date: Date;
+    dateStr: string;
+    time: string;
+    available: boolean;
+  } | null>(null);
 
   // Get user's geolocation
   useEffect(() => {
@@ -475,36 +490,40 @@ export default function ServicePage() {
                               }
                               if (timeSlots.length > 0) {
                                 return (
-                                  <>
-                                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mb-4'>
-                                      {timeSlots.map(slot => (
-                                        <div
-                                          key={`${slot.date.getTime()}-${slot.time}`}
-                                          className='p-3 border border-gray-200 rounded-lg hover:border-shadow-lavender hover:bg-gray-50 cursor-pointer transition-colors'
-                                        >
-                                          <div className='font-medium text-gray-900'>
-                                            {slot.dateStr}
-                                          </div>
-                                          <div className='text-sm text-gray-600 mt-1'>
-                                            {slot.time}
-                                          </div>
-                                          <div className='text-xs text-green-600 mt-1'>
-                                            Available
-                                          </div>
+                                  <div className='grid grid-cols-1 md:grid-cols-2 gap-3 mb-4'>
+                                    {timeSlots.map(slot => (
+                                      <div
+                                        key={`${slot.date.getTime()}-${slot.time}`}
+                                        className='p-3 border border-gray-200 rounded-lg hover:border-shadow-lavender hover:bg-gray-50 cursor-pointer transition-colors'
+                                        role='button'
+                                        tabIndex={0}
+                                        onClick={() => {
+                                          setSelectedTimeSlot(slot);
+                                          setIsBookingModalOpen(true);
+                                        }}
+                                        onKeyDown={e => {
+                                          if (
+                                            e.key === 'Enter' ||
+                                            e.key === ' '
+                                          ) {
+                                            e.preventDefault();
+                                            setSelectedTimeSlot(slot);
+                                            setIsBookingModalOpen(true);
+                                          }
+                                        }}
+                                      >
+                                        <div className='font-medium text-gray-900'>
+                                          {slot.dateStr}
                                         </div>
-                                      ))}
-                                    </div>
-                                    <div className='flex items-center justify-between pt-4 border-t'>
-                                      <div className='text-center flex-1'>
-                                        <Button
-                                          className='w-full bg-shadow-lavender text-pure-white hover:bg-shadow-lavender/90'
-                                          size='default'
-                                        >
-                                          Book Now
-                                        </Button>
+                                        <div className='text-sm text-gray-600 mt-1'>
+                                          {slot.time}
+                                        </div>
+                                        <div className='text-xs text-green-600 mt-1'>
+                                          Available
+                                        </div>
                                       </div>
-                                    </div>
-                                  </>
+                                    ))}
+                                  </div>
                                 );
                               }
                               return (
@@ -656,6 +675,114 @@ export default function ServicePage() {
           return renderDealsStep();
         })()}
       </div>
+
+      {/* Booking Confirmation Modal */}
+      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+        <DialogContent className='max-w-md'>
+          <DialogHeader>
+            <DialogTitle>Confirm Booking</DialogTitle>
+          </DialogHeader>
+          <div className='space-y-4 py-4'>
+            {/* Service - First */}
+            {service && (
+              <div className='space-y-1'>
+                <div className='text-sm font-medium text-gray-500'>Service</div>
+                <div className='flex items-start gap-2'>
+                  <Tag className='w-4 h-4 text-shadow-lavender mt-0.5 flex-shrink-0' />
+                  <div className='font-medium text-gray-900'>
+                    {service.name}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Location - Second */}
+            {selectedLocation && (
+              <div className='space-y-1'>
+                <div className='text-sm font-medium text-gray-500'>
+                  Location
+                </div>
+                <div className='flex items-start gap-2'>
+                  <MapPin className='w-4 h-4 text-shadow-lavender mt-0.5 flex-shrink-0' />
+                  <div className='font-medium text-gray-900'>
+                    {selectedLocation.address}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Date - Third */}
+            {selectedTimeSlot && (
+              <div className='space-y-1'>
+                <div className='text-sm font-medium text-gray-500'>Date</div>
+                <div className='flex items-start gap-2'>
+                  <Calendar className='w-4 h-4 text-shadow-lavender mt-0.5 flex-shrink-0' />
+                  <div className='font-medium text-gray-900'>
+                    {selectedTimeSlot.dateStr}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Time - Fourth */}
+            {selectedTimeSlot && (
+              <div className='space-y-1'>
+                <div className='text-sm font-medium text-gray-500'>Time</div>
+                <div className='flex items-start gap-2'>
+                  <Calendar className='w-4 h-4 text-shadow-lavender mt-0.5 flex-shrink-0' />
+                  <div className='font-medium text-gray-900'>
+                    {selectedTimeSlot.time}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Price - Fifth */}
+            {selectedDeal && (
+              <div className='space-y-1'>
+                <div className='text-sm font-medium text-gray-500'>Price</div>
+                <div className='flex items-center gap-2'>
+                  <div className='text-2xl font-bold text-shadow-lavender'>
+                    {selectedDeal.price != null
+                      ? `$${selectedDeal.price.toFixed(2)}`
+                      : '—'}
+                  </div>
+                  {selectedDeal.originalPrice != null && (
+                    <div className='text-sm text-gray-400 line-through'>
+                      ${selectedDeal.originalPrice.toFixed(2)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setIsBookingModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className='bg-shadow-lavender text-pure-white hover:bg-shadow-lavender/90'
+              onClick={() => {
+                // TODO: Implement payment/booking logic
+                setIsBookingModalOpen(false);
+              }}
+            >
+              Confirm and Pay
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
