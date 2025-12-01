@@ -122,20 +122,38 @@ export class ServiceService {
       duration: number;
       basePrice: number;
       description?: string;
-      business?: { _id?: { toString: () => string } } | string;
-      status: string;
+      business?:
+        | {
+            _id?: { toString: () => string };
+            name?: string;
+            logo?: string;
+            description?: string;
+          }
+        | string;
+      status: 'active' | 'inactive' | string;
       createdAt: string;
       updatedAt: string;
     };
     // Map _id to id and handle business object
     // eslint-disable-next-line no-underscore-dangle
     const mappedServiceId = service._id?.toString() ?? service.id ?? '';
-    const businessObj = service.business as
-      | { _id?: { toString: () => string } }
-      | string
-      | undefined;
-    // eslint-disable-next-line no-underscore-dangle
-    const businessValue = businessObj ?? (businessObj?._id ? businessObj : '');
+
+    let businessValue: Service['business'];
+    if (typeof service.business === 'string') {
+      businessValue = service.business;
+    } else if (service.business && typeof service.business === 'object') {
+      // eslint-disable-next-line no-underscore-dangle
+      const businessId = service.business._id?.toString() ?? '';
+      businessValue = {
+        _id: businessId,
+        name: service.business.name ?? 'Unknown',
+        logo: service.business.logo,
+        description: service.business.description,
+      };
+    } else {
+      businessValue = '';
+    }
+
     return {
       id: mappedServiceId,
       name: service.name,
@@ -144,7 +162,9 @@ export class ServiceService {
       basePrice: service.basePrice,
       description: service.description,
       business: businessValue,
-      status: service.status,
+      status: (service.status === 'active' || service.status === 'inactive'
+        ? service.status
+        : 'active') as 'active' | 'inactive',
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     };

@@ -177,15 +177,22 @@ export default class PublicDealService {
 
     // If it's deals, map them
     if (response.data.type === 'deals') {
+      const dealsData = response.data
+        .data as unknown as PublicDealsResponse['data'];
       return {
         ...response.data,
-        data: (response.data.data as unknown[]).map((raw: unknown) => {
+        data: dealsData.map(raw => {
           // Handle both mapped and unmapped deal formats
-          if (raw.id) {
-            return raw;
+          // If it already has 'id' (not '_id'), it's already mapped
+          if (
+            'id' in raw &&
+            typeof (raw as { id?: string }).id === 'string' &&
+            !('_id' in raw)
+          ) {
+            return raw as unknown as PublicDeal;
           }
           return mapDeal(raw);
-        }),
+        }) as PublicDeal[],
       };
     }
 
