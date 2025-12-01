@@ -89,9 +89,10 @@ export default function DealDetailsPage() {
 
       try {
         // Check bookmark status via service (handles both auth and guest)
-        const saved = await BookmarkDealService.isSaved(dealId, {
-          isAuthenticated,
-        });
+        const saved = await BookmarkDealService.isSaved(
+          dealId,
+          isAuthenticated
+        );
         // Only update state if component is still mounted
         if (isStillMounted) setIsSaved(saved);
       } catch {
@@ -228,7 +229,7 @@ export default function DealDetailsPage() {
       setIsSaving(true);
 
       // Save bookmark via service (handles both auth and guest)
-      const resp = await BookmarkDealService.save(dealId, { isAuthenticated });
+      const resp = await BookmarkDealService.save(dealId, isAuthenticated);
       setIsSaved(true);
 
       // Determine toast message based on response

@@ -154,7 +154,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         localStorage.setItem('user', JSON.stringify(userData));
 
         // Best-effort sync of guest saved deals now that the user is authenticated
-        await BookmarkDealService.saveForGuest();
+        await BookmarkDealService.syncGuestData();
 
         // Auto-select first business if available
         if (userData.businesses && userData.businesses.length > 0) {

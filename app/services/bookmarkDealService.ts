@@ -6,6 +6,7 @@
  */
 
 import api from '~/config/axios';
+import { UserType } from '~/enum/UserType';
 
 /**
  * Raw bookmark deal data structure from backend API
@@ -55,24 +56,6 @@ export interface BookmarkDealResponse {
 }
 
 /**
- * Maps raw bookmark deal data from backend to normalized frontend structure
- * Converts MongoDB _id field to id for consistency across the application
- * @param raw - Raw bookmark deal data from backend API
- * @returns Normalized bookmark deal object
- */
-const mapBookmarkDeal = (raw: RawBookmarkDeal): BookmarkDeal => {
-  // Extract _id and rename to id for frontend consistency
-  const { _id: id } = raw;
-  return {
-    id,
-    user: raw.user,
-    deal: raw.deal,
-    createdAt: raw.createdAt,
-    updatedAt: raw.updatedAt,
-  };
-};
-
-/**
  * Service for managing bookmark deals (saved deals) for both authenticated and guest users
  *
  * This service handles:
@@ -87,6 +70,24 @@ const mapBookmarkDeal = (raw: RawBookmarkDeal): BookmarkDeal => {
 export default class BookmarkDealService {
   /** localStorage key for storing guest bookmark deal IDs */
   private static guestBookmarkKey = 'guestBookmarkDeals';
+
+  /**
+   * Maps raw bookmark deal data from backend to normalized frontend structure
+   * Converts MongoDB _id field to id for consistency across the application
+   * @param raw - Raw bookmark deal data from backend API
+   * @returns Normalized bookmark deal object
+   */
+  private static mapBookmarkDeal = (raw: RawBookmarkDeal): BookmarkDeal => {
+    // Extract _id and rename to id for frontend consistency
+    const { _id: id } = raw;
+    return {
+      id,
+      user: raw.user,
+      deal: raw.deal,
+      createdAt: raw.createdAt,
+      updatedAt: raw.updatedAt,
+    };
+  };
 
   /**
    * Save a deal as a bookmark for authenticated user or guest
@@ -108,19 +109,17 @@ export default class BookmarkDealService {
    */
   static async save(
     dealId: string,
-    options?: { isAuthenticated?: boolean }
+    isAuthenticated?: boolean
   ): Promise<BookmarkDealResponse> {
     // Determine authentication status: use provided value or check localStorage
-    const isAuthenticated = options?.isAuthenticated;
-
     // Guest user: save to localStorage
     if (!isAuthenticated) {
-      this.saveToLocal(dealId);
+      this.saveToLocalStorage(dealId);
       return {
         success: true,
         data: {
           _id: dealId,
-          user: 'guest',
+          user: UserType.GUEST,
           deal: dealId,
         },
         message: 'Saved bookmark deal locally for guest user',
@@ -159,7 +158,7 @@ export default class BookmarkDealService {
     const array = Array.isArray(bookmarkDealRecords)
       ? bookmarkDealRecords
       : [bookmarkDealRecords];
-    return array.map(mapBookmarkDeal);
+    return array.map(this.mapBookmarkDeal);
   }
 
   /**
@@ -199,14 +198,13 @@ export default class BookmarkDealService {
    */
   static async isSaved(
     dealId: string,
-    options?: { isAuthenticated?: boolean }
+    isAuthenticated?: boolean
   ): Promise<boolean> {
     // Determine authentication status: use provided value or check localStorage
-    const isAuthenticated = options?.isAuthenticated;
 
     // Guest user: check localStorage
     if (!isAuthenticated) {
-      return this.listLocal().includes(dealId);
+      return this.listLocalStorage().includes(dealId);
     }
 
     // Authenticated user: check backend
@@ -225,7 +223,7 @@ export default class BookmarkDealService {
    * - Returns empty array if JSON parsing fails
    * - Filters out non-string values for data integrity
    */
-  private static listLocal(): string[] {
+  private static listLocalStorage(): string[] {
     try {
       const localBookmarkDealIdsData = localStorage.getItem(
         this.guestBookmarkKey
@@ -256,8 +254,8 @@ export default class BookmarkDealService {
    * @param dealId - The deal ID to save locally
    * @returns void
    */
-  private static saveToLocal(dealId: string) {
-    const localBookmarkDealIds = this.listLocal();
+  private static saveToLocalStorage(dealId: string) {
+    const localBookmarkDealIds = this.listLocalStorage();
     if (localBookmarkDealIds.includes(dealId)) return;
     const next = [...localBookmarkDealIds, dealId];
     localStorage.setItem(this.guestBookmarkKey, JSON.stringify(next));
@@ -272,7 +270,7 @@ export default class BookmarkDealService {
    * @private
    * @returns void
    */
-  private static clearLocal() {
+  private static clearBookmarkLocalStorage() {
     localStorage.removeItem(this.guestBookmarkKey);
   }
 
@@ -302,56 +300,43 @@ export default class BookmarkDealService {
    * @returns Promise that resolves when sync is complete
    * @throws Does not throw - errors are handled internally
    */
-  static async saveForGuest() {
-    const localBookmarkDealsData = this.listLocal();
+  static async syncGuestData() {
+    const localBookmarkDealsData = this.listLocalStorage();
     if (localBookmarkDealsData.length === 0) return;
     const localBookmarkDealIds = Array.from(new Set(localBookmarkDealsData));
 
-    // Fetch existing bookmark deals from backend
-    let existingDealIds: string[] = [];
-    try {
-      const existingDeals = await this.list();
-      existingDealIds = existingDeals.map(deal => deal.deal);
-    } catch {
-      // If fetching existing deals fails, continue without filtering
-      existingDealIds = [];
-    }
-
     // Filter out deals that already exist in backend
-    const localBookmarkDealsToSync = localBookmarkDealIds.filter(
+    const existingDealIds = await this.getExistingDeals();
+    const bookmarkDealsToSync = localBookmarkDealIds.filter(
       id => !existingDealIds.includes(id)
     );
 
-    if (localBookmarkDealsToSync.length === 0) {
+    if (bookmarkDealsToSync.length === 0) {
       // All deals already exist in backend, clear local cache
-      this.clearLocal();
+      this.clearBookmarkLocalStorage();
       return;
     }
 
-    const results = await Promise.all(
-      localBookmarkDealsToSync.map(async id => {
-        try {
-          // Force isAuthenticated=true since this is called after login
-          await this.save(id, { isAuthenticated: true });
-          return null;
-        } catch {
-          return id; // mark failed so we keep it locally
-        }
-      })
-    );
-
-    const failedBookmarkDealIds = Array.isArray(results)
-      ? results.filter((id): id is string => Boolean(id))
-      : [];
-
-    if (failedBookmarkDealIds.length === 0) {
-      this.clearLocal();
-      return;
+    try {
+      // Bulk save bookmarked deals in one request after login
+      await api.post('/bookmark-deal/bulk', { dealIds: bookmarkDealsToSync });
+      this.clearBookmarkLocalStorage();
+    } catch {
+      // Preserve unsynced deals locally for retry
+      localStorage.setItem(
+        this.guestBookmarkKey,
+        JSON.stringify(bookmarkDealsToSync)
+      );
     }
+  }
 
-    localStorage.setItem(
-      this.guestBookmarkKey,
-      JSON.stringify(failedBookmarkDealIds)
-    );
+  private static async getExistingDeals() {
+    // Fetch existing bookmark deals from backend
+    try {
+      const existingDeals = await this.list();
+      return existingDeals.map(deal => deal.deal);
+    } catch (error) {
+      return [];
+    }
   }
 }
