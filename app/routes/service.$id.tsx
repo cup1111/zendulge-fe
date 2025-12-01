@@ -10,7 +10,10 @@ import PublicDealService, {
   type PublicDeal,
   type TimeSlot,
 } from '~/services/publicDealService';
-import ServiceService, { type Service } from '~/services/serviceService';
+import type { Service } from '~/services/serviceService';
+import * as ServiceServiceModule from '~/services/serviceService';
+
+const ServiceService = ServiceServiceModule.default;
 
 type Step = 'locations' | 'deals' | 'timeSlots';
 

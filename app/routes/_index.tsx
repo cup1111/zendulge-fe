@@ -129,12 +129,7 @@ export default function Landing() {
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    searchParams.toString(),
-    userLocation?.latitude,
-    userLocation?.longitude,
-  ]);
+  }, [searchParams, userLocation?.latitude, userLocation?.longitude]);
 
   // Load categories on mount
   useEffect(() => {
