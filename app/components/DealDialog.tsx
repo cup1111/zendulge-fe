@@ -35,6 +35,7 @@ import {
   type OperateSite,
 } from '~/services/operateSiteService';
 import { ServiceService, type Service } from '~/services/serviceService';
+import { UserManagementService, type User } from '~/services/userManagement';
 
 interface DealDialogProps {
   businessId: string;
@@ -109,6 +110,7 @@ export default function DealDialog({
   const { toast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [operatingSites, setOperatingSites] = useState<OperateSite[]>([]);
+  const [businessUsers, setBusinessUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [internalOpen, setInternalOpen] = useState(false);
@@ -184,7 +186,6 @@ export default function DealDialog({
       ...normalizedAvailability,
       allDay,
       recurrenceType: initialData?.recurrenceType ?? 'none',
-      maxBookings: initialData?.maxBookings,
     };
   }, [initialData, normalizeAvailability]);
 
@@ -265,7 +266,7 @@ export default function DealDialog({
       })(),
       endTime,
       recurrenceType: initialSchedule.recurrenceType,
-      maxBookings: initialData?.maxBookings ?? undefined,
+      assignee: initialData?.assignee?.id ?? user?.id ?? '',
       status: initialData?.status ?? ('active' as const),
       tags: initialData?.tags ?? [],
       service: serviceId,
@@ -281,13 +282,15 @@ export default function DealDialog({
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [servicesData, sitesData] = await Promise.all([
+      const [servicesData, sitesData, usersData] = await Promise.all([
         ServiceService.getServices(businessId),
         OperateSiteService.getOperateSites(businessId),
+        UserManagementService.getBusinessUsers(businessId),
       ]);
 
       setServices(Array.isArray(servicesData) ? servicesData : []);
       setOperatingSites(Array.isArray(sitesData) ? sitesData : []);
+      setBusinessUsers(Array.isArray(usersData) ? usersData : []);
     } catch (error) {
       toast({
         title: 'Error',
@@ -296,6 +299,7 @@ export default function DealDialog({
       });
       setServices([]);
       setOperatingSites([]);
+      setBusinessUsers([]);
     } finally {
       setIsLoading(false);
     }
@@ -337,13 +341,13 @@ export default function DealDialog({
           : toTimeInputValue(initialData.startDate),
         endTime,
         recurrenceType: schedule.recurrenceType,
-        maxBookings: schedule.maxBookings,
+        assignee: initialData.assignee?.id ?? user?.id ?? '',
         status: initialData.status ?? ('active' as const),
         tags: initialData.tags ?? [],
         service: serviceId,
       });
     }
-  }, [initialData, isOpen, getInitialSchedule]);
+  }, [initialData, isOpen, getInitialSchedule, user?.id]);
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -363,7 +367,7 @@ export default function DealDialog({
         startTime: defaultSchedule.startTime,
         endTime: defaultSchedule.endTime,
         recurrenceType: 'none',
-        maxBookings: undefined,
+        assignee: user?.id ?? '',
         status: 'active' as const,
         tags: [],
         service: '',
@@ -457,7 +461,7 @@ export default function DealDialog({
         allDay: formData.allDay,
         startDate: startDateTimeStr,
         recurrenceType: formData.recurrenceType,
-        maxBookings: formData.maxBookings ?? undefined,
+        assignee: formData.assignee || undefined,
         status: formData.status,
         tags: formData.tags,
         service: formData.service,
@@ -493,7 +497,7 @@ export default function DealDialog({
           startTime: defaultSchedule.startTime,
           endTime: defaultSchedule.endTime,
           recurrenceType: 'none',
-          maxBookings: undefined,
+          assignee: user?.id ?? '',
           status: 'active' as const,
           tags: [],
           service: '',
@@ -817,26 +821,35 @@ export default function DealDialog({
                 </Select>
               </div>
 
-              {/* Max Bookings - Full Width */}
+              {/* Assignee - Full Width */}
               <div>
-                <Label htmlFor='maxBookings'>Max Bookings</Label>
-                <Input
-                  id='maxBookings'
-                  type='number'
-                  value={formData.maxBookings ?? ''}
-                  onChange={e => {
-                    const { value } = e.target;
+                <Label htmlFor='assignee'>Assignee</Label>
+                <Select
+                  value={formData.assignee ?? ''}
+                  onValueChange={value => {
                     setFormData({
                       ...formData,
-                      maxBookings:
-                        value === ''
-                          ? undefined
-                          : parseInt(value, 10) || undefined,
+                      assignee: value,
                     });
                   }}
-                  min='1'
-                  placeholder='Optional - leave blank for unlimited'
-                />
+                  disabled={user?.role?.slug === BusinessUserRole.Employee}
+                >
+                  <SelectTrigger className='w-full'>
+                    <SelectValue placeholder='Select assignee' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {businessUsers.map(businessUser => (
+                      <SelectItem key={businessUser.id} value={businessUser.id}>
+                        {businessUser.firstName} {businessUser.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {user?.role?.slug === BusinessUserRole.Employee && (
+                  <p className='text-xs text-gray-500 mt-1'>
+                    Assignee is read-only for employees
+                  </p>
+                )}
               </div>
 
               {/* Description - Full Width */}

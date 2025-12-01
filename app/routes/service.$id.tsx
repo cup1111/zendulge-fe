@@ -17,6 +17,28 @@ const ServiceService = ServiceServiceModule.default;
 
 type Step = 'locations' | 'deals' | 'timeSlots';
 
+/**
+ * Calculates Haversine distance between two geographic points in kilometers
+ */
+const calculateHaversineDistance = (
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number => {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 export default function ServicePage() {
   const params = useParams();
   const navigate = useNavigate();
@@ -42,12 +64,42 @@ export default function ServicePage() {
     }>
   >([]);
 
+  const [userLocation, setUserLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+
   const [loadingService, setLoadingService] = useState(false);
   const [loadingLocations, setLoadingLocations] = useState(false);
   const [loadingDeals, setLoadingDeals] = useState(false);
   const [loadingDeal, setLoadingDeal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Get user's geolocation
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      return undefined;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      position => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      () => {
+        // Silently fail if geolocation is denied or unavailable
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+    return undefined;
+  }, []);
 
   // Load service details
   useEffect(() => {
@@ -76,7 +128,7 @@ export default function ServicePage() {
     };
   }, [serviceId]);
 
-  // Load locations for service
+  // Load locations for service and auto-select closest location
   useEffect(() => {
     if (!serviceId) {
       return undefined;
@@ -89,7 +141,34 @@ export default function ServicePage() {
       try {
         const data = await PublicDealService.getLocationsForService(serviceId);
         if (mounted) {
-          setLocations(data);
+          // Calculate distances if user location is available
+          let locationsWithDistance = data;
+          if (userLocation) {
+            locationsWithDistance = data.map(loc => ({
+              ...loc,
+              distance: calculateHaversineDistance(
+                userLocation.latitude,
+                userLocation.longitude,
+                loc.latitude,
+                loc.longitude
+              ),
+            }));
+            // Sort by distance (closest first)
+            locationsWithDistance.sort((a, b) => {
+              const distA = a.distance ?? Infinity;
+              const distB = b.distance ?? Infinity;
+              return distA - distB;
+            });
+          }
+          setLocations(locationsWithDistance);
+
+          // Auto-select closest location if available
+          if (locationsWithDistance.length > 0 && userLocation) {
+            const closestLocation = locationsWithDistance[0];
+            setSelectedLocation(closestLocation);
+            setStep('deals');
+          }
+
           setLoading(false);
         }
       } catch (err) {
@@ -106,11 +185,11 @@ export default function ServicePage() {
     return () => {
       mounted = false;
     };
-  }, [serviceId]);
+  }, [serviceId, userLocation]);
 
   // Load deals when location is selected
   useEffect(() => {
-    if (!selectedLocation || step !== 'deals') return undefined;
+    if (!selectedLocation) return undefined;
 
     let mounted = true;
     const loadDeals = async () => {
@@ -131,7 +210,7 @@ export default function ServicePage() {
     return () => {
       mounted = false;
     };
-  }, [selectedLocation, step]);
+  }, [selectedLocation]);
 
   // Convert 24-hour time to 12-hour format
   const formatTimeTo12Hour = (time24: string): string => {

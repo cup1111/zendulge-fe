@@ -31,8 +31,13 @@ export interface Deal {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings: number;
+  assignee?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
   status: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
@@ -72,8 +77,8 @@ export interface DealCreateRequest {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings?: number;
+  assignee?: string;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
@@ -98,8 +103,8 @@ export interface DealUpdateRequest {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings?: number;
+  assignee?: string;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
@@ -150,8 +155,8 @@ interface RawDealApiResponse {
     | 'weekdays'
     | 'monthly'
     | 'annually';
-  maxBookings?: number;
   currentBookings?: number;
+  assignee?: string;
   status?: 'active' | 'inactive' | 'expired' | 'sold_out';
   images?: string[];
   tags?: string[];
