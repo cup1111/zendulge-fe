@@ -82,8 +82,8 @@ const businessFaq = [
     question: 'How do I set up my business account?',
     answer: (
       <>
-        Sign up, complete your business details, and once
-        <strong> verified</strong>, you can start posting deals straight away.
+        Sign up, complete your business details, and once verified, you can
+        start posting deals straight away.
       </>
     ),
   },
