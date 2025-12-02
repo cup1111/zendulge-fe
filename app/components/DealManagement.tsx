@@ -119,9 +119,10 @@ export default function DealManagement({ businessId }: DealManagementProps) {
 
       // sort by start date descending
       .sort((a, b) => {
-        const dateA = new Date(a.startDate ?? 0).getTime();
-        const dateB = new Date(b.startDate ?? 0).getTime();
-        return dateB - dateA; // newest first
+        const aStartTime = new Date(a.startDate ?? 0).getTime();
+        const bStartTime = new Date(b.startDate ?? 0).getTime();
+
+        return bStartTime - aStartTime;
       });
 
     return filtered;
