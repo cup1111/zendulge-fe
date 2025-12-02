@@ -41,7 +41,7 @@ import type {
 } from '~/services/serviceService';
 import { ServiceService } from '~/services/serviceService';
 
-import { BusinessUserRole } from '../constants/enums';
+import { BusinessUserRole, ServiceStatus } from '../constants/enums';
 import { useAuth } from '../hooks/useAuth';
 
 type ApiError = {
@@ -80,9 +80,13 @@ export default function ServiceManagement({
   const [itemsPerPage] = useState(10);
 
   // Status tab state
-  const STATUS_TABS = ['active', 'inactive'] as const;
-  type StatusTab = (typeof STATUS_TABS)[number];
-  const [activeTab, setActiveTab] = useState<StatusTab>('active');
+  const STATUS_TABS: ServiceStatus[] = [
+    ServiceStatus.Active,
+    ServiceStatus.Inactive,
+  ];
+  const [activeTab, setActiveTab] = useState<ServiceStatus>(
+    ServiceStatus.Active
+  );
 
   // Helper functions for role-based access control
   const isOwner = user?.role?.slug === BusinessUserRole.Owner;
@@ -705,7 +709,7 @@ export default function ServiceManagement({
       <Tabs
         value={activeTab}
         onValueChange={value => {
-          setActiveTab(value as StatusTab);
+          setActiveTab(value as ServiceStatus);
           setCurrentPage(1);
         }}
         className='w-full relative'
@@ -749,9 +753,16 @@ export default function ServiceManagement({
       </Tabs>
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
-        Showing {startIndex + 1}-{Math.min(endIndex, filteredServices.length)}{' '}
-        of {filteredServices.length} services
-        {searchTerm && ` matching "${searchTerm}"`}
+        {filteredServices.length === 0 ? (
+          <>Showing 0 services{searchTerm && ` matching "${searchTerm}"`}</>
+        ) : (
+          <>
+            Showing {startIndex + 1}-
+            {Math.min(endIndex, filteredServices.length)} of{' '}
+            {filteredServices.length} services
+            {searchTerm && ` matching "${searchTerm}"`}
+          </>
+        )}
       </div>
 
       {paginatedServices.map(service => (

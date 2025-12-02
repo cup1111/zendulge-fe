@@ -31,7 +31,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
-import { BusinessUserRole } from '~/constants/enums';
+import { BusinessUserRole, DealStatus } from '~/constants/enums';
 import { useAuth } from '~/hooks/useAuth';
 import { useToast } from '~/hooks/useToast';
 import type { Deal } from '~/services/dealService';
@@ -89,9 +89,13 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     canCreateDeal();
 
   // Status tab state
-  const STATUS_TABS = ['active', 'inactive', 'sold_out', 'expired'] as const;
-  type StatusTab = (typeof STATUS_TABS)[number];
-  const [activeTab, setActiveTab] = useState<StatusTab>('active');
+  const STATUS_TABS: DealStatus[] = [
+    DealStatus.Active,
+    DealStatus.Inactive,
+    DealStatus.SoldOut,
+    DealStatus.Expired,
+  ];
+  const [activeTab, setActiveTab] = useState<DealStatus>(DealStatus.Active);
 
   // Filtered and paginated deals
   const filteredDeals = useMemo(() => {
@@ -373,7 +377,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
       <Tabs
         value={activeTab}
         onValueChange={value => {
-          setActiveTab(value as StatusTab);
+          setActiveTab(value as DealStatus);
           setCurrentPage(1);
         }}
         className='w-full relative'
@@ -418,9 +422,15 @@ export default function DealManagement({ businessId }: DealManagementProps) {
 
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
-        Showing {startIndex + 1}-{Math.min(endIndex, filteredDeals.length)} of{' '}
-        {filteredDeals.length} deals
-        {searchTerm && ` matching "${searchTerm}"`}
+        {filteredDeals.length === 0 ? (
+          <>Showing 0 deals{searchTerm && ` matching "${searchTerm}"`}</>
+        ) : (
+          <>
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredDeals.length)}{' '}
+            of {filteredDeals.length} deals
+            {searchTerm && ` matching "${searchTerm}"`}
+          </>
+        )}
       </div>
 
       {/* Deals Grid */}
