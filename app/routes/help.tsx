@@ -31,65 +31,103 @@ const customerFaq = [
   {
     value: 'booking',
     question: 'How do I book a deal?',
-    answer:
-      "Simply browse available deals, select your preferred time slot, and complete the payment process. You'll receive an instant confirmation with booking details.",
+    answer: (
+      <>
+        Find a deal you like, choose a time, and book instantly. Your booking
+        confirmation appears straight away.
+      </>
+    ),
   },
   {
     value: 'payment',
     question: 'What payment methods do you accept?',
-    answer:
-      'We accept all major credit cards, debit cards, and digital wallets. All transactions are securely processed through Stripe.',
+    answer: <>We accept major credit/debit cards.</>,
   },
   {
     value: 'cancellation',
     question: 'Can I cancel or reschedule my booking?',
-    answer:
-      'Yes, you can cancel or reschedule up to 2 hours before your appointment time. Check the specific deal terms for any restrictions.',
+    answer: (
+      <>
+        Yes. You can cancel or reschedule up to
+        <strong> 2 hours before your appointment</strong>. Some deals may have
+        specific restrictions — check the deal page for details.
+      </>
+    ),
   },
   {
     value: 'refunds',
     question: 'How do refunds work?',
-    answer:
-      "Refunds are processed according to each business's cancellation policy. Most refunds are processed within 3–5 business days.",
+    answer: (
+      <>
+        If you cancel within the allowed window, your refund is automatically
+        processed back to your original payment method. Timing depends on your
+        bank.
+      </>
+    ),
   },
   {
     value: 'deals',
     question: 'How often are new deals added?',
-    answer:
-      'New deals are added throughout the day as businesses update their availability. Check back regularly or enable notifications for the best deals.',
+    answer: (
+      <>
+        Deals are added throughout the day as businesses release last-minute
+        availability. Check the app often for fresh offers nearby.
+      </>
+    ),
   },
 ];
-
 const businessFaq = [
   {
     value: 'setup',
     question: 'How do I set up my business account?',
-    answer:
-      'Sign up for a business account, complete your business profile, add your services, and start creating deals for your off-peak hours.',
+    answer: (
+      <>
+        Sign up, complete your business details, and once
+        <strong> verified</strong>, you can start posting deals straight away.
+      </>
+    ),
   },
   {
     value: 'commission',
     question: 'What are the platform fees?',
-    answer:
-      'We charge a small commission on successful bookings. The exact rate depends on your subscription plan and booking volume.',
+    answer: (
+      <>
+        You only pay a commission on completed bookings. There are{' '}
+        <strong>no setup fees</strong> and <strong>no monthly fees</strong>.
+        Full pricing is visible inside your dashboard.
+      </>
+    ),
   },
   {
     value: 'payments',
     question: 'When do I receive payments?',
-    answer:
-      'Payments are transferred to your account within 2–3 business days after the service is completed, minus our platform fee.',
+    answer: (
+      <>
+        Payouts happen automaticallyd to your nominated bank account — either{' '}
+        <strong>daily</strong> or <strong>weekly</strong>, depending on your
+        settings.
+      </>
+    ),
   },
   {
     value: 'deals-manage',
     question: 'How do I manage my deals?',
-    answer:
-      'Use your business dashboard to create, edit, pause, or delete deals. You can also set automatic scheduling for recurring off-peak slots.',
+    answer: (
+      <>
+        You can create, edit, pause, or update deals anytime in your dashboard.
+        Adjust pricing and availability in real time to fill last-minute gaps.
+      </>
+    ),
   },
   {
     value: 'customers',
     question: 'How do I communicate with customers?',
-    answer:
-      'The Zendulge platform provides built-in messaging for appointment confirmations and updates. You can also contact customers directly using the provided contact information.',
+    answer: (
+      <>
+        Customers receive automatic confirmations and reminders. If needed, you
+        can message them directly through your business dashboard.
+      </>
+    ),
   },
 ];
 
@@ -195,7 +233,9 @@ export default function Help() {
                     <AccordionTrigger className='text-left items-start'>
                       {item.question}
                     </AccordionTrigger>
-                    <AccordionContent>{item.answer}</AccordionContent>
+                    <AccordionContent>
+                      <AccordionContent>{item.answer}</AccordionContent>
+                    </AccordionContent>{' '}
                   </AccordionItem>
                 ))}
               </Accordion>
@@ -220,7 +260,9 @@ export default function Help() {
                     <AccordionTrigger className='text-left items-start'>
                       {item.question}
                     </AccordionTrigger>
-                    <AccordionContent>{item.answer}</AccordionContent>
+                    <AccordionContent>
+                      <AccordionContent>{item.answer}</AccordionContent>
+                    </AccordionContent>{' '}
                   </AccordionItem>
                 ))}
               </Accordion>
