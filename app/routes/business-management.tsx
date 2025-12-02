@@ -11,12 +11,13 @@ import {
   Plus,
   Users,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import CustomerManagement from '~/components/CustomerManagement';
 import DealManagement from '~/components/DealManagement';
 import ServiceManagement from '~/components/ServiceManagement';
 import { Button } from '~/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { API_CONFIG } from '~/config/api';
 import zendulgeAxios from '~/config/axios';
 import { BusinessStatus } from '~/constants/businessStatus';
@@ -132,6 +133,16 @@ export default function BusinessManagement() {
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Status tab state
+  const STATUS_TABS = [
+    OperatingSiteStatus.Active,
+    OperatingSiteStatus.Inactive,
+  ];
+  type StatusTab = (typeof STATUS_TABS)[number];
+  const [activeTab, setActiveTab] = useState<StatusTab>(
+    OperatingSiteStatus.Active
+  );
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -177,6 +188,16 @@ export default function BusinessManagement() {
 
     loadData();
   }, [isLoading, isAuthenticated, user, currentBusiness?.id]); // Re-run when auth state or business changes
+
+  // Filtered and paginated deals
+  const filteredSites = useMemo(() => {
+    const filtered = operatingSites.filter(site => {
+      // state filter
+      if (site.status !== activeTab) return false;
+      return true;
+    });
+    return filtered;
+  }, [operatingSites, activeTab]);
 
   if (isLoading || dataLoading) {
     return (
@@ -345,6 +366,7 @@ export default function BusinessManagement() {
                   <h2 className='text-2xl font-bold text-shadow-lavender mb-2'>
                     Operating Sites (WIP)
                   </h2>
+
                   <p className='text-gray-600'>
                     Manage all business locations and their details
                   </p>
@@ -354,10 +376,55 @@ export default function BusinessManagement() {
                   Add Location
                 </Button>
               </div>
+              {/* Status Tabs */}
+              <Tabs
+                value={activeTab}
+                onValueChange={value => {
+                  setActiveTab(value as StatusTab);
+                }}
+                className='w-full relative'
+              >
+                <div className='relative w-full'>
+                  <div
+                    className='
+                      absolute 
+                      top-0 left-0 
+                      h-full 
+                      bg-shadow-lavender/20 
+                      rounded-md
+                      transition-all duration-300
+                    '
+                    style={{
+                      width: `calc(100% / ${STATUS_TABS.length})`,
+                      transform: `translateX(${STATUS_TABS.indexOf(activeTab) * 100}%)`,
+                    }}
+                  />
 
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                {operatingSites.length > 0 ? (
-                  operatingSites.map(site => (
+                  <TabsList className='relative grid w-full grid-cols-4 lg:w-auto bg-white p-1 rounded-md shadow-sm h-full p-0'>
+                    {STATUS_TABS.map(tab => (
+                      <TabsTrigger
+                        key={tab}
+                        value={tab}
+                        className={`
+                          relative z-10
+                          data-[state=active]:bg-shadow-lavender 
+                          data-[state=active]:text-white
+                          data-[state=inactive]:bg-transparent
+                          data-[state=inactive]:text-gray-700
+                          rounded-md px-3 py-1 text-sm font-medium
+                          transition-colors
+                        `}
+                      >
+                        {formatStatus(tab)}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+              </Tabs>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3'>
+                {filteredSites.length > 0 ? (
+                  filteredSites.map(site => (
                     <div
                       key={site.id}
                       className='bg-white border border-gray-200 rounded-lg p-6'
@@ -480,10 +547,7 @@ export default function BusinessManagement() {
                   <div className='col-span-full text-center py-12'>
                     <Building2 className='w-16 h-16 text-gray-400 mx-auto mb-4' />
                     <p className='text-gray-500 text-lg'>
-                      No operating sites found
-                    </p>
-                    <p className='text-gray-400 text-sm'>
-                      Add your first location to get started
+                      No operating {activeTab} sites found
                     </p>
                   </div>
                 )}
