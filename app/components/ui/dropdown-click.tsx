@@ -1,61 +1,59 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { combineClasses } from '~/lib/utils';
 
-export const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
+export const DropdownClick = ({ children }: { children: React.ReactNode }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
-  const handleMouseEnter = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      setTimeoutId(null);
-    }
-    setIsOpen(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const handleMouseClick = () => {
+    setIsOpen(!isOpen);
   };
-  const handleMouseLeave = () => {
-    const id = setTimeout(() => {
-      setIsOpen(false);
-    }, 150); // 150ms delay before closing
-    setTimeoutId(id);
-  };
-  useEffect(
-    () => () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
       }
-    },
-    [timeoutId]
-  );
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   return (
-    <div
-      className='relative inline-block'
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      {React.Children.map(children, child =>
-        React.isValidElement(child)
-          ? React.cloneElement(child, { isOpen, setIsOpen } as Partial<
-              typeof child.props
-            >)
-          : child
-      )}
+    <div ref={containerRef} className='relative inline-block'>
+      <button
+        type='button'
+        className='relative inline-block'
+        onClick={handleMouseClick}
+      >
+        {React.Children.map(children, child =>
+          React.isValidElement(child)
+            ? React.cloneElement(child, { isOpen, setIsOpen } as Partial<
+                typeof child.props
+              >)
+            : child
+        )}
+      </button>
     </div>
   );
 };
 
-interface DropdownMenuContentProps {
+interface DropdownClickContentProps {
   children: React.ReactNode;
   align?: 'center' | 'start' | 'end';
   className?: string;
   isOpen?: boolean;
 }
 
-export const DropdownMenuContent = ({
+export const DropdownClickContent = ({
   children,
   align = 'center',
   className,
   isOpen,
-}: DropdownMenuContentProps) => {
+}: DropdownClickContentProps) => {
   if (!isOpen) return null;
 
   return (
@@ -73,19 +71,19 @@ export const DropdownMenuContent = ({
   );
 };
 
-interface DropdownMenuItemProps {
+interface DropdownClickItemProps {
   children: React.ReactNode;
   asChild?: boolean;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   className?: string;
 }
 
-export const DropdownMenuItem = ({
+export const DropdownClickItem = ({
   children,
   asChild: _asChild,
   onClick,
   className,
-}: DropdownMenuItemProps) => {
+}: DropdownClickItemProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();

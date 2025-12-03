@@ -46,7 +46,7 @@ export type BusinessRegistrationFormData = {
 };
 
 export type ErrorState = {
-  [K in keyof BusinessRegistrationFormData]: string;
+  [K in keyof BusinessRegistrationFormData]?: string;
 };
 
 type BusinessAddressValue = {

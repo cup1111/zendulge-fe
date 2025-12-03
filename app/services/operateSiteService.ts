@@ -1,9 +1,9 @@
 import api from '../config/axios';
 
 export interface OperatingHourDay {
-  isClosed?: boolean;
-  open?: string;
-  close?: string;
+  isClosed: boolean;
+  open: string;
+  close: string;
 }
 
 export interface OperateSite {
@@ -37,7 +37,7 @@ export interface OperateSiteCreateRequest {
   postcode: string;
   phoneNumber: string;
   emailAddress: string;
-  operatingHours?: Record<string, OperatingHourDay>;
+  operatingHours: Record<string, OperatingHourDay>;
   specialInstruction?: string;
   isActive?: boolean;
 }
