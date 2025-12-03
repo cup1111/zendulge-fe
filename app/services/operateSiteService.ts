@@ -9,14 +9,18 @@ export interface OperatingHourDay {
 export interface OperateSite {
   id: string;
   name: string;
-  address: string;
+  country: string;
+  streetNumber: string;
+  street: string;
+  suburb: string;
+  city: string;
+  state: string;
+  postcode: string;
   phoneNumber: string;
   emailAddress: string;
   operatingHours: Record<string, OperatingHourDay>;
   specialInstruction?: string;
   business: string;
-  latitude: number;
-  longitude: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -24,25 +28,33 @@ export interface OperateSite {
 
 export interface OperateSiteCreateRequest {
   name: string;
-  address: string;
+  country: string;
+  streetNumber: string;
+  street: string;
+  suburb: string;
+  city: string;
+  state: string;
+  postcode: string;
   phoneNumber: string;
   emailAddress: string;
   operatingHours?: Record<string, OperatingHourDay>;
   specialInstruction?: string;
-  latitude: number;
-  longitude: number;
   isActive?: boolean;
 }
 
 export interface OperateSiteUpdateRequest {
   name?: string;
-  address?: string;
+  country: string;
+  streetNumber: string;
+  street: string;
+  suburb: string;
+  city: string;
+  state: string;
+  postcode: string;
   phoneNumber?: string;
   emailAddress?: string;
   operatingHours?: Record<string, OperatingHourDay>;
   specialInstruction?: string;
-  latitude?: number;
-  longitude?: number;
   isActive?: boolean;
 }
 

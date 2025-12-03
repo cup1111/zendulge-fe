@@ -13,13 +13,13 @@ import type { ErrorState } from '../../types/businessType';
 
 interface AddressInputProps {
   formData: {
-    businessAddressCountry: string;
-    businessAddressStreetNumber: string;
-    businessAddressStreet: string;
-    businessAddressSuburb: string;
-    businessAddressCity: string;
-    businessAddressState: string;
-    businessAddressPostcode: string;
+    country: string;
+    streetNumber: string;
+    street: string;
+    suburb: string;
+    city: string;
+    state: string;
+    postcode: string;
   };
   onInputChange: (field: string, value: string) => void;
   error: ErrorState;
@@ -48,27 +48,21 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Number *</Label>
               <Input
-                value={formData.businessAddressStreetNumber}
-                onChange={e =>
-                  onInputChange('businessAddressStreetNumber', e.target.value)
-                }
+                value={formData.streetNumber}
+                onChange={e => onInputChange('streetNumber', e.target.value)}
                 placeholder='123'
               />
-              {error.businessAddressStreetNumber &&
-                renderErrorMessage(error.businessAddressStreetNumber)}
+              {error.streetNumber && renderErrorMessage(error.streetNumber)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Street Name *</Label>
               <Input
-                value={formData.businessAddressStreet ?? ''}
-                onChange={e =>
-                  onInputChange('businessAddressStreet', e.target.value)
-                }
+                value={formData.street ?? ''}
+                onChange={e => onInputChange('street', e.target.value)}
                 placeholder='Collins Street'
               />
-              {error.businessAddressStreet &&
-                renderErrorMessage(error.businessAddressStreet)}
+              {error.street && renderErrorMessage(error.street)}
             </div>
           </div>
 
@@ -76,27 +70,21 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Suburb</Label>
               <Input
-                value={formData.businessAddressSuburb ?? ''}
-                onChange={e =>
-                  onInputChange('businessAddressSuburb', e.target.value)
-                }
+                value={formData.suburb ?? ''}
+                onChange={e => onInputChange('suburb', e.target.value)}
                 placeholder='Suburb'
               />
-              {error.businessAddressSuburb &&
-                renderErrorMessage(error.businessAddressSuburb)}
+              {error.suburb && renderErrorMessage(error.suburb)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>City *</Label>
               <Input
-                value={formData.businessAddressCity || ''}
-                onChange={e =>
-                  onInputChange('businessAddressCity', e.target.value)
-                }
+                value={formData.city || ''}
+                onChange={e => onInputChange('city', e.target.value)}
                 placeholder='Melbourne'
               />
-              {error.businessAddressCity &&
-                renderErrorMessage(error.businessAddressCity)}
+              {error.city && renderErrorMessage(error.city)}
             </div>
           </div>
 
@@ -104,10 +92,8 @@ export default function AddressInput({
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>State *</Label>
               <Select
-                value={formData.businessAddressState ?? ''}
-                onValueChange={val =>
-                  onInputChange('businessAddressState', val)
-                }
+                value={formData.state ?? ''}
+                onValueChange={val => onInputChange('state', val)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select State' />
@@ -123,21 +109,17 @@ export default function AddressInput({
                   <SelectItem value='NT'>NT</SelectItem>
                 </SelectContent>
               </Select>
-              {error.businessAddressState &&
-                renderErrorMessage(error.businessAddressState)}
+              {error.state && renderErrorMessage(error.state)}
             </div>
 
             <div className='space-y-2'>
               <Label className='text-sm font-medium'>Postal Code *</Label>
               <Input
-                value={formData.businessAddressPostcode ?? ''}
-                onChange={e =>
-                  onInputChange('businessAddressPostcode', e.target.value)
-                }
+                value={formData.postcode ?? ''}
+                onChange={e => onInputChange('postcode', e.target.value)}
                 placeholder='3000'
               />
-              {error.businessAddressPostcode &&
-                renderErrorMessage(error.businessAddressPostcode)}
+              {error.postcode && renderErrorMessage(error.postcode)}
             </div>
 
             <div className='space-y-2'>
