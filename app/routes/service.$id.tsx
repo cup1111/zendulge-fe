@@ -12,6 +12,8 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { Separator } from '~/components/ui/separator';
+import { useToast } from '~/hooks/useToast';
+import AppointmentService from '~/services/appointmentService';
 import PublicDealService, {
   type Location,
   type PublicDeal,
@@ -68,6 +70,7 @@ export default function ServicePage() {
       dateStr: string;
       time: string;
       available: boolean;
+      originalSlot?: TimeSlot;
     }>
   >([]);
 
@@ -89,7 +92,10 @@ export default function ServicePage() {
     dateStr: string;
     time: string;
     available: boolean;
+    originalSlot?: TimeSlot;
   } | null>(null);
+  const [isCreatingAppointment, setIsCreatingAppointment] = useState(false);
+  const { toast } = useToast();
 
   // Get user's geolocation
   useEffect(() => {
@@ -265,6 +271,8 @@ export default function ServicePage() {
                 }),
                 time: `${startTime12h} - ${endTime12h}`,
                 available: slot.available,
+                // Store original slot data for appointment creation
+                originalSlot: slot,
               };
             }
           );
@@ -773,12 +781,111 @@ export default function ServicePage() {
             </Button>
             <Button
               className='bg-shadow-lavender text-pure-white hover:bg-shadow-lavender/90'
-              onClick={() => {
-                // TODO: Implement payment/booking logic
-                setIsBookingModalOpen(false);
+              disabled={
+                isCreatingAppointment ||
+                !selectedDeal ||
+                !selectedLocation ||
+                !selectedTimeSlot
+              }
+              onClick={async () => {
+                if (!selectedDeal || !selectedLocation || !selectedTimeSlot) {
+                  return;
+                }
+
+                setIsCreatingAppointment(true);
+                try {
+                  // Use the original slot data if available, otherwise parse from formatted time
+                  let appointmentDateTime: Date;
+
+                  if (selectedTimeSlot.originalSlot?.dateTime) {
+                    // Use the original ISO datetime string from the slot
+                    appointmentDateTime = new Date(
+                      selectedTimeSlot.originalSlot.dateTime
+                    );
+                  } else {
+                    // Fallback: parse from the formatted date and time
+                    appointmentDateTime = new Date(selectedTimeSlot.date);
+
+                    // Try to extract time from the formatted time string (12-hour format)
+                    // Format: "9:00 AM - 10:00 AM"
+                    const timeMatch = selectedTimeSlot.time.match(
+                      /(\d{1,2}):(\d{2})\s*(AM|PM)/
+                    );
+                    if (timeMatch) {
+                      let hours = parseInt(timeMatch[1], 10);
+                      const minutes = parseInt(timeMatch[2], 10);
+                      const period = timeMatch[3];
+
+                      // Convert to 24-hour format
+                      if (period === 'PM' && hours !== 12) {
+                        hours += 12;
+                      } else if (period === 'AM' && hours === 12) {
+                        hours = 0;
+                      }
+
+                      appointmentDateTime.setHours(hours, minutes, 0, 0);
+                    }
+                  }
+
+                  await AppointmentService.create({
+                    dealId: selectedDeal.id,
+                    operatingSiteId: selectedLocation.id,
+                    appointmentDate: appointmentDateTime.toISOString(),
+                  });
+
+                  toast({
+                    title: 'Appointment Created',
+                    description:
+                      'Your appointment has been successfully booked!',
+                    variant: 'default',
+                  });
+
+                  setIsBookingModalOpen(false);
+                  // Optionally refresh the time slots to show the booked slot is no longer available
+                  if (selectedDeal) {
+                    // Reload deal to get updated time slots
+                    const dealData = await PublicDealService.getById(
+                      selectedDeal.id
+                    );
+                    if (dealData.availableTimeSlots) {
+                      const formattedSlots = dealData.availableTimeSlots.map(
+                        slot => {
+                          const slotDate = new Date(slot.dateTime);
+                          return {
+                            date: slotDate,
+                            dateStr: slot.date,
+                            time: `${slot.startTime} - ${slot.endTime}`,
+                            available: slot.available,
+                          };
+                        }
+                      );
+                      setTimeSlots(formattedSlots);
+                    }
+                  }
+                } catch (bookingError: unknown) {
+                  const errorMessage =
+                    bookingError &&
+                    typeof bookingError === 'object' &&
+                    'response' in bookingError
+                      ? (
+                          bookingError as {
+                            response?: { data?: { message?: string } };
+                          }
+                        )?.response?.data?.message
+                      : undefined;
+                  toast({
+                    title: 'Booking Failed',
+                    description:
+                      errorMessage ??
+                      'Failed to create appointment. Please try again.',
+                    variant: 'destructive',
+                  });
+                } finally {
+                  setIsCreatingAppointment(false);
+                }
               }}
             >
-              Confirm and Pay
+              {isCreatingAppointment ? 'Processing...' : 'Confirm and Pay'}
             </Button>
           </DialogFooter>
         </DialogContent>

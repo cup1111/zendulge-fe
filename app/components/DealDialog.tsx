@@ -1,3 +1,4 @@
+import { format, startOfDay, addMinutes } from 'date-fns';
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -47,17 +48,9 @@ interface DealDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-const formatDate = (date: Date) => {
-  const normalized = new Date(date);
-  normalized.setHours(0, 0, 0, 0);
-  return normalized.toISOString().split('T')[0];
-};
+const formatDate = (date: Date) => format(startOfDay(date), 'yyyy-MM-dd');
 
-const formatTime = (date: Date) => {
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
-  return `${hours}:${minutes}`;
-};
+const formatTime = (date: Date) => format(date, 'HH:mm');
 
 const calculateEndTime = (
   startTime: string,
@@ -68,7 +61,7 @@ const calculateEndTime = (
   const startDate = new Date();
   startDate.setHours(hours, minutes, 0, 0);
   const totalMinutes = durationMinutes * sections;
-  const endDate = new Date(startDate.getTime() + totalMinutes * 60 * 1000);
+  const endDate = addMinutes(startDate, totalMinutes);
   return formatTime(endDate);
 };
 

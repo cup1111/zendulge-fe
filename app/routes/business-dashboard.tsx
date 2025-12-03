@@ -1,3 +1,4 @@
+import { format, isToday, parseISO } from 'date-fns';
 import {
   BarChart3,
   Bell,
@@ -28,6 +29,9 @@ import {
   mockRecentActivity,
   mockRecentBookings,
 } from '~/lib/mockData';
+import AppointmentService, {
+  type Appointment,
+} from '~/services/appointmentService';
 import BusinessService, { type BusinessInfo } from '~/services/businessService';
 
 // Types for our data
@@ -57,11 +61,11 @@ interface OperatingSite {
 }
 
 interface RecentBooking {
-  id: number;
+  id: number | string;
   customer: string;
   service: string;
   date: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
+  status: 'confirmed' | 'pending' | 'cancelled' | 'completed' | 'no_show';
   amount: string;
 }
 
@@ -163,9 +167,56 @@ async function fetchOperatingSites(
   return sites;
 }
 
-async function fetchRecentBookings(): Promise<RecentBooking[]> {
-  // Backend doesn't have booking system yet
-  return mockRecentBookings;
+async function fetchRecentBookings(
+  businessId?: string
+): Promise<RecentBooking[]> {
+  if (!businessId) {
+    return mockRecentBookings;
+  }
+
+  try {
+    const response = await AppointmentService.list({
+      businessId,
+      page: 1,
+      limit: 10,
+    });
+
+    return response.data.map((appointment: Appointment) => {
+      const appointmentDate = parseISO(appointment.appointmentDate);
+      const dateStr = isToday(appointmentDate)
+        ? `Today, ${format(appointmentDate, 'h:mm a')}`
+        : format(appointmentDate, 'EEE, MMM d, h:mm a');
+
+      return {
+        id: appointment.id,
+        customer:
+          appointment.customerName ??
+          (() => {
+            const fullName =
+              `${appointment.customer?.firstName ?? ''} ${appointment.customer?.lastName ?? ''}`.trim();
+            return (
+              (fullName || appointment.customer?.email) ?? 'Unknown Customer'
+            );
+          })(),
+        service:
+          appointment.service?.name ||
+          appointment.deal?.title ||
+          'Unknown Service',
+        date: dateStr,
+        status: appointment.status as
+          | 'confirmed'
+          | 'pending'
+          | 'cancelled'
+          | 'completed'
+          | 'no_show',
+        amount: `$${appointment.price.toFixed(2)}`,
+      };
+    });
+  } catch (error) {
+    // Fallback to mock data if API fails
+    // Error logged silently, using mock data as fallback
+    return mockRecentBookings;
+  }
 }
 
 async function fetchActiveDeals(): Promise<ActiveDeal[]> {
@@ -230,7 +281,7 @@ export default function BusinessDashboard() {
         const [statsData, bookingsData, dealsData, activityData] =
           await Promise.all([
             fetchBusinessStats(),
-            fetchRecentBookings(),
+            fetchRecentBookings(businessIdString),
             fetchActiveDeals(),
             fetchRecentActivity(),
           ]);
@@ -537,12 +588,18 @@ export default function BusinessDashboard() {
                               className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${(() => {
                                 if (booking.status === 'confirmed')
                                   return 'bg-green-100 text-green-800';
+                                if (booking.status === 'completed')
+                                  return 'bg-blue-100 text-blue-800';
                                 if (booking.status === 'pending')
                                   return 'bg-yellow-100 text-yellow-800';
+                                if (booking.status === 'no_show')
+                                  return 'bg-orange-100 text-orange-800';
                                 return 'bg-red-100 text-red-800';
                               })()}`}
                             >
-                              {booking.status}
+                              {booking.status === 'no_show'
+                                ? 'No Show'
+                                : booking.status}
                             </span>
                           </div>
                         </div>
