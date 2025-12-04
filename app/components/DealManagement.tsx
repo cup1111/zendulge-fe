@@ -24,13 +24,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
-import { BusinessUserRole } from '~/constants/enums';
+import { BusinessUserRole, DealStatus } from '~/constants/enums';
 import { useAuth } from '~/hooks/useAuth';
 import { useToast } from '~/hooks/useToast';
 import type { Deal } from '~/services/dealService';
@@ -88,23 +89,45 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     // Anyone who can create deals can duplicate them
     canCreateDeal();
 
+  // Status tab state
+  const STATUS_TABS: DealStatus[] = [
+    DealStatus.Active,
+    DealStatus.Inactive,
+    DealStatus.SoldOut,
+    DealStatus.Expired,
+  ];
+  const [activeTab, setActiveTab] = useState<DealStatus>(DealStatus.Active);
+
   // Filtered and paginated deals
   const filteredDeals = useMemo(() => {
-    const filtered = deals.filter(deal => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        deal.title?.toLowerCase().includes(searchLower) ||
-        (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
-        deal.description?.toLowerCase().includes(searchLower) ||
-        deal.operatingSite.some(site =>
-          site.name?.toLowerCase().includes(searchLower)
-        ) ||
-        deal.service?.name?.toLowerCase().includes(searchLower)
-      );
-    });
+    const filtered = deals
+      .filter(deal => {
+        // state filter
+        if (deal.status !== activeTab) return false;
+
+        // search filter
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          deal.title?.toLowerCase().includes(searchLower) ||
+          (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
+          deal.description?.toLowerCase().includes(searchLower) ||
+          deal.operatingSite.some(site =>
+            site.name?.toLowerCase().includes(searchLower)
+          ) ||
+          deal.service?.name?.toLowerCase().includes(searchLower)
+        );
+      })
+
+      // sort by start date descending
+      .sort((a, b) => {
+        const aStartTime = new Date(a.startDate ?? 0).getTime();
+        const bStartTime = new Date(b.startDate ?? 0).getTime();
+
+        return bStartTime - aStartTime;
+      });
 
     return filtered;
-  }, [deals, searchTerm]);
+  }, [deals, searchTerm, activeTab]);
 
   const totalPages = Math.ceil(filteredDeals.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -352,11 +375,64 @@ export default function DealManagement({ businessId }: DealManagementProps) {
         </div>
       </div>
 
+      {/* Status Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={value => {
+          setActiveTab(value as DealStatus);
+          setCurrentPage(1);
+        }}
+        className='w-full relative'
+      >
+        <div className='relative w-full'>
+          <div
+            className='
+        absolute 
+        top-0 left-0 
+        h-full 
+        bg-shadow-lavender/20 
+        rounded-md
+        transition-all duration-300
+      '
+            style={{
+              width: `calc(100% / ${STATUS_TABS.length})`,
+              transform: `translateX(${STATUS_TABS.indexOf(activeTab) * 100}%)`,
+            }}
+          />
+
+          <TabsList className='relative grid w-full grid-cols-4 lg:w-auto bg-white p-1 rounded-md shadow-sm h-full p-0'>
+            {STATUS_TABS.map(tab => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className={`
+            relative z-10
+            data-[state=active]:bg-shadow-lavender 
+            data-[state=active]:text-white
+            data-[state=inactive]:bg-transparent
+            data-[state=inactive]:text-gray-700
+            rounded-md px-3 py-1 text-sm font-medium
+            transition-colors
+          `}
+              >
+                {formatStatus(tab)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+      </Tabs>
+
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
-        Showing {startIndex + 1}-{Math.min(endIndex, filteredDeals.length)} of{' '}
-        {filteredDeals.length} deals
-        {searchTerm && ` matching "${searchTerm}"`}
+        {filteredDeals.length === 0 ? (
+          <>Showing 0 deals{searchTerm && ` matching "${searchTerm}"`}</>
+        ) : (
+          <>
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredDeals.length)}{' '}
+            of {filteredDeals.length} deals
+            {searchTerm && ` matching "${searchTerm}"`}
+          </>
+        )}
       </div>
 
       {/* Confirm Duplicate Dialog */}
