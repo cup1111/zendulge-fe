@@ -794,17 +794,17 @@ export default function ServicePage() {
 
                 setIsCreatingAppointment(true);
                 try {
-                  // Use the original slot data if available, otherwise parse from formatted time
-                  let appointmentDateTime: Date;
+                  let appointmentDateISO: string;
 
                   if (selectedTimeSlot.originalSlot?.dateTime) {
-                    // Use the original ISO datetime string from the slot
-                    appointmentDateTime = new Date(
-                      selectedTimeSlot.originalSlot.dateTime
-                    );
+                    // Use the original ISO datetime string from the slot (already in UTC)
+                    // Backend standard: Accept ISO 8601 format with timezone (UTC)
+                    appointmentDateISO = selectedTimeSlot.originalSlot.dateTime;
                   } else {
                     // Fallback: parse from the formatted date and time
-                    appointmentDateTime = new Date(selectedTimeSlot.date);
+                    // The slot date/time is in the operating site's local timezone
+                    // We need to interpret it as local time and convert to UTC ISO 8601
+                    const localDate = new Date(selectedTimeSlot.date);
 
                     // Try to extract time from the formatted time string (12-hour format)
                     // Format: "9:00 AM - 10:00 AM"
@@ -823,14 +823,17 @@ export default function ServicePage() {
                         hours = 0;
                       }
 
-                      appointmentDateTime.setHours(hours, minutes, 0, 0);
+                      localDate.setHours(hours, minutes, 0, 0);
                     }
+
+                    // Convert local time to UTC ISO 8601 format (backend standard)
+                    appointmentDateISO = localDate.toISOString();
                   }
 
                   await AppointmentService.create({
                     dealId: selectedDeal.id,
                     operatingSiteId: selectedLocation.id,
-                    appointmentDate: appointmentDateTime.toISOString(),
+                    appointmentDate: appointmentDateISO, // ISO 8601 UTC format
                   });
 
                   toast({

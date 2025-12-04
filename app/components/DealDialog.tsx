@@ -1,4 +1,4 @@
-import { format, startOfDay, addMinutes } from 'date-fns';
+import { addMinutes, format, startOfDay } from 'date-fns';
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -433,14 +433,19 @@ export default function DealDialog({
 
     setIsSubmitting(true);
     try {
-      // Build datetime strings
+      // Build datetime strings - convert local time to UTC ISO 8601 format
       let startDateTimeStr: string;
       if (formData.allDay) {
         startDateTimeStr = toIsoUtcString(formData.startDate);
       } else {
         const { startDate } = formData;
         const startTime = formData.startTime ?? '09:00';
-        startDateTimeStr = `${startDate}T${startTime}:00.000Z`;
+        // Parse local date and time, then convert to UTC ISO 8601
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const localDate = new Date(
+          `${startDate}T${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`
+        );
+        startDateTimeStr = localDate.toISOString(); // Converts local time to UTC ISO 8601
       }
 
       const dealData: DealCreateRequest = {
