@@ -1,3 +1,4 @@
+import type { AxiosError } from 'axios';
 import {
   ArrowLeft,
   Building2,
@@ -14,18 +15,26 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Separator } from '~/components/ui/separator';
+import { useAuth } from '~/hooks/useAuth';
+import { useToast } from '~/hooks/useToast';
 import PublicDealService, {
   type PublicDeal,
   type TimeSlot,
 } from '~/services/publicDealService';
 
+import BookmarkDealService from '../services/bookmarkDealService';
+
 export default function DealDetailsPage() {
   const params = useParams();
   const navigate = useNavigate();
   const dealId = params.id;
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [deal, setDeal] = useState<PublicDeal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -49,6 +58,56 @@ export default function DealDetailsPage() {
       mounted = false;
     };
   }, [dealId]);
+
+  /**
+   * Effect: Check if the current deal is bookmarked
+   *
+   * Runs when:
+   * - Component mounts
+   * - dealId changes
+   * - User authentication status changes (login/logout)
+   *
+   * Flow:
+   * 1. Validates dealId exists
+   * 2. Calls BookmarkDealService.isSaved() with authentication status
+   *    - For authenticated users: checks backend
+   *    - For guest users: checks localStorage
+   * 3. Updates isSaved state based on result
+   * 4. Uses mounted flag to prevent state updates after unmount
+   *
+   * Error handling: Sets isSaved to false if check fails
+   */
+  useEffect(() => {
+    let isStillMounted = true;
+
+    const checkSaved = async () => {
+      // Early return if no dealId
+      if (!dealId) {
+        setIsSaved(false);
+        return;
+      }
+
+      try {
+        // Check bookmark status via service (handles both auth and guest)
+        const saved = await BookmarkDealService.isSaved(
+          dealId,
+          isAuthenticated
+        );
+        // Only update state if component is still mounted
+        if (isStillMounted) setIsSaved(saved);
+      } catch {
+        // On error, assume not saved and only update if still mounted
+        if (isStillMounted) setIsSaved(false);
+      }
+    };
+
+    checkSaved();
+
+    // Cleanup: prevent state updates after unmount
+    return () => {
+      isStillMounted = false;
+    };
+  }, [dealId, isAuthenticated]);
 
   if (loading) {
     return (
@@ -139,6 +198,74 @@ export default function DealDetailsPage() {
   };
 
   const timeSlots = deal.availableTimeSlots?.map(formatTimeSlot) ?? [];
+
+  /**
+   * Handler: Save/bookmark the current deal
+   *
+   * This function handles the "Save for later" button click:
+   * 1. Validates preconditions (dealId exists, not already saved/saving)
+   * 2. Calls BookmarkDealService.save() with authentication status
+   *    - Authenticated users: saves to backend via API
+   *    - Guest users: saves to localStorage
+   * 3. Updates UI state and shows appropriate toast notification
+   * 4. Handles errors with user-friendly messages
+   *
+   * Flow:
+   * - For authenticated users: "Saved" - Deal saved to account
+   * - For guest users: "Saved locally" - Will sync after login
+   * - On error: Shows error message from server or generic fallback
+   *
+   * State updates:
+   * - Sets isSaving during operation
+   * - Sets isSaved to true on success
+   */
+  const handleBookmark = async () => {
+    // Validate dealId exists
+    if (!dealId) return;
+    // Prevent duplicate saves
+    if (isSaved || isSaving) return;
+
+    try {
+      setIsSaving(true);
+
+      // Save bookmark via service (handles both auth and guest)
+      const resp = await BookmarkDealService.save(dealId, isAuthenticated);
+      setIsSaved(true);
+
+      // Determine toast message based on response
+      const messageLower = resp?.message?.toLowerCase() ?? '';
+      const savedLocally = messageLower.includes('local');
+
+      let title = 'Saved';
+      let description = 'Deal has been saved for later.';
+
+      if (savedLocally) {
+        // Guest user: saved to localStorage
+        title = 'Saved locally';
+        description =
+          'We will sync this deal to your account after you log in.';
+      }
+
+      // Show success notification
+      toast({ title, description });
+    } catch (err: unknown) {
+      // Handle errors with user-friendly messages
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      const serverMessage = axiosErr.response?.data?.message;
+      toast({
+        title: 'Save failed',
+        description:
+          serverMessage ??
+          (err instanceof Error
+            ? err.message
+            : 'Failed to save deal. Please try again.'),
+        variant: 'destructive',
+      });
+    } finally {
+      // Always reset saving state
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className='min-h-screen bg-gray-50'>
@@ -320,9 +447,10 @@ export default function DealDetailsPage() {
                     variant='ghost'
                     size='default'
                     className='w-full gap-2'
+                    disabled={isSaved || isSaving}
+                    onClick={handleBookmark}
                   >
-                    {/* <Heart className='w-4 h-4' /> */}
-                    Save for later
+                    {isSaved ? 'Saved' : 'Save for later'}
                   </Button>
                 </div>
 
