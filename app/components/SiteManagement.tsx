@@ -332,30 +332,6 @@ export default function SiteManagement({ businessId }: SiteManagementProps) {
                     <p className='text-sm text-gray-900'>operatingHours</p>
                   </div>
                 </div>
-
-                <div className='mb-4'>
-                  <p className='text-sm font-medium text-gray-900 mb-2'>
-                    Services:
-                  </p>
-                  <div className='flex flex-wrap gap-1'>WIP</div>
-                </div>
-
-                {site.isActive === true && ( // TODO: ask if we want to show revenue and bookings only for active sites
-                  <div className='grid grid-cols-2 gap-4 mb-4'>
-                    <div className='text-center p-3 bg-gray-50 rounded-lg'>
-                      <p className='text-sm text-gray-600'>Revenue</p>
-                      <p className='text-lg font-semibold text-gray-900'>
-                        revenue
-                      </p>
-                    </div>
-                    <div className='text-center p-3 bg-gray-50 rounded-lg'>
-                      <p className='text-sm text-gray-600'>Bookings</p>
-                      <p className='text-lg font-semibold text-gray-900'>
-                        bookings
-                      </p>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))
