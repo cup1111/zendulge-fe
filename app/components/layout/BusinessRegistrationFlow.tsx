@@ -396,22 +396,14 @@ export default function BusinessRegistrationFlow({
                 </label>
                 <AddressInput
                   formData={{
-                    businessAddressCountry:
-                      businessRegistrationFormData.businessAddressCountry.value,
-                    businessAddressStreetNumber:
-                      businessRegistrationFormData.businessAddressStreetNumber
-                        .value,
-                    businessAddressStreet:
-                      businessRegistrationFormData.businessAddressStreet.value,
-                    businessAddressSuburb:
-                      businessRegistrationFormData.businessAddressSuburb.value,
-                    businessAddressCity:
-                      businessRegistrationFormData.businessAddressCity.value,
-                    businessAddressState:
-                      businessRegistrationFormData.businessAddressState.value,
-                    businessAddressPostcode:
-                      businessRegistrationFormData.businessAddressPostcode
-                        .value,
+                    country: businessRegistrationFormData.country.value,
+                    streetNumber:
+                      businessRegistrationFormData.streetNumber.value,
+                    street: businessRegistrationFormData.street.value,
+                    suburb: businessRegistrationFormData.suburb.value,
+                    city: businessRegistrationFormData.city.value,
+                    state: businessRegistrationFormData.state.value,
+                    postcode: businessRegistrationFormData.postcode.value,
                   }}
                   onInputChange={onAddressChange}
                   error={error}

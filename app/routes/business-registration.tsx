@@ -137,12 +137,12 @@ export default function BusinessRegistration() {
         value: [] as string[],
         defaultValue: [],
       },
-      businessAddressCountry: {
+      country: {
         isRequired: true,
         value: 'Australia',
         defaultValue: 'Australia',
       },
-      businessAddressStreetNumber: {
+      streetNumber: {
         isRequired: true,
         // Street number validation: allows numbers and common suffixes (e.g., "123A", "45/67")
         // Important for accurate address formatting and delivery purposes
@@ -159,7 +159,7 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      businessAddressStreet: {
+      street: {
         isRequired: true,
         // Street name validation: minimum 2 characters, allows letters, numbers, and common address terms
         // Ensures valid street names for accurate address formatting
@@ -175,7 +175,7 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      businessAddressSuburb: {
+      suburb: {
         isRequired: true,
         // Suburb validation: minimum 2 characters, maximum 50 characters
         // Important for accurate address identification in Australia
@@ -191,7 +191,7 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      businessAddressCity: {
+      city: {
         isRequired: true,
         // City validation: minimum 2 characters, maximum 50 characters
         // Ensures valid city names for accurate address formatting
@@ -207,12 +207,12 @@ export default function BusinessRegistration() {
         value: '',
         defaultValue: '',
       },
-      businessAddressState: {
+      state: {
         isRequired: true,
         value: '',
         defaultValue: '',
       },
-      businessAddressPostcode: {
+      postcode: {
         isRequired: true,
         // Postcode validation: Australian postcodes are exactly 4 digits
         // Critical for accurate mail delivery and address verification
@@ -495,13 +495,13 @@ export default function BusinessRegistration() {
     [SectionNumber.adminInformation]: ['firstName', 'lastName'],
     [SectionNumber.serviceCategories]: ['categories'],
     [SectionNumber.businessAddress]: [
-      'businessAddressCountry',
-      'businessAddressStreetNumber',
-      'businessAddressStreet',
-      'businessAddressSuburb',
-      'businessAddressCity',
-      'businessAddressState',
-      'businessAddressPostcode',
+      'country',
+      'streetNumber',
+      'street',
+      'suburb',
+      'city',
+      'state',
+      'postcode',
     ],
     [SectionNumber.contactInformation]: ['phone', 'businessEmail'],
     [SectionNumber.contactPerson]: [
@@ -620,23 +620,23 @@ export default function BusinessRegistration() {
     const data = {
       ...flatData,
       businessAddress: {
-        country: flatData.businessAddressCountry,
-        streetNumber: flatData.businessAddressStreetNumber,
-        street: flatData.businessAddressStreet,
-        suburb: flatData.businessAddressSuburb,
-        city: flatData.businessAddressCity,
-        state: flatData.businessAddressState,
-        postcode: flatData.businessAddressPostcode,
+        country: flatData.country,
+        streetNumber: flatData.streetNumber,
+        street: flatData.street,
+        suburb: flatData.suburb,
+        city: flatData.city,
+        state: flatData.state,
+        postcode: flatData.postcode,
       },
     };
     // Remove flat address fields
-    delete data.businessAddressCountry;
-    delete data.businessAddressStreetNumber;
-    delete data.businessAddressStreet;
-    delete data.businessAddressSuburb;
-    delete data.businessAddressCity;
-    delete data.businessAddressState;
-    delete data.businessAddressPostcode;
+    delete data.country;
+    delete data.streetNumber;
+    delete data.street;
+    delete data.suburb;
+    delete data.city;
+    delete data.state;
+    delete data.postcode;
     const response = await registerBusiness(data);
     if (response.successful || response.success) {
       nextStep();

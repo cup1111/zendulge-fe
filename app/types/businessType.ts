@@ -25,13 +25,13 @@ export type BusinessRegistrationFormData = {
   lastName: BusinessField<string>;
   categories: BusinessField<string[]>;
   // Address fields flattened
-  businessAddressCountry: BusinessField<string>;
-  businessAddressStreetNumber: BusinessField<string>;
-  businessAddressStreet: BusinessField<string>;
-  businessAddressSuburb: BusinessField<string>;
-  businessAddressCity: BusinessField<string>;
-  businessAddressState: BusinessField<string>;
-  businessAddressPostcode: BusinessField<string>;
+  country: BusinessField<string>;
+  streetNumber: BusinessField<string>;
+  street: BusinessField<string>;
+  suburb: BusinessField<string>;
+  city: BusinessField<string>;
+  state: BusinessField<string>;
+  postcode: BusinessField<string>;
   phone: BusinessField<string>;
   businessEmail: BusinessField<string>;
   contactPersonName: BusinessField<string>;
@@ -46,7 +46,7 @@ export type BusinessRegistrationFormData = {
 };
 
 export type ErrorState = {
-  [K in keyof BusinessRegistrationFormData]: string;
+  [K in keyof BusinessRegistrationFormData]?: string;
 };
 
 type BusinessAddressValue = {
