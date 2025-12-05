@@ -24,13 +24,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip';
-import { BusinessUserRole } from '~/constants/enums';
+import { BusinessUserRole, DealStatus } from '~/constants/enums';
 import { useAuth } from '~/hooks/useAuth';
 import { useToast } from '~/hooks/useToast';
 import type { Deal } from '~/services/dealService';
@@ -50,6 +51,7 @@ export default function DealManagement({ businessId }: DealManagementProps) {
   const [dealToDelete, setDealToDelete] = useState<Deal | null>(null);
   const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
   const [dealToDuplicate, setDealToDuplicate] = useState<Deal | null>(null);
+  const [confirmDuplicate, setConfirmDuplicate] = useState(false);
 
   // Pagination and search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,23 +89,45 @@ export default function DealManagement({ businessId }: DealManagementProps) {
     // Anyone who can create deals can duplicate them
     canCreateDeal();
 
+  // Status tab state
+  const STATUS_TABS: DealStatus[] = [
+    DealStatus.Active,
+    DealStatus.Inactive,
+    DealStatus.SoldOut,
+    DealStatus.Expired,
+  ];
+  const [activeTab, setActiveTab] = useState<DealStatus>(DealStatus.Active);
+
   // Filtered and paginated deals
   const filteredDeals = useMemo(() => {
-    const filtered = deals.filter(deal => {
-      const searchLower = searchTerm.toLowerCase();
-      return (
-        deal.title?.toLowerCase().includes(searchLower) ||
-        (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
-        deal.description?.toLowerCase().includes(searchLower) ||
-        deal.operatingSite.some(site =>
-          site.name?.toLowerCase().includes(searchLower)
-        ) ||
-        deal.service?.name?.toLowerCase().includes(searchLower)
-      );
-    });
+    const filtered = deals
+      .filter(deal => {
+        // state filter
+        if (deal.status !== activeTab) return false;
+
+        // search filter
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          deal.title?.toLowerCase().includes(searchLower) ||
+          (deal.service?.category ?? '').toLowerCase().includes(searchLower) ||
+          deal.description?.toLowerCase().includes(searchLower) ||
+          deal.operatingSite.some(site =>
+            site.name?.toLowerCase().includes(searchLower)
+          ) ||
+          deal.service?.name?.toLowerCase().includes(searchLower)
+        );
+      })
+
+      // sort by start date descending
+      .sort((a, b) => {
+        const aStartTime = new Date(a.startDate ?? 0).getTime();
+        const bStartTime = new Date(b.startDate ?? 0).getTime();
+
+        return bStartTime - aStartTime;
+      });
 
     return filtered;
-  }, [deals, searchTerm]);
+  }, [deals, searchTerm, activeTab]);
 
   const totalPages = Math.ceil(filteredDeals.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -351,12 +375,108 @@ export default function DealManagement({ businessId }: DealManagementProps) {
         </div>
       </div>
 
+      {/* Status Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={value => {
+          setActiveTab(value as DealStatus);
+          setCurrentPage(1);
+        }}
+        className='w-full relative'
+      >
+        <div className='relative w-full'>
+          <div
+            className='
+        absolute 
+        top-0 left-0 
+        h-full 
+        bg-shadow-lavender/20 
+        rounded-md
+        transition-all duration-300
+      '
+            style={{
+              width: `calc(100% / ${STATUS_TABS.length})`,
+              transform: `translateX(${STATUS_TABS.indexOf(activeTab) * 100}%)`,
+            }}
+          />
+
+          <TabsList className='relative grid w-full grid-cols-4 lg:w-auto bg-white p-1 rounded-md shadow-sm h-full p-0'>
+            {STATUS_TABS.map(tab => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className={`
+            relative z-10
+            data-[state=active]:bg-shadow-lavender 
+            data-[state=active]:text-white
+            data-[state=inactive]:bg-transparent
+            data-[state=inactive]:text-gray-700
+            rounded-md px-3 py-1 text-sm font-medium
+            transition-colors
+          `}
+              >
+                {formatStatus(tab)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+      </Tabs>
+
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
-        Showing {startIndex + 1}-{Math.min(endIndex, filteredDeals.length)} of{' '}
-        {filteredDeals.length} deals
-        {searchTerm && ` matching "${searchTerm}"`}
+        {filteredDeals.length === 0 ? (
+          <>Showing 0 deals{searchTerm && ` matching "${searchTerm}"`}</>
+        ) : (
+          <>
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredDeals.length)}{' '}
+            of {filteredDeals.length} deals
+            {searchTerm && ` matching "${searchTerm}"`}
+          </>
+        )}
       </div>
+
+      {/* Confirm Duplicate Dialog */}
+      <Dialog open={confirmDuplicate} onOpenChange={setConfirmDuplicate}>
+        <DialogContent className='max-w-md'>
+          <DialogHeader>
+            <DialogTitle>Duplicate Deal</DialogTitle>
+          </DialogHeader>
+
+          <p className='text-gray-600'>
+            Are you sure you want to duplicate this{' '}
+            <span className='font-semibold'>
+              {dealToDuplicate
+                ? formatStatus(dealToDuplicate.status ?? 'unknown')
+                : ''}
+            </span>{' '}
+            deal: &quot;{dealToDuplicate?.title}&quot;?
+          </p>
+
+          <div className='flex justify-end space-x-2 mt-4'>
+            <Button
+              variant='outline'
+              onClick={() => {
+                setConfirmDuplicate(false);
+                setDealToDuplicate(null);
+              }}
+              className='cursor-pointer'
+            >
+              Cancel
+            </Button>
+
+            <Button
+              className='cursor-pointer bg-shadow-lavender hover:bg-shadow-lavender/90'
+              onClick={() => {
+                setConfirmDuplicate(false);
+                if (!dealToDuplicate) return;
+                openDuplicateDialog(dealToDuplicate);
+              }}
+            >
+              Duplicate
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Deals Grid */}
       <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'>
@@ -375,7 +495,10 @@ export default function DealManagement({ businessId }: DealManagementProps) {
                     <Button
                       variant='ghost'
                       size='sm'
-                      onClick={() => openDuplicateDialog(deal)}
+                      onClick={() => {
+                        setDealToDuplicate(deal);
+                        setConfirmDuplicate(true);
+                      }}
                       className='cursor-pointer p-1 h-8 w-8'
                       title='Duplicate deal'
                     >
@@ -617,7 +740,10 @@ export default function DealManagement({ businessId }: DealManagementProps) {
             setIsDuplicateDialogOpen(false);
             setDealToDuplicate(null);
           }}
-          initialData={dealToDuplicate}
+          initialData={{
+            ...dealToDuplicate,
+            title: `${dealToDuplicate.title ?? 'Untitled Deal'} (duplicate)`,
+          }}
         />
       )}
 

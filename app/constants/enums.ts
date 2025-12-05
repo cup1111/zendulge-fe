@@ -11,3 +11,15 @@ export enum OperatingSiteStatus {
   Inactive = 'inactive',
   OpeningSoon = 'opening_soon',
 }
+
+export enum DealStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+  SoldOut = 'sold_out',
+  Expired = 'expired',
+}
+
+export enum ServiceStatus {
+  Active = 'active',
+  Inactive = 'inactive',
+}

@@ -2,10 +2,12 @@
 // @ts-nocheck
 
 import { MapPin } from 'lucide-react';
+import { Link } from 'react-router';
 
 import AddressInput from '~/components/inputs/AddressInput';
 import EmailInput from '~/components/inputs/EmailInput';
 import PhoneInput from '~/components/inputs/PhoneInput';
+import { SectionNumber } from '~/enum/SectionNumber';
 
 import ImageInput from '../inputs/ImageInput';
 
@@ -36,18 +38,9 @@ export default function BusinessRegistrationFlow({
   onPrev,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   hasChanged,
+  companyCheckboxChecked,
+  setCompanyCheckboxChecked,
 }: JSX.Element) {
-  enum SectionNumber {
-    basicInformation = 1,
-    adminInformation,
-    serviceCategories,
-    businessAddress,
-    contactInformation,
-    contactPerson,
-    brandingSocialMedia,
-    loginInformation,
-    completed,
-  }
   const sections = [
     {
       key: 'basicInfo',
@@ -109,15 +102,16 @@ export default function BusinessRegistrationFlow({
   return (
     <div className='min-h-screen bg-gray-50'>
       {/* Banner */}
-      <div className='bg-blue-100 border-b border-blue-200 p-4'>
-        <div className='max-w-4xl mx-auto'>
-          <p className='text-blue-800 text-sm'>
-            Business Registration Process - {currentSection?.title} (
-            {sectionStep} of {maxSteps - 1})
-          </p>
+      {sectionStep <= maxSteps - 1 && (
+        <div className='bg-blue-100 border-b border-blue-200 p-4'>
+          <div className='max-w-4xl mx-auto'>
+            <p className='text-blue-800 text-sm'>
+              Business Registration Process - {currentSection?.title} (
+              {sectionStep} of {maxSteps - 1})
+            </p>
+          </div>
         </div>
-      </div>
-
+      )}
       <div className='max-w-4xl mx-auto px-4 py-8'>
         <div className='bg-white rounded-lg shadow-md p-8'>
           <div className='mb-8'>
@@ -150,13 +144,13 @@ export default function BusinessRegistrationFlow({
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='BusinessRegistrationFlow'
+                  htmlFor='businessName'
                 >
                   Business Name *
                   <input
                     type='text'
-                    id='BusinessRegistrationFlow'
-                    placeholder='e.g., Zen Wellness Spa'
+                    id='businessName'
+                    placeholder='e.g. Zen Wellness Spa'
                     value={businessRegistrationFormData.businessName.value}
                     onChange={e =>
                       onInputChange('businessName', e.target.value)
@@ -167,30 +161,66 @@ export default function BusinessRegistrationFlow({
                 {error.businessName && renderErrorMessage(error.businessName)}
               </div>
               <div>
+                <label
+                  className='flex items-center gap-2 text-sm font-medium text-gray-700 mb-2'
+                  htmlFor='companyCheckbox'
+                >
+                  <input
+                    id='companyCheckbox'
+                    type='checkbox'
+                    defaultChecked={companyCheckboxChecked}
+                    onChange={() =>
+                      setCompanyCheckboxChecked(!companyCheckboxChecked)
+                    }
+                  />
+                  Company Name is same as Business Name
+                </label>
+                <div />
+                {!companyCheckboxChecked && (
+                  <label
+                    className='block text-sm font-medium text-gray-700 mb-2'
+                    htmlFor='companyName'
+                  >
+                    Company Name *
+                    <input
+                      type='text'
+                      id='companyName'
+                      placeholder='e.g. Zen Wellness Spa'
+                      value={businessRegistrationFormData.companyName.value}
+                      onChange={e =>
+                        onInputChange('companyName', e.target.value)
+                      }
+                      className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
+                    />
+                    {error.companyName && renderErrorMessage(error.companyName)}
+                  </label>
+                )}
+              </div>
+              <div>
                 <span className='block text-sm font-medium text-gray-700 mb-2'>
                   Business Logo
                 </span>
                 <ImageInput
                   onChange={value => {
-                    onInputChange('companyLogo', value);
+                    onInputChange('businessLogo', value);
                   }}
                   onUploadError={err => {
-                    setError({ ...error, ...{ companyLogo: err.message } });
+                    setError({ ...error, ...{ businessLogo: err.message } });
                   }}
-                  logoUrl={businessRegistrationFormData.companyLogo.value}
+                  logoUrl={businessRegistrationFormData.businessLogo.value}
                 />
-                {error.companyLogo && renderErrorMessage(error.companyLogo)}
+                {error.businessLogo && renderErrorMessage(error.businessLogo)}
               </div>
               <div>
                 <label
                   className='block text-sm font-medium text-gray-700 mb-2'
-                  htmlFor='BusinessABN'
+                  htmlFor='businessABN'
                 >
                   Business ABN *
                   <input
                     type='text'
-                    id='BusinessABN'
-                    placeholder='e.g., 12 345 678 901'
+                    id='businessABN'
+                    placeholder='e.g. 12 345 678 901'
                     value={businessRegistrationFormData.businessABN.value}
                     onChange={e => onInputChange('businessABN', e.target.value)}
                     className='w-full border rounded-lg p-3 focus:ring-2 focus:ring-shadow-lavender focus:border-transparent'
@@ -365,10 +395,26 @@ export default function BusinessRegistrationFlow({
                   Business Address
                 </label>
                 <AddressInput
-                  value={businessRegistrationFormData.businessAddress}
-                  onChange={address => onAddressChange(address)}
+                  formData={{
+                    businessAddressCountry:
+                      businessRegistrationFormData.businessAddressCountry.value,
+                    businessAddressStreetNumber:
+                      businessRegistrationFormData.businessAddressStreetNumber
+                        .value,
+                    businessAddressStreet:
+                      businessRegistrationFormData.businessAddressStreet.value,
+                    businessAddressSuburb:
+                      businessRegistrationFormData.businessAddressSuburb.value,
+                    businessAddressCity:
+                      businessRegistrationFormData.businessAddressCity.value,
+                    businessAddressState:
+                      businessRegistrationFormData.businessAddressState.value,
+                    businessAddressPostcode:
+                      businessRegistrationFormData.businessAddressPostcode
+                        .value,
+                  }}
+                  onInputChange={onAddressChange}
                   error={error}
-                  errorSetter={setError}
                 />
                 <p className='text-sm text-gray-600'>
                   This is where customers will visit for your wellness services
@@ -511,11 +557,11 @@ export default function BusinessRegistrationFlow({
                 <div>
                   <label
                     className='block text-sm font-medium text-gray-700 mb-2'
-                    htmlFor='facebook'
+                    htmlFor='facebookProfile'
                   >
                     Facebook Page URL
                     <input
-                      id='fecebook'
+                      id='facebookProfile'
                       type='url'
                       placeholder='https://facebook.com/yourbusiness'
                       value={businessRegistrationFormData.facebook.value}
@@ -619,25 +665,11 @@ export default function BusinessRegistrationFlow({
               </h2>
               <div className='bg-green-50 border border-green-200 rounded-lg p-6'>
                 <ul className='text-green-700 text-left space-y-2'>
+                  <li>• Your registration has been submitted successfully</li>
                   <li>
-                    • Access your business dashboard with full admin
-                    capabilities
+                    • We will review your registration and be in touch very soon
                   </li>
-                  <li>
-                    • Set up your first services with detailed descriptions
-                  </li>
-                  <li>
-                    • Create time-limited deals with specific pricing and
-                    availability
-                  </li>
-                  <li>
-                    • Configure Stripe payment processing for customer bookings
-                  </li>
-                  <li>
-                    • Manage operating sites and business user access levels
-                  </li>
-                  <li>• Start receiving customer bookings and enquiries</li>
-                  <li>• View analytics and performance reports</li>
+                  <li>• We will notify you once the review is completed</li>
                 </ul>
               </div>
             </div>
@@ -655,7 +687,7 @@ export default function BusinessRegistrationFlow({
               </button>
             )}
             <div className='flex-1' />
-            {sectionStep < maxSteps - 1 ? (
+            {sectionStep < maxSteps - 1 && (
               <button
                 type='button'
                 onClick={onNext}
@@ -664,13 +696,22 @@ export default function BusinessRegistrationFlow({
               >
                 Next
               </button>
-            ) : (
+            )}
+            {sectionStep === maxSteps - 1 && (
               <button
                 type='button'
                 onClick={onSubmit}
                 className='px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90'
               >
                 Submit
+              </button>
+            )}
+            {sectionStep === maxSteps && (
+              <button
+                type='button'
+                className='px-6 py-2 bg-shadow-lavender text-white rounded-lg hover:bg-shadow-lavender/90'
+              >
+                <Link to='/'>Back to Home Page</Link>
               </button>
             )}
           </div>

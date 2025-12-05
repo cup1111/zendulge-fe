@@ -258,9 +258,11 @@ export default function CustomerRegistration() {
                   Already have an account?
                 </p>
               </div>
-              <Button variant='default' className='w-full h-12 text-base'>
-                <Link to='/login'>Login</Link>
-              </Button>
+              <Link to='/login'>
+                <Button variant='default' className='w-full h-12 text-base'>
+                  Login
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Textarea } from '~/components/ui/textarea';
 import { useToast } from '~/hooks/useToast';
 import type {
@@ -40,7 +41,7 @@ import type {
 } from '~/services/serviceService';
 import { ServiceService } from '~/services/serviceService';
 
-import { BusinessUserRole } from '../constants/enums';
+import { BusinessUserRole, ServiceStatus } from '../constants/enums';
 import { useAuth } from '../hooks/useAuth';
 
 type ApiError = {
@@ -78,6 +79,15 @@ export default function ServiceManagement({
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+  // Status tab state
+  const STATUS_TABS: ServiceStatus[] = [
+    ServiceStatus.Active,
+    ServiceStatus.Inactive,
+  ];
+  const [activeTab, setActiveTab] = useState<ServiceStatus>(
+    ServiceStatus.Active
+  );
+
   // Helper functions for role-based access control
   const isOwner = user?.role?.slug === BusinessUserRole.Owner;
   const isManager = user?.role?.slug === BusinessUserRole.Manager;
@@ -94,16 +104,28 @@ export default function ServiceManagement({
     status: 'active',
   });
 
+  const formatStatus = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'inactive':
+        return 'Inactive';
+      default:
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
   // Filtered and paginated services
   const filteredServices = useMemo(() => {
     const filtered = services.filter(service => {
+      if (service.status !== activeTab) return false;
       const searchLower = searchTerm.toLowerCase();
       const nameMatch = service.name?.toLowerCase().includes(searchLower);
 
       return nameMatch;
     });
     return filtered;
-  }, [services, searchTerm]);
+  }, [services, searchTerm, activeTab]);
 
   const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -683,11 +705,64 @@ export default function ServiceManagement({
         </Dialog>
       </div>
 
+      {/* Status Tabs */}
+      <Tabs
+        value={activeTab}
+        onValueChange={value => {
+          setActiveTab(value as ServiceStatus);
+          setCurrentPage(1);
+        }}
+        className='w-full relative'
+      >
+        <div className='relative w-full'>
+          <div
+            className='
+        absolute 
+        top-0 left-0 
+        h-full 
+        bg-shadow-lavender/20 
+        rounded-md
+        transition-all duration-300
+      '
+            style={{
+              width: `calc(100% / ${STATUS_TABS.length})`,
+              transform: `translateX(${STATUS_TABS.indexOf(activeTab) * 100}%)`,
+            }}
+          />
+
+          <TabsList className='relative grid w-full grid-cols-4 lg:w-auto bg-white p-1 rounded-md shadow-sm h-full p-0'>
+            {STATUS_TABS.map(tab => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className={`
+            relative z-10
+            data-[state=active]:bg-shadow-lavender 
+            data-[state=active]:text-white
+            data-[state=inactive]:bg-transparent
+            data-[state=inactive]:text-gray-700
+            rounded-md px-3 py-1 text-sm font-medium
+            transition-colors
+          `}
+              >
+                {formatStatus(tab)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
+      </Tabs>
       {/* Results Summary */}
       <div className='text-sm text-gray-600'>
-        Showing {startIndex + 1}-{Math.min(endIndex, filteredServices.length)}{' '}
-        of {filteredServices.length} services
-        {searchTerm && ` matching "${searchTerm}"`}
+        {filteredServices.length === 0 ? (
+          <>Showing 0 services{searchTerm && ` matching "${searchTerm}"`}</>
+        ) : (
+          <>
+            Showing {startIndex + 1}-
+            {Math.min(endIndex, filteredServices.length)} of{' '}
+            {filteredServices.length} services
+            {searchTerm && ` matching "${searchTerm}"`}
+          </>
+        )}
       </div>
 
       {paginatedServices.map(service => (

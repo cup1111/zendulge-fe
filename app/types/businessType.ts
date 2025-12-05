@@ -17,12 +17,21 @@ export type BusinessAddress = {
 
 export type BusinessRegistrationFormData = {
   businessName: BusinessField<string>;
+  companyName: BusinessField<string>;
   businessABN: BusinessField<string>;
+  businessLogo: BusinessField<string>;
   description: BusinessField<string>;
   firstName: BusinessField<string>;
   lastName: BusinessField<string>;
   categories: BusinessField<string[]>;
-  businessAddress: BusinessAddress;
+  // Address fields flattened
+  businessAddressCountry: BusinessField<string>;
+  businessAddressStreetNumber: BusinessField<string>;
+  businessAddressStreet: BusinessField<string>;
+  businessAddressSuburb: BusinessField<string>;
+  businessAddressCity: BusinessField<string>;
+  businessAddressState: BusinessField<string>;
+  businessAddressPostcode: BusinessField<string>;
   phone: BusinessField<string>;
   businessEmail: BusinessField<string>;
   contactPersonName: BusinessField<string>;
@@ -36,14 +45,8 @@ export type BusinessRegistrationFormData = {
   confirmPassword: BusinessField<string>;
 };
 
-type AddressErrorState = {
-  [K in keyof BusinessAddress]?: string;
-};
-
 export type ErrorState = {
-  [K in keyof BusinessRegistrationFormData]: K extends 'businessAddress'
-    ? AddressErrorState
-    : string;
+  [K in keyof BusinessRegistrationFormData]: string;
 };
 
 type BusinessAddressValue = {
@@ -58,7 +61,9 @@ type BusinessAddressValue = {
 
 export type BusinessRegisterPayload = {
   businessName: string;
+  companyName: string;
   businessABN: string;
+  businessLogo: string;
   description: string;
   firstName: string;
   lastName: string;
