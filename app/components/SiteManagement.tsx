@@ -55,17 +55,14 @@ export default function SiteManagement({ businessId }: SiteManagementProps) {
   };
 
   const canEditSite = () => {
-    if (isOwner) return true; // TODO: Managers cannot edit sites?
+    if (isOwner || isManager) return true;
     return false;
   };
 
   const canDeleteSite = () => {
-    if (isOwner) return true;
-    if (isManager) return true; // TODO: if there are unsolved deals, cannot delete
+    if (isOwner) return true; // TODO: if there are unsolved deals, cannot delete，should be implemented in backend
     return false;
   };
-
-  const canViewSite = () => true; // TODO: owner or manager of the site
 
   // Pagination and search state
   const [searchTerm, setSearchTerm] = useState('');
@@ -261,17 +258,6 @@ export default function SiteManagement({ businessId }: SiteManagementProps) {
                         <MoreHorizontal className='w-4 h-4' />
                       </Button>
                       <DropdownClickContent align='start'>
-                        <DropdownClickItem>
-                          {canViewSite() && (
-                            <button
-                              type='button'
-                              onClick={() => {}}
-                              className='w-full'
-                            >
-                              View Site
-                            </button>
-                          )}
-                        </DropdownClickItem>
                         <DropdownClickItem>
                           {canEditSite() && (
                             <button
