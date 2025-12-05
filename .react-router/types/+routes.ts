@@ -17,6 +17,15 @@ type Pages = {
   "/help": {
     params: {};
   };
+  "/about": {
+    params: {};
+  };
+  "/privacy-policy": {
+    params: {};
+  };
+  "/terms-of-service": {
+    params: {};
+  };
   "/business": {
     params: {};
   };
@@ -59,7 +68,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/help" | "/business" | "/business-dashboard" | "/business-management" | "/user-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/verify-email" | "/*";
+    page: "/" | "/help" | "/about" | "/privacy-policy" | "/terms-of-service" | "/business" | "/business-dashboard" | "/business-management" | "/user-management" | "/deal-details/:id" | "/login" | "/profile" | "/business-registration" | "/customer-registration" | "/verify-email" | "/*";
   };
   "./routes/_index.tsx": {
     id: "routes/_index";
@@ -68,6 +77,18 @@ type RouteFiles = {
   "./routes/help.tsx": {
     id: "routes/help";
     page: "/help";
+  };
+  "./routes/about.tsx": {
+    id: "routes/about";
+    page: "/about";
+  };
+  "./routes/privacy-policy.tsx": {
+    id: "routes/privacy-policy";
+    page: "/privacy-policy";
+  };
+  "./routes/terms-of-service.tsx": {
+    id: "routes/terms-of-service";
+    page: "/terms-of-service";
   };
   "./routes/business-info.tsx": {
     id: "routes/business-info";
@@ -119,6 +140,9 @@ type RouteModules = {
   "root": typeof import("./app/root.tsx");
   "routes/_index": typeof import("./app/./routes/_index.tsx");
   "routes/help": typeof import("./app/./routes/help.tsx");
+  "routes/about": typeof import("./app/./routes/about.tsx");
+  "routes/privacy-policy": typeof import("./app/./routes/privacy-policy.tsx");
+  "routes/terms-of-service": typeof import("./app/./routes/terms-of-service.tsx");
   "routes/business-info": typeof import("./app/./routes/business-info.tsx");
   "routes/business-dashboard": typeof import("./app/./routes/business-dashboard.tsx");
   "routes/business-management": typeof import("./app/./routes/business-management.tsx");

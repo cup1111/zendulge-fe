@@ -123,44 +123,44 @@ export default function Footer() {
             <h4 className='font-semibold mb-4'>Legal & Support</h4>
             <ul className='space-y-2 text-gray-400'>
               <li>
-                <a
-                  href='#about'
+                <Link
+                  to='/about'
                   className='hover:text-pure-white transition-colors'
                 >
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href='#contact'
+                <Link
+                  to='/help#contact'
                   className='hover:text-pure-white transition-colors'
                 >
                   Contact Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href='#privacy'
+                <Link
+                  to='/privacy-policy'
                   className='hover:text-pure-white transition-colors'
                 >
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href='#terms'
+                <Link
+                  to='/terms-of-service'
                   className='hover:text-pure-white transition-colors'
                 >
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href='#faq'
+                <Link
+                  to='/help#faqs'
                   className='hover:text-pure-white transition-colors'
                 >
                   FAQs
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
