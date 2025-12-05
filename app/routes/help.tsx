@@ -1,4 +1,12 @@
-import { Building, Mail, Phone, Users } from 'lucide-react';
+import {
+  Building,
+  Code2,
+  FileText,
+  Mail,
+  Phone,
+  Users,
+  Video,
+} from 'lucide-react';
 
 import {
   Accordion,
