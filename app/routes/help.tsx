@@ -1,11 +1,11 @@
 import {
-  Phone,
-  Mail,
-  Clock,
-  Users,
   Building,
-  ShoppingCart,
+  Clock,
   CreditCard,
+  Mail,
+  Phone,
+  ShoppingCart,
+  Users,
 } from 'lucide-react';
 
 import {
@@ -26,7 +26,8 @@ import {
 export default function Help() {
   return (
     <div className='min-h-screen bg-gray-50 py-8'>
-      <div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
+      {/* Contact Section */}
+      <div id='contact' className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8'>
         {/* Header */}
         <div className='text-center mb-12'>
           <h1 className='text-4xl font-bold text-shadow-lavender mb-4'>
@@ -72,7 +73,7 @@ export default function Help() {
       </div>
 
       {/* FAQ Sections */}
-      <div className='grid md:grid-cols-2 gap-8'>
+      <div id='faqs' className='grid md:grid-cols-2 gap-8'>
         {/* Customer FAQ */}
         <Card>
           <CardHeader>
